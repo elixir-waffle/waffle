@@ -64,7 +64,8 @@ Waffle expects certain properties to be configured at the application level:
 ```elixir
 config :waffle,
   storage: Waffle.Storage.S3, # or Waffle.Storage.Local
-  bucket: {:system, "AWS_S3_BUCKET"} # if using Amazon S3
+  bucket: {:system, "AWS_S3_BUCKET"}, # if using Amazon s3
+  asset_host: "http://static.example.com" # or {:system, "ASSET_HOST"}
 ```
 
 Along with any configuration necessary for ExAws.
