@@ -40,6 +40,11 @@ defmodule Waffle.Actions.Delete do
   end
 
   defp delete_version(definition, version, {file, scope}) do
-    definition.__storage.delete(definition, version, {file, scope})
+    conversion = definition.transform(version, {file, scope})
+    if conversion == :skip do
+      :ok
+    else
+      definition.__storage.delete(definition, version, {file, scope})
+    end
   end
 end

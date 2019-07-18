@@ -13,9 +13,7 @@ defmodule WaffleTest.Storage.Local do
 
 
   defmodule DummyDefinition do
-    use Waffle.Actions.Store
-    use Waffle.Definition.Storage
-    use Waffle.Actions.Url
+    use Waffle.Definition
 
     @acl :public_read
     def transform(:thumb, _), do: {:convert, "-strip -thumbnail 10x10"}
@@ -42,6 +40,11 @@ defmodule WaffleTest.Storage.Local do
     :ok = Waffle.Storage.Local.delete(DummyDefinition, :thumb, {%{file_name: "image.png"}, nil})
     refute File.exists?("waffletest/uploads/original-image.png")
     refute File.exists?("waffletest/uploads/1/thumb-image.png")
+  end
+
+  test "deleting when there's a skipped version" do
+    DummyDefinition.store(@img)
+    assert :ok = DummyDefinition.delete(@img)
   end
 
   test "save binary" do
