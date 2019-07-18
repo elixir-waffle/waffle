@@ -12,6 +12,6 @@ defmodule Waffle.Processor do
   end
 
   defp apply_transformation(file, {cmd, conversion}) do
-    Waffle.Transformations.Convert.apply(cmd, Waffle.File.ensure_path(file), conversion)
+    Waffle.Transformations.Convert.apply(cmd, file, conversion)
   end
 end
