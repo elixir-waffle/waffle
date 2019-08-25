@@ -1,4 +1,4 @@
-defmodule Arc.MissingExecutableError do
+defmodule Waffle.MissingExecutableError do
   defexception [:message]
 
   def exception(opts) do

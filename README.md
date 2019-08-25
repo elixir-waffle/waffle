@@ -1,9 +1,7 @@
-Arc
+Waffle
 ===
 
-[![Build Status](https://semaphoreci.com/api/v1/projects/7fc62b34-c895-475e-a3a6-671fefd0c017/480818/badge.svg)](https://semaphoreci.com/stavro/arc)
-
-Arc is a flexible file upload library for Elixir with straightforward integrations for Amazon S3 and ImageMagick.
+Waffle is a flexible file upload library for Elixir with straightforward integrations for Amazon S3 and ImageMagick.
 
 Browse the readme below, or jump to [a full example](#full-example).
 
@@ -42,7 +40,7 @@ Add the latest stable release to your `mix.exs` file, along with the required de
 ```elixir
 defp deps do
   [
-    arc: "~> 0.11.0",
+    waffle: "~> 0.0.1",
 
     # If using Amazon S3:
     ex_aws: "~> 2.0",
@@ -58,18 +56,18 @@ Then run `mix deps.get` in your shell to fetch the dependencies.
 
 ### Configuration
 
-Arc expects certain properties to be configured at the application level:
+Waffle expects certain properties to be configured at the application level:
 
 ```elixir
-config :arc,
-  storage: Arc.Storage.S3, # or Arc.Storage.Local
+config :waffle,
+  storage: Waffle.Storage.S3, # or Waffle.Storage.Local
   bucket: {:system, "AWS_S3_BUCKET"} # if using Amazon S3
 ```
 
 Along with any configuration necessary for ExAws.
 
 ### Storage Providers
-Arc ships with integrations for Local Storage and S3.  Alternative storage providers may be supported by the community:
+Waffle ships with integrations for Local Storage and S3.  Alternative storage providers may be supported by the community:
 
 * **Rackspace** - https://github.com/lokalebasen/arc_rackspace
 * **Manta** - https://github.com/onyxrev/arc_manta
@@ -79,14 +77,14 @@ Arc ships with integrations for Local Storage and S3.  Alternative storage provi
 
 ### Usage with Ecto
 
-Arc comes with a companion package for use with Ecto.  If you intend to use Arc with Ecto, it is highly recommended you also add the [`arc_ecto`](https://github.com/stavro/arc_ecto) dependency.  Benefits include:
+Waffle comes with a companion package for use with Ecto.  If you intend to use Waffle with Ecto, it is highly recommended you also add the [`waffle_ecto`](https://github.com/stavro/waffle_ecto) dependency.  Benefits include:
 
   * Changeset integration
   * Versioned urls for cache busting (`.../thumb.png?v=63601457477`)
 
 # Getting Started: Defining your Upload
 
-Arc requires a **definition module** which contains the relevant configuration to store and retrieve your files.
+Waffle requires a **definition module** which contains the relevant configuration to store and retrieve your files.
 
 This definition module contains relevant functions to determine:
   * Optional transformations of the uploaded file
@@ -98,7 +96,7 @@ This definition module contains relevant functions to determine:
 To start off, generate an attachment definition:
 
 ```bash
-mix arc.g avatar
+mix waffle.g avatar
 ```
 
 This should give you a basic file in:
@@ -111,7 +109,7 @@ Check this file for descriptions of configurable options.
 
 ## Basics
 
-There are two supported use-cases of Arc currently:
+There are two supported use-cases of Waffle currently:
 
   1. As a general file store, or
   2. As an attachment to another model (the attached model is referred to as a `scope`)
@@ -152,7 +150,7 @@ This scope will be available throughout the definition module to be used as an i
 
 ## Transformations
 
-Arc can be used to facilitate transformations of uploaded files via any system executable.  Some common operations you may want to take on uploaded files include resizing an uploaded avatar with ImageMagick or extracting a still image from a video with FFmpeg.
+Waffle can be used to facilitate transformations of uploaded files via any system executable.  Some common operations you may want to take on uploaded files include resizing an uploaded avatar with ImageMagick or extracting a still image from a video with FFmpeg.
 
 To transform an image, the definition module must define a `transform/2` function which accepts a version atom and a tuple consisting of the uploaded file and corresponding scope.
 
@@ -165,7 +163,7 @@ This transform handler accepts the version atom, as well as the file/scope argum
 
 ### ImageMagick transformations
 
-As images are one of the most commonly uploaded filetypes, Arc has a recommended integration with ImageMagick's `convert` tool for manipulation of images.  Each upload definition may specify as many versions as desired, along with the corresponding transformation for each version.
+As images are one of the most commonly uploaded filetypes, Waffle has a recommended integration with ImageMagick's `convert` tool for manipulation of images.  Each upload definition may specify as many versions as desired, along with the corresponding transformation for each version.
 
 The expected return value of a `transform` function call must either be `:noaction`, in which case the original file will be stored as-is, `:skip`, in which case nothing will be stored, or `{:convert, transformation}` in which the original file will be processed via ImageMagick's `convert` tool with the corresponding transformation parameters.
 
@@ -173,7 +171,7 @@ The following example stores the original file, as well as a squared 100x100 thu
 
 ```elixir
 defmodule Avatar do
-  use Arc.Definition
+  use Waffle.Definition
 
   @versions [:original, :thumb]
 
@@ -195,7 +193,7 @@ Other examples:
 
 For more information on defining your transformation, please consult [ImageMagick's convert documentation](http://www.imagemagick.org/script/convert.php).
 
-> **Note**: Keep this transformation function simple and deterministic based on the version, file name, and scope object. The `transform` function is subsequently called during URL generation, and the transformation is scanned for the output file format.  As such, if you conditionally format the image as a `png` or `jpg` depending on the time of day, you will be displeased with the result of Arc's URL generation.
+> **Note**: Keep this transformation function simple and deterministic based on the version, file name, and scope object. The `transform` function is subsequently called during URL generation, and the transformation is scanned for the output file format.  As such, if you conditionally format the image as a `png` or `jpg` depending on the time of day, you will be displeased with the result of Waffle's URL generation.
 
 > **System Resources**: If you are accepting arbitrary uploads on a public site, it may be prudent to add system resource limits to prevent overloading your system resources from malicious or nefarious files.  Since all processing is done directly in ImageMagick, you may pass in system resource restrictions through the [-limit](http://www.imagemagick.org/script/command-line-options.php#limit) flag.  One such example might be: `-limit area 10MB -limit disk 100MB`.
 
@@ -212,16 +210,16 @@ Common transformations of uploaded videos can be also defined through your defin
 ```
 
 ### Complex Transformations
-`Arc` requires the output of your transformation to be located at a predetermined path.  However, the transformation may be done completely outside of `Arc`. For fine-grained transformations, you should create an executable wrapper in your $PATH (eg. bash script) which takes these proper arguments, runs your transformation, and then moves the file into the correct location.
+`Waffle` requires the output of your transformation to be located at a predetermined path.  However, the transformation may be done completely outside of `Waffle`. For fine-grained transformations, you should create an executable wrapper in your $PATH (eg. bash script) which takes these proper arguments, runs your transformation, and then moves the file into the correct location.
 
 For example, to use `soffice` to convert a doc to an html file, you should place the following bash script in your $PATH:
 
 ```bash
 #!/usr/bin/env sh
 
-# `soffice` doesn't allow for output file path option, and arc can't find the
+# `soffice` doesn't allow for output file path option, and waffle can't find the
 # temporary file to process and copy. This script has a similar argument list as
-# what arc expects. See https://github.com/stavro/arc/issues/77.
+# what waffle expects. See https://github.com/stavro/arc/issues/77.
 
 set -e
 set -o pipefail
@@ -262,7 +260,7 @@ If you specify multiple versions in your definition module, each version is proc
 If you wish to change the time allocated to version transformation and storage, you may add a configuration parameter:
 
 ```elixir
-config :arc,
+config :waffle,
   :version_timeout, 15_000 # milliseconds
 ```
 
@@ -270,16 +268,16 @@ To disable asynchronous processing, add `@async false` to your upload definition
 
 ## Storage of files
 
-Arc currently supports Amazon S3 and local destinations for file uploads.
+Waffle currently supports Amazon S3 and local destinations for file uploads.
 
 ### Local Configuration
 
-To store your attachments locally, override the `__storage` function in your definition module to `Arc.Storage.Local`. You may wish to optionally override the storage directory as well, as outlined below.
+To store your attachments locally, override the `__storage` function in your definition module to `Waffle.Storage.Local`. You may wish to optionally override the storage directory as well, as outlined below.
 
 ```elixir
 defmodule Avatar do
-  use Arc.Definition
-  def __storage, do: Arc.Storage.Local # Add this
+  use Waffle.Definition
+  def __storage, do: Waffle.Storage.Local # Add this
 end
 ```
 
@@ -290,14 +288,14 @@ end
 To store your attachments in Amazon S3, you'll need to provide a bucket destination in your application config:
 
 ```elixir
-config :arc,
+config :waffle,
   bucket: "uploads"
 ```
 
 You may also set the bucket from an environment variable:
 
 ```elixir
-config :arc,
+config :waffle,
   bucket: {:system, "S3_BUCKET"}
 ```
 
@@ -317,10 +315,10 @@ This means it will first look for the AWS standard AWS_ACCESS_KEY_ID and AWS_SEC
 
 **Configuration Option**
 
-* `arc[:storage_dir]` - The storage directory to place files. Defaults to `uploads`, but can be overwritten via configuration options `:storage_dir`
+* `waffle[:storage_dir]` - The storage directory to place files. Defaults to `uploads`, but can be overwritten via configuration options `:storage_dir`
 
 ```elixir
-config :arc,
+config :waffle,
   storage_dir: "my/dir"
 ```
 
@@ -339,7 +337,7 @@ end
 
 ### Specify multiple buckets
 
-Arc lets you specify a bucket on a per definition basis. In case you want to use
+Waffle lets you specify a bucket on a per definition basis. In case you want to use
 multiple buckets, you can specify a bucket in the uploader definition file
 like this:
 
@@ -349,7 +347,7 @@ def bucket, do: :some_custom_bucket_name
 
 ### Specify multiple asset hosts
 
-Arc lets you specify an asset host on a per definition basis. In case you want to use
+Waffle lets you specify an asset host on a per definition basis. In case you want to use
 multiple hosts, you can specify an asset_host in the uploader definition file
 like this:
 
@@ -359,7 +357,7 @@ def asset_host, do: "https://example.com"
 
 ### Access Control Permissions
 
-Arc defaults all uploads to `private`.  In cases where it is desired to have your uploads public, you may set the ACL at the module level (which applies to all versions):
+Waffle defaults all uploads to `private`.  In cases where it is desired to have your uploads public, you may set the ACL at the module level (which applies to all versions):
 
 ```elixir
 @acl :public_read
@@ -411,11 +409,11 @@ end
 
 While storing files on S3 (rather than your harddrive) eliminates some malicious attack vectors, it is strongly encouraged to validate the extensions of uploaded files as well.
 
-Arc delegates validation to a `validate/1` function with a tuple of the file and scope.  As an example, to validate that an uploaded file conforms to popular image formats, you may use:
+Waffle delegates validation to a `validate/1` function with a tuple of the file and scope.  As an example, to validate that an uploaded file conforms to popular image formats, you may use:
 
 ```elixir
 defmodule Avatar do
-  use Arc.Definition
+  use Waffle.Definition
   @extension_whitelist ~w(.jpg .jpeg .gif .png)
 
   def validate({file, _}) do
@@ -450,7 +448,7 @@ def filename(version, _), do: version
 
 ## Object Deletion
 
-After an object is stored through Arc, you may optionally remove it.  To remove a stored object, pass the same path identifier and scope from which you stored the object.
+After an object is stored through Waffle, you may optionally remove it.  To remove a stored object, pass the same path identifier and scope from which you stored the object.
 
 Example:
 
@@ -474,7 +472,7 @@ user = Repo.get!(User, 1)
 
 Saving your files is only the first half of any decent storage solution.  Straightforward access to your uploaded files is equally as important as storing them in the first place.
 
-Often times you will want to regain access to the stored files.  As such, `Arc` facilitates the generation of urls.
+Often times you will want to regain access to the stored files.  As such, `Waffle` facilitates the generation of urls.
 
 ```elixir
 # Given some user record
@@ -497,7 +495,7 @@ Avatar.urls({"selfie.png", user}) #=> %{original: "https://.../original.png", th
 
 **Default url**
 
-In cases where a placeholder image is desired when an uploaded file is not present, Arc allows the definition of a default image to be returned gracefully when requested with a `nil` file.
+In cases where a placeholder image is desired when an uploaded file is not present, Waffle allows the definition of a default image to be returned gracefully when requested with a `nil` file.
 
 ```elixir
 def default_url(version) do
@@ -517,7 +515,7 @@ To use this style of url generation, your bucket name must be DNS compliant.
 This can be enabled with:
 
 ```elixir
-config :arc,
+config :waffle,
   virtual_host: true
 ```
 
@@ -531,16 +529,16 @@ You may optionally specify an asset host rather than using the default `bucket.s
 In your application configuration, you'll need to provide an `asset_host` value:
 
 ```elixir
-config :arc,
+config :waffle,
   asset_host: "https://d3gav2egqolk5.cloudfront.net", # For a value known during compilation
   asset_host: {:system, "ASSET_HOST"} # For a value not known until runtime
 ```
 
 ### Alternate S3 configuration example
-If you are using a region other than US-Standard, it is necessary to specify the correct configuration for `ex_aws`.  A full example configuration for both arc and ex_aws is as follows:
+If you are using a region other than US-Standard, it is necessary to specify the correct configuration for `ex_aws`.  A full example configuration for both waffle and ex_aws is as follows:
 
 ```
-config :arc,
+config :waffle,
   bucket: "my-frankfurt-bucket"
 
 config :ex_aws,
@@ -561,7 +559,7 @@ config :ex_aws,
 
 ```elixir
 defmodule Avatar do
-  use Arc.Definition
+  use Waffle.Definition
 
   @versions [:original, :thumb]
   @extension_whitelist ~w(.jpg .jpeg .gif .png)
@@ -617,14 +615,15 @@ Open source contributions are welcome.  All pull requests must have correspondin
 
 To execute all tests locally, make sure the following system environment variables are set prior to running tests (if you wish to test `s3_test.exs`)
 
-  * `ARC_TEST_BUCKET`
-  * `ARC_TEST_S3_KEY`
-  * `ARC_TEST_S3_SECRET`
+  * `WAFFLE_TEST_BUCKET`
+  * `WAFFLE_TEST_S3_KEY`
+  * `WAFFLE_TEST_S3_SECRET`
 
 Then execute `mix test`.
 
 ## License
 
+Copyright 2019 Boris Kuznetsov
 Copyright 2015 Sean Stavropoulos
 
   Licensed under the Apache License, Version 2.0 (the "License");

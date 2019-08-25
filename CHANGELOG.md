@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.0.1 (2019-08-25)
+  * Move project to a new repository and change name to `Waffle`
+
 ## v0.11.0 (2018-10-04)
   * (Dependency) `:httpoison` removed in favor of `:hackney`
   * (Enhancement) Proper generator file location for Phoenix 1.3+
@@ -122,8 +125,8 @@ Since `erlcloud` has been removed from `arc`, you must also remove it from your 
 ```elixir
 # BEFORE
 config :arc,
-  access_key_id: "###",		
-  secret_access_key: "###",		
+  access_key_id: "###",
+  secret_access_key: "###",
   bucket: "uploads"
 
 #AFTER

@@ -1,0 +1,2 @@
+defmodule Waffle do
+end

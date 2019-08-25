@@ -1,4 +1,4 @@
-defmodule Arc.Processor do
+defmodule Waffle.Processor do
   def process(definition, version, {file, scope}) do
     transform = definition.transform(version, {file, scope})
     apply_transformation(file, transform)
@@ -12,6 +12,6 @@ defmodule Arc.Processor do
   end
 
   defp apply_transformation(file, {cmd, conversion}) do
-    Arc.Transformations.Convert.apply(cmd, Arc.File.ensure_path(file), conversion)
+    Waffle.Transformations.Convert.apply(cmd, Waffle.File.ensure_path(file), conversion)
   end
 end

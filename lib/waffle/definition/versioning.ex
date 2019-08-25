@@ -1,8 +1,8 @@
-defmodule Arc.Definition.Versioning do
+defmodule Waffle.Definition.Versioning do
   defmacro __using__(_) do
     quote do
       @versions [:original]
-      @before_compile Arc.Definition.Versioning
+      @before_compile Waffle.Definition.Versioning
     end
   end
 

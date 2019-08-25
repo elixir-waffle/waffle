@@ -1,8 +1,8 @@
-defmodule Arc.Actions.Delete do
+defmodule Waffle.Actions.Delete do
   defmacro __using__(_) do
     quote do
-      def delete(args), do: Arc.Actions.Delete.delete(__MODULE__, args)
-      
+      def delete(args), do: Waffle.Actions.Delete.delete(__MODULE__, args)
+
       defoverridable [{:delete, 1}]
     end
   end
@@ -20,7 +20,7 @@ defmodule Arc.Actions.Delete do
   #
 
   defp version_timeout do
-    Application.get_env(:arc, :version_timeout) || 15_000
+    Application.get_env(:waffle, :version_timeout) || 15_000
   end
 
   defp do_delete(definition, {file, scope}) do

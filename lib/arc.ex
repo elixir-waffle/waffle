@@ -1,2 +1,0 @@
-defmodule Arc do
-end

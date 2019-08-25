@@ -1,4 +1,4 @@
-defmodule Arc.File do
+defmodule Waffle.File do
   defstruct [:path, :file_name, :binary]
 
   def generate_temporary_path(file \\ nil) do
@@ -18,7 +18,7 @@ defmodule Arc.File do
     filename = Path.basename(uri.path)
 
     case save_file(uri, filename) do
-      {:ok, local_path} -> %Arc.File{path: local_path, file_name: filename}
+      {:ok, local_path} -> %Waffle.File{path: local_path, file_name: filename}
       :error -> {:error, :invalid_file_path}
     end
 end
@@ -26,19 +26,19 @@ end
   # Accepts a path
   def new(path) when is_binary(path) do
     case File.exists?(path) do
-      true -> %Arc.File{path: path, file_name: Path.basename(path)}
+      true -> %Waffle.File{path: path, file_name: Path.basename(path)}
       false -> {:error, :invalid_file_path}
     end
   end
 
   def new(%{filename: filename, binary: binary}) do
-    %Arc.File{binary: binary, file_name: Path.basename(filename)}
+    %Waffle.File{binary: binary, file_name: Path.basename(filename)}
   end
 
   # Accepts a map conforming to %Plug.Upload{} syntax
   def new(%{filename: filename, path: path}) do
     case File.exists?(path) do
-      true -> %Arc.File{path: path, file_name: filename}
+      true -> %Waffle.File{path: path, file_name: filename}
       false -> {:error, :invalid_file_path}
     end
   end
@@ -84,12 +84,12 @@ end
   defp get_remote_path(remote_path) do
     options = [
       follow_redirect: true,
-      recv_timeout: Application.get_env(:arc, :recv_timeout, 5_000),
-      connect_timeout: Application.get_env(:arc, :connect_timeout, 10_000),
-      timeout: Application.get_env(:arc, :timeout, 10_000),
-      max_retries: Application.get_env(:arc, :max_retries, 3),
-      backoff_factor: Application.get_env(:arc, :backoff_factor, 1000),
-      backoff_max: Application.get_env(:arc, :backoff_max, 30_000),
+      recv_timeout: Application.get_env(:waffle, :recv_timeout, 5_000),
+      connect_timeout: Application.get_env(:waffle, :connect_timeout, 10_000),
+      timeout: Application.get_env(:waffle, :timeout, 10_000),
+      max_retries: Application.get_env(:waffle, :max_retries, 3),
+      backoff_factor: Application.get_env(:waffle, :backoff_factor, 1000),
+      backoff_max: Application.get_env(:waffle, :backoff_max, 30_000),
     ]
 
     request(remote_path, options)
@@ -104,7 +104,7 @@ end
           {:error, :out_of_tries} -> {:error, :timeout}
         end
 
-      _ -> {:error, :arc_httpoison_error}
+      _ -> {:error, :waffle_httpoison_error}
     end
   end
 

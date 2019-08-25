@@ -1,12 +1,12 @@
-defmodule Arc.Actions.Store do
+defmodule Waffle.Actions.Store do
   defmacro __using__(_) do
     quote do
-      def store(args), do: Arc.Actions.Store.store(__MODULE__, args)
+      def store(args), do: Waffle.Actions.Store.store(__MODULE__, args)
     end
   end
 
   def store(definition, {file, scope}) when is_binary(file) or is_map(file) do
-    put(definition, {Arc.File.new(file), scope})
+    put(definition, {Waffle.File.new(file), scope})
   end
 
   def store(definition, filepath) when is_binary(filepath) or is_map(filepath) do
@@ -18,7 +18,7 @@ defmodule Arc.Actions.Store do
   #
 
   defp put(_definition, { error = {:error, _msg}, _scope}), do: error
-  defp put(definition, {%Arc.File{}=file, scope}) do
+  defp put(definition, {%Waffle.File{}=file, scope}) do
     case definition.validate({file, scope}) do
       true -> put_versions(definition, {file, scope})
       _    -> {:error, :invalid_file}
@@ -54,7 +54,7 @@ defmodule Arc.Actions.Store do
   end
 
   defp version_timeout do
-    Application.get_env(:arc, :version_timeout) || 15_000
+    Application.get_env(:waffle, :version_timeout) || 15_000
   end
 
   defp async_process_version(definition, version, {file, scope}) do
@@ -70,7 +70,7 @@ defmodule Arc.Actions.Store do
   end
 
   defp process_version(definition, version, {file, scope}) do
-    {version, Arc.Processor.process(definition, version, {file, scope})}
+    {version, Waffle.Processor.process(definition, version, {file, scope})}
   end
 
   defp put_version(definition, version, {result, scope}) do
@@ -78,8 +78,8 @@ defmodule Arc.Actions.Store do
       {:error, error} -> {:error, error}
       {:ok, nil} -> {:ok, nil}
       {:ok, file} ->
-        file_name = Arc.Definition.Versioning.resolve_file_name(definition, version, {file, scope})
-        file      = %Arc.File{file | file_name: file_name}
+        file_name = Waffle.Definition.Versioning.resolve_file_name(definition, version, {file, scope})
+        file      = %Waffle.File{file | file_name: file_name}
         result = definition.__storage.put(definition, version, {file, scope})
         result
     end

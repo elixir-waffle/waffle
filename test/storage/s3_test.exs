@@ -1,14 +1,14 @@
-defmodule ArcTest.Storage.S3 do
+defmodule WaffleTest.Storage.S3 do
   use ExUnit.Case, async: false
 
   @img "test/support/image.png"
   @img_with_space "test/support/image two.png"
 
   defmodule DummyDefinition do
-    use Arc.Definition
+    use Waffle.Definition
 
     @acl :public_read
-    def storage_dir(_, _), do: "arctest/uploads"
+    def storage_dir(_, _), do: "waffletest/uploads"
     def acl(_, {_, :private}), do: :private
 
     def s3_object_headers(:original, {_, :with_content_type}), do: [content_type: "image/gif"]
@@ -16,7 +16,7 @@ defmodule ArcTest.Storage.S3 do
   end
 
   defmodule DefinitionWithThumbnail do
-    use Arc.Definition
+    use Waffle.Definition
     @versions [:thumb]
     @acl :public_read
 
@@ -26,7 +26,7 @@ defmodule ArcTest.Storage.S3 do
   end
 
   defmodule DefinitionWithSkipped do
-    use Arc.Definition
+    use Waffle.Definition
     @versions [:skipped]
     @acl :public_read
 
@@ -34,23 +34,23 @@ defmodule ArcTest.Storage.S3 do
   end
 
   defmodule DefinitionWithScope do
-    use Arc.Definition
+    use Waffle.Definition
     @acl :public_read
     def storage_dir(_, {_, scope}), do: "uploads/with_scopes/#{scope.id}"
   end
 
   defmodule DefinitionWithBucket do
-    use Arc.Definition
-    def bucket, do: System.get_env("ARC_TEST_BUCKET")
+    use Waffle.Definition
+    def bucket, do: System.get_env("WAFFLE_TEST_BUCKET")
   end
 
   defmodule DefinitionWithAssetHost do
-    use Arc.Definition
+    use Waffle.Definition
     def asset_host, do: "https://example.com"
   end
 
   def env_bucket do
-    System.get_env("ARC_TEST_BUCKET")
+    System.get_env("WAFFLE_TEST_BUCKET")
   end
 
   defmacro delete_and_assert_not_found(definition, args) do
@@ -116,11 +116,11 @@ defmodule ArcTest.Storage.S3 do
   setup_all do
     Application.ensure_all_started(:hackney)
     Application.ensure_all_started(:ex_aws)
-    Application.put_env :arc, :virtual_host, false
-    Application.put_env :arc, :bucket, { :system, "ARC_TEST_BUCKET" }
+    Application.put_env :waffle, :virtual_host, false
+    Application.put_env :waffle, :bucket, { :system, "WAFFLE_TEST_BUCKET" }
     # Application.put_env :ex_aws, :s3, [scheme: "https://", host: "s3.amazonaws.com", region: "us-west-2"]
-    Application.put_env :ex_aws, :access_key_id, System.get_env("ARC_TEST_S3_KEY")
-    Application.put_env :ex_aws, :secret_access_key,  System.get_env("ARC_TEST_S3_SECRET")
+    Application.put_env :ex_aws, :access_key_id, System.get_env("WAFFLE_TEST_S3_KEY")
+    Application.put_env :ex_aws, :secret_access_key,  System.get_env("WAFFLE_TEST_S3_SECRET")
     # Application.put_env :ex_aws, :region, "us-east-1"
     # Application.put_env :ex_aws, :scheme, "https://"
   end
@@ -140,12 +140,12 @@ defmodule ArcTest.Storage.S3 do
   @tag :s3
   @tag timeout: 15000
   test "virtual_host" do
-    with_env :arc, :virtual_host, true, fn ->
-      assert "https://#{env_bucket()}.s3.amazonaws.com/arctest/uploads/image.png" == DummyDefinition.url(@img)
+    with_env :waffle, :virtual_host, true, fn ->
+      assert "https://#{env_bucket()}.s3.amazonaws.com/waffletest/uploads/image.png" == DummyDefinition.url(@img)
     end
 
-    with_env :arc, :virtual_host, false, fn ->
-      assert "https://s3.amazonaws.com/#{env_bucket()}/arctest/uploads/image.png" == DummyDefinition.url(@img)
+    with_env :waffle, :virtual_host, false, fn ->
+      assert "https://s3.amazonaws.com/#{env_bucket()}/waffletest/uploads/image.png" == DummyDefinition.url(@img)
     end
   end
 
@@ -154,17 +154,17 @@ defmodule ArcTest.Storage.S3 do
   test "custom asset_host" do
     custom_asset_host = "https://some.cloudfront.com"
 
-    with_env :arc, :asset_host, custom_asset_host, fn ->
-      assert "#{custom_asset_host}/arctest/uploads/image.png" == DummyDefinition.url(@img)
+    with_env :waffle, :asset_host, custom_asset_host, fn ->
+      assert "#{custom_asset_host}/waffletest/uploads/image.png" == DummyDefinition.url(@img)
     end
 
-    with_env :arc, :asset_host, {:system, "ARC_ASSET_HOST"}, fn ->
-      System.put_env("ARC_ASSET_HOST", custom_asset_host)
-      assert "#{custom_asset_host}/arctest/uploads/image.png" == DummyDefinition.url(@img)
+    with_env :waffle, :asset_host, {:system, "WAFFLE_ASSET_HOST"}, fn ->
+      System.put_env("WAFFLE_ASSET_HOST", custom_asset_host)
+      assert "#{custom_asset_host}/waffletest/uploads/image.png" == DummyDefinition.url(@img)
     end
 
-    with_env :arc, :asset_host, false, fn ->
-      assert "https://s3.amazonaws.com/#{env_bucket()}/arctest/uploads/image.png" == DummyDefinition.url(@img)
+    with_env :waffle, :asset_host, false, fn ->
+      assert "https://s3.amazonaws.com/#{env_bucket()}/waffletest/uploads/image.png" == DummyDefinition.url(@img)
     end
   end
 
@@ -180,7 +180,7 @@ defmodule ArcTest.Storage.S3 do
   @tag timeout: 15000
   test "encoded url" do
     url = DummyDefinition.url(@img_with_space)
-    assert "https://s3.amazonaws.com/#{env_bucket()}/arctest/uploads/image%20two.png" == url
+    assert "https://s3.amazonaws.com/#{env_bucket()}/waffletest/uploads/image%20two.png" == url
   end
 
   @tag :s3
@@ -238,9 +238,9 @@ defmodule ArcTest.Storage.S3 do
   @tag :s3
   @tag timeout: 150000
   test "put with error" do
-    Application.put_env(:arc, :bucket, "unknown-bucket")
+    Application.put_env(:waffle, :bucket, "unknown-bucket")
     {:error, res} = DummyDefinition.store("test/support/image.png")
-    Application.put_env :arc, :bucket, env_bucket()
+    Application.put_env :waffle, :bucket, env_bucket()
     assert res
   end
 

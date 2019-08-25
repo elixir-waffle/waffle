@@ -1,20 +1,20 @@
-defmodule Mix.Tasks.Arc do
+defmodule Mix.Tasks.Waffle do
   defmodule G do
     use Mix.Task
     import Mix.Generator
     import Macro, only: [camelize: 1, underscore: 1]
 
-    @shortdoc "For Arc definition generation code"
+    @shortdoc "For Waffle definition generation code"
 
     @moduledoc """
-    A task for generating arc uploader modules.
+    A task for generating waffle uploader modules.
 
     If generating an uploader in a Phoenix project, your a uploader will be generated in
     lib/[APP_NAME]_web/uploaders/
 
     ## Example
 
-        mix arc.g avatar # creates  lib/[APP_NAME]_web/uploaders/avatar.ex
+        mix waffle.g avatar # creates  lib/[APP_NAME]_web/uploaders/avatar.ex
 
 
     If not generating an uploader in a Phoenix project, then you must pass the path to where the
@@ -22,7 +22,7 @@ defmodule Mix.Tasks.Arc do
 
     ## Example
 
-        mix arc.g avatar  uploaders/avatar.ex # creates uploaders/avatar.ex
+        mix waffle.g avatar  uploaders/avatar.ex # creates uploaders/avatar.ex
     """
 
     def run([model_name]) do
@@ -42,7 +42,7 @@ defmodule Mix.Tasks.Arc do
     end
 
     def run(_) do
-      IO.puts "Incorrect syntax. Please try mix arc.g <model_name>"
+      IO.puts "Incorrect syntax. Please try mix waffle.g <model_name>"
     end
 
     defp generate_uploader_file(model_name, project_module_name, path) do
@@ -65,10 +65,10 @@ defmodule Mix.Tasks.Arc do
 
     embed_template :uploader, """
     defmodule <%= inspect @uploader_model_name %> do
-      use Arc.Definition
+      use Waffle.Definition
 
-      # Include ecto support (requires package arc_ecto installed):
-      # use Arc.Ecto.Definition
+      # Include ecto support (requires package waffle_ecto installed):
+      # use Waffle.Ecto.Definition
 
       @versions [:original]
 

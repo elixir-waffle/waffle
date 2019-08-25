@@ -1,11 +1,11 @@
-defmodule ArcTest.Processor do
+defmodule WaffleTest.Processor do
   use ExUnit.Case, async: false
   @img "test/support/image.png"
   @img2 "test/support/image two.png"
 
   defmodule DummyDefinition do
-    use Arc.Actions.Store
-    use Arc.Definition.Storage
+    use Waffle.Actions.Store
+    use Waffle.Definition.Storage
 
     def validate({file, _}), do: String.ends_with?(file.file_name, ".png")
     def transform(:original, _), do: :noaction
@@ -17,8 +17,8 @@ defmodule ArcTest.Processor do
   end
 
   defmodule BrokenDefinition do
-    use Arc.Actions.Store
-    use Arc.Definition.Storage
+    use Waffle.Actions.Store
+    use Waffle.Definition.Storage
 
     def validate({file, _}), do: String.ends_with?(file.file_name, ".png")
     def transform(:original, _), do: :noaction
@@ -27,22 +27,22 @@ defmodule ArcTest.Processor do
   end
 
   defmodule MissingExecutableDefinition do
-    use Arc.Definition
+    use Waffle.Definition
 
     def transform(:original, _), do: {:blah, ""}
   end
 
   test "returns the original path for :noaction transformations" do
-    {:ok, file} = Arc.Processor.process(DummyDefinition, :original, {Arc.File.new(@img), nil})
+    {:ok, file} = Waffle.Processor.process(DummyDefinition, :original, {Waffle.File.new(@img), nil})
     assert file.path == @img
   end
 
   test "returns nil for :skip transformations" do
-    assert {:ok, nil} = Arc.Processor.process(DummyDefinition, :skipped, {Arc.File.new(@img), nil})
+    assert {:ok, nil} = Waffle.Processor.process(DummyDefinition, :skipped, {Waffle.File.new(@img), nil})
   end
 
   test "transforms a copied version of file according to the specified transformation" do
-    {:ok, new_file} = Arc.Processor.process(DummyDefinition, :thumb, {Arc.File.new(@img), nil})
+    {:ok, new_file} = Waffle.Processor.process(DummyDefinition, :thumb, {Waffle.File.new(@img), nil})
     assert new_file.path != @img
     assert "128x128" == geometry(@img) #original file untouched
     assert "10x10" == geometry(new_file.path)
@@ -50,7 +50,7 @@ defmodule ArcTest.Processor do
   end
 
   test "transforms a copied version of file according to a function transformation that returns a string" do
-    {:ok, new_file} = Arc.Processor.process(DummyDefinition, :med, {Arc.File.new(@img), nil})
+    {:ok, new_file} = Waffle.Processor.process(DummyDefinition, :med, {Waffle.File.new(@img), nil})
     assert new_file.path != @img
     assert "128x128" == geometry(@img) #original file untouched
     assert "10x10" == geometry(new_file.path)
@@ -58,7 +58,7 @@ defmodule ArcTest.Processor do
   end
 
   test "transforms a copied version of file according to a function transformation that returns a list" do
-    {:ok, new_file} = Arc.Processor.process(DummyDefinition, :small, {Arc.File.new(@img), nil})
+    {:ok, new_file} = Waffle.Processor.process(DummyDefinition, :small, {Waffle.File.new(@img), nil})
     assert new_file.path != @img
     assert "128x128" == geometry(@img) #original file untouched
     assert "10x10" == geometry(new_file.path)
@@ -67,7 +67,7 @@ defmodule ArcTest.Processor do
 
   test "transforms a file given as a binary" do
     img_binary = File.read!(@img)
-    {:ok, new_file} = Arc.Processor.process(DummyDefinition, :small, {Arc.File.new(%{binary: img_binary, filename: "image.png"}), nil})
+    {:ok, new_file} = Waffle.Processor.process(DummyDefinition, :small, {Waffle.File.new(%{binary: img_binary, filename: "image.png"}), nil})
     assert new_file.path != @img
     assert "128x128" == geometry(@img) #original file untouched
     assert "10x10" == geometry(new_file.path)
@@ -75,7 +75,7 @@ defmodule ArcTest.Processor do
   end
 
   test "file names with spaces" do
-    {:ok, new_file} = Arc.Processor.process(DummyDefinition, :thumb, {Arc.File.new(@img2), nil})
+    {:ok, new_file} = Waffle.Processor.process(DummyDefinition, :thumb, {Waffle.File.new(@img2), nil})
     assert new_file.path != @img2
     assert "128x128" == geometry(@img2) #original file untouched
     assert "10x10" == geometry(new_file.path)
@@ -83,12 +83,12 @@ defmodule ArcTest.Processor do
   end
 
   test "returns tuple in an invalid transformation" do
-    assert {:error, _} = Arc.Processor.process(BrokenDefinition, :thumb, {Arc.File.new(@img), nil})
+    assert {:error, _} = Waffle.Processor.process(BrokenDefinition, :thumb, {Waffle.File.new(@img), nil})
   end
 
   test "raises an error if the given transformation executable cannot be found" do
-    assert_raise Arc.MissingExecutableError, ~r"blah", fn ->
-      Arc.Processor.process(MissingExecutableDefinition, :original, {Arc.File.new(@img), nil})
+    assert_raise Waffle.MissingExecutableError, ~r"blah", fn ->
+      Waffle.Processor.process(MissingExecutableDefinition, :original, {Waffle.File.new(@img), nil})
     end
   end
 

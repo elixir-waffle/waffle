@@ -1,4 +1,4 @@
 use Mix.Config
 
-config :arc,
-  storage: Arc.Storage.S3
+config :waffle,
+  storage: Waffle.Storage.S3

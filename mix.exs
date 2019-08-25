@@ -1,10 +1,10 @@
-defmodule Arc.Mixfile do
+defmodule Waffle.Mixfile do
   use Mix.Project
 
-  @version "0.10.0"
+  @version "0.0.1"
 
   def project do
-    [app: :arc,
+    [app: :waffle,
      version: @version,
      elixir: "~> 1.4",
      deps: deps(),
@@ -21,9 +21,9 @@ defmodule Arc.Mixfile do
   end
 
   defp package do
-    [maintainers: ["Sean Stavropoulos"],
+    [maintainers: ["Boris Kuznetsov"],
      licenses: ["Apache 2.0"],
-     links: %{"GitHub" => "https://github.com/stavro/arc"},
+     links: %{"GitHub" => "https://github.com/elixir-waffle/waffle"},
      files: ~w(mix.exs README.md CHANGELOG.md lib)]
   end
 

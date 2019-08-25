@@ -1,4 +1,4 @@
-defmodule Arc.Actions.Url do
+defmodule Waffle.Actions.Url do
   defmacro __using__(_) do
     quote do
       def urls(file, options \\ []) do
@@ -10,7 +10,7 @@ defmodule Arc.Actions.Url do
       def url(file), do: url(file, nil)
       def url(file, options) when is_list(options), do: url(file, nil, options)
       def url(file, version), do: url(file, version, [])
-      def url(file, version, options), do: Arc.Actions.Url.url(__MODULE__, file, version, options)
+      def url(file, version, options), do: Waffle.Actions.Url.url(__MODULE__, file, version, options)
 
       defoverridable [{:url, 3}]
     end
@@ -42,7 +42,7 @@ defmodule Arc.Actions.Url do
   end
 
   defp build(definition, version, file_and_scope, options) do
-    case Arc.Definition.Versioning.resolve_file_name(definition, version, file_and_scope) do
+    case Waffle.Definition.Versioning.resolve_file_name(definition, version, file_and_scope) do
       nil -> nil
       _ ->
         definition.__storage.url(definition, version, file_and_scope, options)

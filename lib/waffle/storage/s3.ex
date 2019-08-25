@@ -1,4 +1,4 @@
-defmodule Arc.Storage.S3 do
+defmodule Waffle.Storage.S3 do
   require Logger
   @default_expiry_time 60*5
 
@@ -40,7 +40,7 @@ defmodule Arc.Storage.S3 do
   defp ensure_keyword_list(map) when is_map(map), do: Map.to_list(map)
 
   # If the file is stored as a binary in-memory, send to AWS in a single request
-  defp do_put(file=%Arc.File{binary: file_binary}, {s3_bucket, s3_key, s3_options}) when is_binary(file_binary) do
+  defp do_put(file=%Waffle.File{binary: file_binary}, {s3_bucket, s3_key, s3_options}) when is_binary(file_binary) do
     ExAws.S3.put_object(s3_bucket, s3_key, file_binary, s3_options)
     |> ExAws.request()
     |> case do
@@ -73,7 +73,7 @@ defmodule Arc.Storage.S3 do
   end
 
   defp build_signed_url(definition, version, file_and_scope, options) do
-    # Previous arc argument was expire_in instead of expires_in
+    # Previous waffle argument was expire_in instead of expires_in
     # check for expires_in, if not present, use expire_at.
     options = put_in options[:expires_in], Keyword.get(options, :expires_in, options[:expire_in])
     # fallback to default, if neither is present.
@@ -89,7 +89,7 @@ defmodule Arc.Storage.S3 do
   defp s3_key(definition, version, file_and_scope) do
     Path.join([
       definition.storage_dir(version, file_and_scope),
-      Arc.Definition.Versioning.resolve_file_name(definition, version, file_and_scope)
+      Waffle.Definition.Versioning.resolve_file_name(definition, version, file_and_scope)
     ])
   end
 
@@ -116,7 +116,7 @@ defmodule Arc.Storage.S3 do
   end
 
   defp virtual_host do
-    Application.get_env(:arc, :virtual_host) || false
+    Application.get_env(:waffle, :virtual_host) || false
   end
 
   defp s3_bucket(definition) do

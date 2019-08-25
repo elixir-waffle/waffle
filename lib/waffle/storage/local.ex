@@ -1,4 +1,4 @@
-defmodule Arc.Storage.Local do
+defmodule Waffle.Storage.Local do
   def put(definition, version, {file, scope}) do
     destination_dir = definition.storage_dir(version, {file, scope})
     path = Path.join(destination_dir, file.file_name)
@@ -33,7 +33,7 @@ defmodule Arc.Storage.Local do
   defp build_local_path(definition, version, file_and_scope) do
     Path.join([
       definition.storage_dir(version, file_and_scope),
-      Arc.Definition.Versioning.resolve_file_name(definition, version, file_and_scope)
+      Waffle.Definition.Versioning.resolve_file_name(definition, version, file_and_scope)
     ])
   end
 end
