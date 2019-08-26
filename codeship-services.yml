@@ -1,0 +1,3 @@
+waffle:
+  build:
+    dockerfile: Dockerfile.codeship

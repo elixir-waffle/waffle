@@ -1,6 +1,8 @@
 Waffle
 ===
 
+[![Codeship Status for elixir-waffle/waffle](https://app.codeship.com/projects/182a04b0-aa53-0137-1d00-2259d5318dee/status?branch=master)](https://app.codeship.com/projects/361668)
+
 Waffle is a flexible file upload library for Elixir with straightforward integrations for Amazon S3 and ImageMagick.
 
 Browse the readme below, or jump to [a full example](#full-example).
