@@ -1,2 +1,3 @@
 - name: tests
   service: waffle
+  command: mix test
