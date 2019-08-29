@@ -1,0 +1,9 @@
+version: "2.4"
+services:
+  waffle:
+    build:
+      context: .
+      dockerfile: Dockerfile.codeship
+    command: tail -f /dev/null
+    volumes:
+      - .:/srv/app:cached

@@ -34,6 +34,7 @@ Browse the readme below, or jump to [a full example](#full-example).
   - [URL Generation](#url-generation)
     - [Alternate S3 configuration example](#alternate-s3-configuration-example)
 - [Full example](#full-example)
+- [Development](/documentation/development.md)
 
 ## Installation
 
