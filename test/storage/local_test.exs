@@ -16,12 +16,15 @@ defmodule WaffleTest.Storage.Local do
     use Waffle.Definition
 
     @acl :public_read
+    @versions [:original, :thumb, :skipped]
+
     def transform(:thumb, _), do: {:convert, "-strip -thumbnail 10x10"}
     def transform(:original, _), do: :noaction
     def transform(:skipped, _), do: :skip
-    def __versions, do: [:original, :thumb, :skipped]
+
     def storage_dir(_, _), do: "waffletest/uploads"
     def __storage, do: Waffle.Storage.Local
+
     def filename(:original, {file, _}), do: "original-#{Path.basename(file.file_name, Path.extname(file.file_name))}"
     def filename(:thumb, {file, _}), do: "1/thumb-#{Path.basename(file.file_name, Path.extname(file.file_name))}"
     def filename(:skipped, {file, _}), do: "1/skipped-#{Path.basename(file.file_name, Path.extname(file.file_name))}"
