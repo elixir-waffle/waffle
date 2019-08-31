@@ -22,20 +22,11 @@ defmodule Waffle.Actions.Store do
     case definition.validate({file, scope}) do
       true ->
         put_versions(definition, {file, scope})
-        |> cleanup(file)
+        |> cleanup!(file)
       _    -> {:error, :invalid_file}
     end
   end
 
-  defp cleanup(result, file) do
-    # If we were working with binary data or a remote file, a tempfile was
-    # created that we need to clean up.
-    if file.tempfile? do
-      File.rm(file.path)
-    end
-
-    result
-  end
 
   defp put_versions(definition, {file, scope}) do
     if definition.async do
@@ -92,15 +83,20 @@ defmodule Waffle.Actions.Store do
       {:ok, file} ->
         file_name = Waffle.Definition.Versioning.resolve_file_name(definition, version, {file, scope})
         file      = %Waffle.File{file | file_name: file_name}
-        result = definition.__storage.put(definition, version, {file, scope})
 
-        # If this version was transformed in any way, a tempfile was created
-        # that we need to clean up.
-        if file.tempfile? do
-          File.rm(file.path)
-        end
-
-        result
+        definition.__storage.put(definition, version, {file, scope})
+        |> cleanup!(file)
     end
   end
+
+  defp cleanup!(result, file) do
+    # If we were working with binary data or a remote file, a tempfile was
+    # created that we need to clean up.
+    if file.is_tempfile? do
+      File.rm!(file.path)
+    end
+
+    result
+  end
+
 end

@@ -9,7 +9,7 @@ defmodule Waffle.Transformations.Convert do
     result = System.cmd(program, args_list(args), stderr_to_stdout: true)
     case result do
       {_, 0} ->
-        {:ok, %Waffle.File{file | path: new_path, tempfile?: true}}
+        {:ok, %Waffle.File{file | path: new_path, is_tempfile?: true}}
       {error_message, _exit_code} ->
         {:error, error_message}
     end

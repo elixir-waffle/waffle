@@ -1,5 +1,5 @@
 defmodule Waffle.File do
-  defstruct [:path, :file_name, :binary, :tempfile?]
+  defstruct [:path, :file_name, :binary, :is_tempfile?]
 
   def generate_temporary_path(file \\ nil) do
     extension = Path.extname((file && file.path) || "")
@@ -18,7 +18,7 @@ defmodule Waffle.File do
     filename = Path.basename(uri.path)
 
     case save_file(uri, filename) do
-      {:ok, local_path} -> %Waffle.File{path: local_path, file_name: filename, tempfile?: true}
+      {:ok, local_path} -> %Waffle.File{path: local_path, file_name: filename, is_tempfile?: true}
       :error -> {:error, :invalid_file_path}
     end
 end
@@ -52,7 +52,7 @@ end
     %__MODULE__{
       file_name: file.file_name,
       path: path,
-      tempfile?: true
+      is_tempfile?: true
     }
   end
 
