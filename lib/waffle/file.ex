@@ -47,7 +47,7 @@ end
 
   defp write_binary(file) do
     path = generate_temporary_path(file)
-    :ok = File.write!(path, file.binary)
+    File.write!(path, file.binary)
 
     %__MODULE__{
       file_name: file.file_name,

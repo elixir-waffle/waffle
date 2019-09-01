@@ -83,9 +83,16 @@ defmodule Waffle.Actions.Store do
       {:ok, file} ->
         file_name = Waffle.Definition.Versioning.resolve_file_name(definition, version, {file, scope})
         file      = %Waffle.File{file | file_name: file_name}
+        result    = definition.__storage.put(definition, version, {file, scope})
 
-        definition.__storage.put(definition, version, {file, scope})
-        |> cleanup!(file)
+        case definition.transform(version, {file, scope}) do
+          :noaction ->
+            # we don't have to cleanup after `:noaction` transofmations
+            # because final `cleanup!` will remove the original temporary file
+            result
+          _ ->
+            cleanup!(result, file)
+        end
     end
   end
 
