@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.0.2 (2019-09-02)
+  * Clean up all temp files created during processing and storage (#9)
+  * Bypass delete on skipped versions (#8)
+  * add documentation for phoenix integration (#7)
+  * add documentation for local development setup (#5)
+  * update dependencies (#4)
+  * add codeship integration (#2)
+
 ## v0.0.1 (2019-08-25)
   * Move project to a new repository and change name to `Waffle`
 
