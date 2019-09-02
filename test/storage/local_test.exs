@@ -3,11 +3,14 @@ defmodule WaffleTest.Storage.Local do
   @img "test/support/image.png"
   @badimg "test/support/invalid_image.png"
 
-  setup_all do
+  setup do
     File.mkdir_p("waffletest/uploads")
+    File.mkdir_p("waffletest/tmp")
+    System.put_env("TMPDIR", "waffletest/tmp")
 
     on_exit fn ->
       File.rm_rf("waffletest/uploads")
+      File.rm_rf("waffletest/tmp")
     end
   end
 
@@ -73,5 +76,24 @@ defmodule WaffleTest.Storage.Local do
 
     assert !File.exists?("waffletest/uploads/original-#{filename}")
     assert !File.exists?("waffletest/uploads/1/thumb-#{filename}")
+  end
+
+  test "temp files from processing are cleaned up" do
+    filepath = @img
+    DummyDefinition.store(filepath)
+    assert length(File.ls!("waffletest/tmp")) == 0
+  end
+
+  test "temp files from handling binary data are cleaned up" do
+    filepath = @img
+    filename = "image.png"
+    DummyDefinition.store(%{binary: File.read!(filepath), filename: filename})
+    assert File.exists?("waffletest/uploads/original-#{filename}")
+    assert length(File.ls!("waffletest/tmp")) == 0
+  end
+
+  test "temp files from handling remote URLs are cleaned up" do
+    DummyDefinition.store("https://www.google.com/favicon.ico")
+    assert length(File.ls!("waffletest/tmp")) == 0
   end
 end

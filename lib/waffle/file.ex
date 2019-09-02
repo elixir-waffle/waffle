@@ -1,5 +1,5 @@
 defmodule Waffle.File do
-  defstruct [:path, :file_name, :binary]
+  defstruct [:path, :file_name, :binary, :is_tempfile?]
 
   def generate_temporary_path(file \\ nil) do
     extension = Path.extname((file && file.path) || "")
@@ -18,7 +18,7 @@ defmodule Waffle.File do
     filename = Path.basename(uri.path)
 
     case save_file(uri, filename) do
-      {:ok, local_path} -> %Waffle.File{path: local_path, file_name: filename}
+      {:ok, local_path} -> %Waffle.File{path: local_path, file_name: filename, is_tempfile?: true}
       :error -> {:error, :invalid_file_path}
     end
 end
@@ -33,6 +33,7 @@ end
 
   def new(%{filename: filename, binary: binary}) do
     %Waffle.File{binary: binary, file_name: Path.basename(filename)}
+    |> write_binary()
   end
 
   # Accepts a map conforming to %Plug.Upload{} syntax
@@ -43,16 +44,15 @@ end
     end
   end
 
-  def ensure_path(file = %{path: path}) when is_binary(path), do: file
-  def ensure_path(file = %{binary: binary}) when is_binary(binary), do: write_binary(file)
 
   defp write_binary(file) do
     path = generate_temporary_path(file)
-    :ok = File.write!(path, file.binary)
+    File.write!(path, file.binary)
 
     %__MODULE__{
       file_name: file.file_name,
-      path: path
+      path: path,
+      is_tempfile?: true
     }
   end
 
