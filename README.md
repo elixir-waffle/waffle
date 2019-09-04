@@ -275,12 +275,22 @@ Waffle currently supports Amazon S3 and local destinations for file uploads.
 
 ### Local Configuration
 
+```elixir
+config :waffle,
+  storage: Waffle.Storage.Local,
+  # in order to have a different storage directory from url
+  starage_dir_prefix: "priv/waffle/private"
+```
+
 To store your attachments locally, override the `__storage` function in your definition module to `Waffle.Storage.Local`. You may wish to optionally override the storage directory as well, as outlined below.
+
 
 ```elixir
 defmodule Avatar do
   use Waffle.Definition
   def __storage, do: Waffle.Storage.Local # Add this
+  # in order to have a different storage directory from url
+  def starage_dir_prefix(), do: "priv/waffle/private"
 end
 ```
 
