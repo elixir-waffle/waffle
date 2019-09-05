@@ -1,4 +1,21 @@
 defmodule Waffle.Storage.Local do
+  @moduledoc ~S"""
+  Local storage provides facility to store files locally.
+
+  ## Local configuration
+
+      config :waffle,
+        storage: Waffle.Storage.Local,
+        # in order to have a different storage directory from url
+        starage_dir_prefix: "priv/waffle/private"
+
+  If you want to handle your attachements by phoenix application, configure the endpoint to serve it.
+
+      defmodule AppWeb.Endpoint do
+        plug Plug.Static,
+          at: "/uploads", from: Path.expand("./priv/waffle/public/uploads"), gzip: false
+      end
+  """
 
   def put(definition, version, {file, scope}) do
     destination_path = Path.join([
