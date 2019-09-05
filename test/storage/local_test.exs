@@ -97,20 +97,20 @@ defmodule WaffleTest.Storage.Local do
   end
 
   test "get, delete with :asset_host set" do
-    with_env :arc, :asset_host, @custom_asset_host, fn ->
+    with_env :waffle, :asset_host, @custom_asset_host, fn ->
 
-      assert {:ok, "original-image.png"} == Arc.Storage.Local.put(DummyDefinition, :original, {Arc.File.new(%{filename: "original-image.png", path: @img}), nil})
-      assert {:ok, "1/thumb-image.png"} == Arc.Storage.Local.put(DummyDefinition, :thumb, {Arc.File.new(%{filename: "1/thumb-image.png", path: @img}), nil})
+      assert {:ok, "original-image.png"} == Waffle.Storage.Local.put(DummyDefinition, :original, {Waffle.File.new(%{filename: "original-image.png", path: @img}), nil})
+      assert {:ok, "1/thumb-image.png"} == Waffle.Storage.Local.put(DummyDefinition, :thumb, {Waffle.File.new(%{filename: "1/thumb-image.png", path: @img}), nil})
 
-      assert File.exists?("arctest/uploads/original-image.png")
-      assert File.exists?("arctest/uploads/1/thumb-image.png")
-      assert @custom_asset_host <> "/arctest/uploads/original-image.png" == DummyDefinition.url("image.png", :original)
-      assert @custom_asset_host <> "/arctest/uploads/1/thumb-image.png" == DummyDefinition.url("1/image.png", :thumb)
+      assert File.exists?("waffletest/uploads/original-image.png")
+      assert File.exists?("waffletest/uploads/1/thumb-image.png")
+      assert @custom_asset_host <> "/waffletest/uploads/original-image.png" == DummyDefinition.url("image.png", :original)
+      assert @custom_asset_host <> "/waffletest/uploads/1/thumb-image.png" == DummyDefinition.url("1/image.png", :thumb)
 
-      :ok = Arc.Storage.Local.delete(DummyDefinition, :original, {%{file_name: "image.png"}, nil})
-      :ok = Arc.Storage.Local.delete(DummyDefinition, :thumb, {%{file_name: "image.png"}, nil})
-      refute File.exists?("arctest/uploads/original-image.png")
-      refute File.exists?("arctest/uploads/1/thumb-image.png")
+      :ok = Waffle.Storage.Local.delete(DummyDefinition, :original, {%{file_name: "image.png"}, nil})
+      :ok = Waffle.Storage.Local.delete(DummyDefinition, :thumb, {%{file_name: "image.png"}, nil})
+      refute File.exists?("waffletest/uploads/original-image.png")
+      refute File.exists?("waffletest/uploads/1/thumb-image.png")
     end
   end
 
