@@ -7,7 +7,9 @@ defmodule Waffle.Storage.Local do
       config :waffle,
         storage: Waffle.Storage.Local,
         # in order to have a different storage directory from url
-        starage_dir_prefix: "priv/waffle/private"
+        starage_dir_prefix: "priv/waffle/private",
+        # add custom host to url
+        asset_host: "https://example.com"
 
   If you want to handle your attachements by phoenix application, configure the endpoint to serve it.
 
