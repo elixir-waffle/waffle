@@ -12,6 +12,10 @@ defmodule Waffle.File do
     Path.join(System.tmp_dir, file_name)
   end
 
+  #
+  # Handle a remote file
+  #
+
   # Given a remote file
   def new(remote_path = "http" <> _) do
     uri = URI.parse(remote_path)
@@ -21,7 +25,35 @@ defmodule Waffle.File do
       {:ok, local_path} -> %Waffle.File{path: local_path, file_name: filename, is_tempfile?: true}
       :error -> {:error, :invalid_file_path}
     end
-end
+  end
+
+  # Given a remote file with a filename
+  def new(%{filename: filename, remote_path: remote_path} = %{filename: _, remote_path: "http" <> _}) do
+    uri = URI.parse(remote_path)
+    case save_file(uri, filename) do
+      {:ok, local_path} -> %Waffle.File{path: local_path, file_name: filename, is_tempfile?: true}
+      :error -> {:error, :invalid_file_path}
+    end
+  end
+
+  # Rejects invalid remote file path
+  def new(%{filename: _filename, remote_path: _remote_path} = %{filename: _, remote_path: _}) do
+    {:error, :invalid_file_path}
+  end
+
+  #
+  # Handle a binary blob
+  #
+
+  def new(%{filename: filename, binary: binary}) do
+    %Waffle.File{binary: binary, file_name: Path.basename(filename)}
+    |> write_binary()
+  end
+
+
+  #
+  # Handle a local file
+  #
 
   # Accepts a path
   def new(path) when is_binary(path) do
@@ -29,11 +61,6 @@ end
       true -> %Waffle.File{path: path, file_name: Path.basename(path)}
       false -> {:error, :invalid_file_path}
     end
-  end
-
-  def new(%{filename: filename, binary: binary}) do
-    %Waffle.File{binary: binary, file_name: Path.basename(filename)}
-    |> write_binary()
   end
 
   # Accepts a map conforming to %Plug.Upload{} syntax
@@ -44,6 +71,9 @@ end
     end
   end
 
+  #
+  # Support functions
+  #
 
   defp write_binary(file) do
     path = generate_temporary_path(file)
