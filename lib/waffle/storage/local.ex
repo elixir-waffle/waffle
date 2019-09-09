@@ -7,7 +7,9 @@ defmodule Waffle.Storage.Local do
       config :waffle,
         storage: Waffle.Storage.Local,
         # in order to have a different storage directory from url
-        starage_dir_prefix: "priv/waffle/private"
+        starage_dir_prefix: "priv/waffle/private",
+        # add custom host to url
+        asset_host: "https://example.com"
 
   If you want to handle your attachements by phoenix application, configure the endpoint to serve it.
 
@@ -39,14 +41,14 @@ defmodule Waffle.Storage.Local do
       definition.storage_dir(version, file_and_scope),
       Waffle.Definition.Versioning.resolve_file_name(definition, version, file_and_scope)
     ])
+    host = host(definition)
 
-    url = if String.starts_with?(local_path, "/") do
-      local_path
+    if host == nil do
+      Path.join("/", local_path)
     else
-      "/" <> local_path
+      Path.join([host, local_path])
     end
-
-    url |> URI.encode()
+    |> URI.encode()
   end
 
   def delete(definition, version, file_and_scope) do
@@ -56,5 +58,13 @@ defmodule Waffle.Storage.Local do
       Waffle.Definition.Versioning.resolve_file_name(definition, version, file_and_scope)
     ])
     |> File.rm()
+  end
+
+
+  defp host(definition) do
+    case definition.asset_host() do
+      {:system, env_var} when is_binary(env_var) -> System.get_env(env_var)
+      url -> url
+    end
   end
 end
