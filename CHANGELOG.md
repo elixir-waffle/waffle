@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.0.3 (2019-09-09)
+  * add new file from remote path with new filename (#13)
+  * support specifying asset host for local storage (#12)
+  * allow storage path to be different from url (#11)
+
 ## v0.0.2 (2019-09-02)
   * Clean up all temp files created during processing and storage (#9)
   * Bypass delete on skipped versions (#8)

@@ -1,7 +1,7 @@
 defmodule Waffle.Mixfile do
   use Mix.Project
 
-  @version "0.0.2"
+  @version "0.0.3"
 
   def project do
     [app: :waffle,
