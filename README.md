@@ -81,7 +81,7 @@ Waffle ships with integrations for Local Storage and S3.  Alternative storage pr
 
 ### Usage with Ecto
 
-Waffle comes with a companion package for use with Ecto.  If you intend to use Waffle with Ecto, it is highly recommended you also add the [`waffle_ecto`](https://github.com/stavro/waffle_ecto) dependency.  Benefits include:
+Waffle comes with a companion package for use with Ecto.  If you intend to use Waffle with Ecto, it is highly recommended you also add the [`waffle_ecto`](https://github.com/elixir-waffle/waffle_ecto) dependency.  Benefits include:
 
   * Changeset integration
   * Versioned urls for cache busting (`.../thumb.png?v=63601457477`)
