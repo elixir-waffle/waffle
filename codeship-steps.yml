@@ -1,5 +1,4 @@
 - type: parallel
-  service: waffle
   steps:
   - name: linters
     service: waffle
