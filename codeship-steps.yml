@@ -1,3 +1,9 @@
-- name: tests
+- type: parallel
   service: waffle
-  command: mix test
+  steps:
+  - name: linters
+    service: waffle
+    command: mix credo --strict
+  - name: tests
+    service: waffle
+    command: mix test
