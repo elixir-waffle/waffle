@@ -142,7 +142,7 @@ defmodule WaffleTest.Storage.Local do
   test "temp files from processing are cleaned up" do
     filepath = @img
     DummyDefinition.store(filepath)
-    assert length(File.ls!("waffletest/tmp")) == 0
+    assert Enum.empty?(File.ls!("waffletest/tmp"))
   end
 
   test "temp files from handling binary data are cleaned up" do
@@ -150,11 +150,11 @@ defmodule WaffleTest.Storage.Local do
     filename = "image.png"
     DummyDefinition.store(%{binary: File.read!(filepath), filename: filename})
     assert File.exists?("waffletest/uploads/original-#{filename}")
-    assert length(File.ls!("waffletest/tmp")) == 0
+    assert Enum.empty?(File.ls!("waffletest/tmp"))
   end
 
   test "temp files from handling remote URLs are cleaned up" do
     DummyDefinition.store("https://www.google.com/favicon.ico")
-    assert length(File.ls!("waffletest/tmp")) == 0
+    assert Enum.empty?(File.ls!("waffletest/tmp"))
   end
 end
