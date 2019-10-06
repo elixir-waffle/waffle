@@ -117,7 +117,7 @@ defmodule WaffleTest.Storage.S3 do
     Application.ensure_all_started(:hackney)
     Application.ensure_all_started(:ex_aws)
     Application.put_env :waffle, :virtual_host, false
-    Application.put_env :waffle, :bucket, { :system, "WAFFLE_TEST_BUCKET" }
+    Application.put_env :waffle, :bucket, {:system, "WAFFLE_TEST_BUCKET"}
     # Application.put_env :ex_aws, :s3, [scheme: "https://", host: "s3.amazonaws.com", region: "us-west-2"]
     Application.put_env :ex_aws, :access_key_id, System.get_env("WAFFLE_TEST_S3_KEY")
     Application.put_env :ex_aws, :secret_access_key,  System.get_env("WAFFLE_TEST_S3_SECRET")

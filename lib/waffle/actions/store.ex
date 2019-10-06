@@ -17,8 +17,8 @@ defmodule Waffle.Actions.Store do
   # Private
   #
 
-  defp put(_definition, { error = {:error, _msg}, _scope}), do: error
-  defp put(definition, {%Waffle.File{}=file, scope}) do
+  defp put(_definition, {error = {:error, _msg}, _scope}), do: error
+  defp put(definition, {%Waffle.File{} = file, scope}) do
     case definition.validate({file, scope}) do
       true ->
         put_versions(definition, {file, scope})

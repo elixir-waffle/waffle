@@ -1,6 +1,6 @@
 defmodule Waffle.Storage.S3 do
   require Logger
-  @default_expiry_time 60*5
+  @default_expiry_time 60 * 5
 
   def put(definition, version, {file, scope}) do
     destination_dir = definition.storage_dir(version, {file, scope})
@@ -39,7 +39,7 @@ defmodule Waffle.Storage.S3 do
   defp ensure_keyword_list(map) when is_map(map), do: Map.to_list(map)
 
   # If the file is stored as a binary in-memory, send to AWS in a single request
-  defp do_put(file=%Waffle.File{binary: file_binary}, {s3_bucket, s3_key, s3_options}) when is_binary(file_binary) do
+  defp do_put(file = %Waffle.File{binary: file_binary}, {s3_bucket, s3_key, s3_options}) when is_binary(file_binary) do
     ExAws.S3.put_object(s3_bucket, s3_key, file_binary, s3_options)
     |> ExAws.request()
     |> case do
