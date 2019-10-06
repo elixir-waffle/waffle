@@ -50,7 +50,6 @@ defmodule Waffle.File do
     |> write_binary()
   end
 
-
   #
   # Handle a local file
   #

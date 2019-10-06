@@ -60,7 +60,6 @@ defmodule Waffle.Storage.Local do
     |> File.rm()
   end
 
-
   defp host(definition) do
     case definition.asset_host() do
       {:system, env_var} when is_binary(env_var) -> System.get_env(env_var)

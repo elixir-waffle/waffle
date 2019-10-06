@@ -27,7 +27,6 @@ defmodule Waffle.Actions.Store do
     end
   end
 
-
   defp put_versions(definition, {file, scope}) do
     if definition.async do
       definition.__versions

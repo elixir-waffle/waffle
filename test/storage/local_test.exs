@@ -27,7 +27,6 @@ defmodule WaffleTest.Storage.Local do
     end
   end
 
-
   defmodule DummyDefinition do
     use Waffle.Definition
 
@@ -52,7 +51,7 @@ defmodule WaffleTest.Storage.Local do
 
     def transform(:thumb, _), do: {:convert, "-strip -thumbnail 10x10"}
 
-    def storage_dir_prefix(), do: "priv/waffle/private"
+    def storage_dir_prefix, do: "priv/waffle/private"
     def storage_dir(_, _), do: "waffletest/uploads"
     def __storage, do: Waffle.Storage.Local
 
@@ -89,7 +88,6 @@ defmodule WaffleTest.Storage.Local do
     refute File.exists?("priv/waffle/private/waffletest/uploads/original-image.png")
     refute File.exists?("priv/waffle/private/waffletest/uploads/1/thumb-image.png")
   end
-
 
   test "deleting when there's a skipped version" do
     DummyDefinition.store(@img)

@@ -138,7 +138,7 @@ defmodule WaffleTest.Storage.S3 do
   end
 
   @tag :s3
-  @tag timeout: 15000
+  @tag timeout: 15_000
   test "virtual_host" do
     with_env :waffle, :virtual_host, true, fn ->
       assert "https://#{env_bucket()}.s3.amazonaws.com/waffletest/uploads/image.png" == DummyDefinition.url(@img)
@@ -150,7 +150,7 @@ defmodule WaffleTest.Storage.S3 do
   end
 
   @tag :s3
-  @tag timeout: 15000
+  @tag timeout: 15_000
   test "custom asset_host" do
     custom_asset_host = "https://some.cloudfront.com"
 
@@ -169,7 +169,7 @@ defmodule WaffleTest.Storage.S3 do
   end
 
   @tag :s3
-  @tag timeout: 150000
+  @tag timeout: 150_000
   test "custom asset_host in definition" do
     custom_asset_host = "https://example.com"
 
@@ -177,14 +177,14 @@ defmodule WaffleTest.Storage.S3 do
   end
 
   @tag :s3
-  @tag timeout: 15000
+  @tag timeout: 15_000
   test "encoded url" do
     url = DummyDefinition.url(@img_with_space)
     assert "https://s3.amazonaws.com/#{env_bucket()}/waffletest/uploads/image%20two.png" == url
   end
 
   @tag :s3
-  @tag timeout: 15000
+  @tag timeout: 15_000
   test "public put and get" do
     assert {:ok, "image.png"} == DummyDefinition.store(@img)
     assert_public(DummyDefinition, "image.png")
@@ -192,7 +192,7 @@ defmodule WaffleTest.Storage.S3 do
   end
 
   @tag :s3
-  @tag timeout: 15000
+  @tag timeout: 15_000
   test "private put and signed get" do
     #put the image as private
     assert {:ok, "image.png"} == DummyDefinition.store({@img, :private})
@@ -201,7 +201,7 @@ defmodule WaffleTest.Storage.S3 do
   end
 
   @tag :s3
-  @tag timeout: 15000
+  @tag timeout: 15_000
   test "content_type" do
     {:ok, "image.png"} = DummyDefinition.store({@img, :with_content_type})
     assert_header(DummyDefinition, "image.png", "content-type", "image/gif")
@@ -209,7 +209,7 @@ defmodule WaffleTest.Storage.S3 do
   end
 
   @tag :s3
-  @tag timeout: 15000
+  @tag timeout: 15_000
   test "content_disposition" do
     {:ok, "image.png"} = DummyDefinition.store({@img, :with_content_disposition})
     assert_header(DummyDefinition, "image.png", "content-disposition", "attachment; filename=abc.png")
@@ -217,7 +217,7 @@ defmodule WaffleTest.Storage.S3 do
   end
 
   @tag :s3
-  @tag timeout: 150000
+  @tag timeout: 150_000
   test "delete with scope" do
     scope = %{id: 1}
     {:ok, path} = DefinitionWithScope.store({"test/support/image.png", scope})
@@ -227,7 +227,7 @@ defmodule WaffleTest.Storage.S3 do
   end
 
   @tag :s3
-  @tag timeout: 150000
+  @tag timeout: 150_000
   test "with bucket" do
     url = "https://s3.amazonaws.com/#{env_bucket()}/uploads/image.png"
     assert url == DefinitionWithBucket.url("test/support/image.png")
@@ -236,7 +236,7 @@ defmodule WaffleTest.Storage.S3 do
   end
 
   @tag :s3
-  @tag timeout: 150000
+  @tag timeout: 150_000
   test "put with error" do
     Application.put_env(:waffle, :bucket, "unknown-bucket")
     {:error, res} = DummyDefinition.store("test/support/image.png")
@@ -245,7 +245,7 @@ defmodule WaffleTest.Storage.S3 do
   end
 
   @tag :s3
-  @tag timeout: 150000
+  @tag timeout: 150_000
   test "put with converted version" do
     assert {:ok, "image.png"} == DefinitionWithThumbnail.store(@img)
     assert_public_with_extension(DefinitionWithThumbnail, "image.png", :thumb, ".jpg")
@@ -253,7 +253,7 @@ defmodule WaffleTest.Storage.S3 do
   end
 
   @tag :s3
-  @tag timeout: 150000
+  @tag timeout: 150_000
   test "url for a skipped version" do
     assert nil == DefinitionWithSkipped.url("image.png")
   end
