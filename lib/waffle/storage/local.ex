@@ -7,7 +7,7 @@ defmodule Waffle.Storage.Local do
       config :waffle,
         storage: Waffle.Storage.Local,
         # in order to have a different storage directory from url
-        starage_dir_prefix: "priv/waffle/private",
+        storage_dir_prefix: "priv/waffle/private",
         # add custom host to url
         asset_host: "https://example.com"
 
