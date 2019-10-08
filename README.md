@@ -280,7 +280,7 @@ Waffle currently supports Amazon S3 and local destinations for file uploads.
 config :waffle,
   storage: Waffle.Storage.Local,
   # in order to have a different storage directory from url
-  starage_dir_prefix: "priv/waffle/private"
+  storage_dir_prefix: "priv/waffle/private"
 ```
 
 To store your attachments locally, override the `__storage` function in your definition module to `Waffle.Storage.Local`. You may wish to optionally override the storage directory as well, as outlined below.
@@ -291,11 +291,11 @@ defmodule Avatar do
   use Waffle.Definition
   def __storage, do: Waffle.Storage.Local # Add this
   # in order to have a different storage directory from url
-  def starage_dir_prefix(), do: "priv/waffle/private"
+  def storage_dir_prefix(), do: "priv/waffle/private"
 end
 ```
 
-If you want to handle your attachements by phoenix application, configure the endpoint to serve it.
+If you want to handle your attachments by phoenix application, configure the endpoint to serve it.
 
 ```elixir
 defmodule AppWeb.Endpoint do
