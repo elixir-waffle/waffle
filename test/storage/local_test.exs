@@ -1,5 +1,8 @@
 defmodule WaffleTest.Storage.Local do
   use ExUnit.Case
+
+  alias Waffle.Storage.Local
+
   @img "test/support/image.png"
   @badimg "test/support/invalid_image.png"
   @custom_asset_host "http://static.example.com"
@@ -37,7 +40,7 @@ defmodule WaffleTest.Storage.Local do
     def transform(:skipped, _), do: :skip
 
     def storage_dir(_, _), do: "waffletest/uploads"
-    def __storage, do: Waffle.Storage.Local
+    def __storage, do: Local
 
     def filename(:original, {file, _}), do: "original-#{Path.basename(file.file_name, Path.extname(file.file_name))}"
     def filename(:thumb, {file, _}), do: "1/thumb-#{Path.basename(file.file_name, Path.extname(file.file_name))}"
@@ -53,38 +56,38 @@ defmodule WaffleTest.Storage.Local do
 
     def storage_dir_prefix, do: "priv/waffle/private"
     def storage_dir(_, _), do: "waffletest/uploads"
-    def __storage, do: Waffle.Storage.Local
+    def __storage, do: Local
 
     def filename(:original, {file, _}), do: "original-#{Path.basename(file.file_name, Path.extname(file.file_name))}"
     def filename(:thumb, {file, _}), do: "1/thumb-#{Path.basename(file.file_name, Path.extname(file.file_name))}"
   end
 
   test "put, delete, get" do
-    assert {:ok, "original-image.png"} == Waffle.Storage.Local.put(DummyDefinition, :original, {Waffle.File.new(%{filename: "original-image.png", path: @img}), nil})
-    assert {:ok, "1/thumb-image.png"} == Waffle.Storage.Local.put(DummyDefinition, :thumb, {Waffle.File.new(%{filename: "1/thumb-image.png", path: @img}), nil})
+    assert {:ok, "original-image.png"} == Local.put(DummyDefinition, :original, {Waffle.File.new(%{filename: "original-image.png", path: @img}), nil})
+    assert {:ok, "1/thumb-image.png"} == Local.put(DummyDefinition, :thumb, {Waffle.File.new(%{filename: "1/thumb-image.png", path: @img}), nil})
 
     assert File.exists?("waffletest/uploads/original-image.png")
     assert File.exists?("waffletest/uploads/1/thumb-image.png")
     assert "/waffletest/uploads/original-image.png" == DummyDefinition.url("image.png", :original)
     assert "/waffletest/uploads/1/thumb-image.png" == DummyDefinition.url("1/image.png", :thumb)
 
-    :ok = Waffle.Storage.Local.delete(DummyDefinition, :original, {%{file_name: "image.png"}, nil})
-    :ok = Waffle.Storage.Local.delete(DummyDefinition, :thumb, {%{file_name: "image.png"}, nil})
+    :ok = Local.delete(DummyDefinition, :original, {%{file_name: "image.png"}, nil})
+    :ok = Local.delete(DummyDefinition, :thumb, {%{file_name: "image.png"}, nil})
     refute File.exists?("waffletest/uploads/original-image.png")
     refute File.exists?("waffletest/uploads/1/thumb-image.png")
   end
 
   test "put, delete, get with storage prefix" do
-    assert {:ok, "original-image.png"} == Waffle.Storage.Local.put(DummyDefinitionWithPrefix, :original, {Waffle.File.new(%{filename: "original-image.png", path: @img}), nil})
-    assert {:ok, "1/thumb-image.png"} == Waffle.Storage.Local.put(DummyDefinitionWithPrefix, :thumb, {Waffle.File.new(%{filename: "1/thumb-image.png", path: @img}), nil})
+    assert {:ok, "original-image.png"} == Local.put(DummyDefinitionWithPrefix, :original, {Waffle.File.new(%{filename: "original-image.png", path: @img}), nil})
+    assert {:ok, "1/thumb-image.png"} == Local.put(DummyDefinitionWithPrefix, :thumb, {Waffle.File.new(%{filename: "1/thumb-image.png", path: @img}), nil})
 
     assert File.exists?("priv/waffle/private/waffletest/uploads/original-image.png")
     assert File.exists?("priv/waffle/private/waffletest/uploads/1/thumb-image.png")
     assert "/waffletest/uploads/original-image.png" == DummyDefinitionWithPrefix.url("image.png", :original)
     assert "/waffletest/uploads/1/thumb-image.png" == DummyDefinitionWithPrefix.url("1/image.png", :thumb)
 
-    :ok = Waffle.Storage.Local.delete(DummyDefinitionWithPrefix, :original, {%{file_name: "image.png"}, nil})
-    :ok = Waffle.Storage.Local.delete(DummyDefinitionWithPrefix, :thumb, {%{file_name: "image.png"}, nil})
+    :ok = Local.delete(DummyDefinitionWithPrefix, :original, {%{file_name: "image.png"}, nil})
+    :ok = Local.delete(DummyDefinitionWithPrefix, :thumb, {%{file_name: "image.png"}, nil})
     refute File.exists?("priv/waffle/private/waffletest/uploads/original-image.png")
     refute File.exists?("priv/waffle/private/waffletest/uploads/1/thumb-image.png")
   end
@@ -97,23 +100,23 @@ defmodule WaffleTest.Storage.Local do
   test "get, delete with :asset_host set" do
     with_env :waffle, :asset_host, @custom_asset_host, fn ->
 
-      assert {:ok, "original-image.png"} == Waffle.Storage.Local.put(DummyDefinition, :original, {Waffle.File.new(%{filename: "original-image.png", path: @img}), nil})
-      assert {:ok, "1/thumb-image.png"} == Waffle.Storage.Local.put(DummyDefinition, :thumb, {Waffle.File.new(%{filename: "1/thumb-image.png", path: @img}), nil})
+      assert {:ok, "original-image.png"} == Local.put(DummyDefinition, :original, {Waffle.File.new(%{filename: "original-image.png", path: @img}), nil})
+      assert {:ok, "1/thumb-image.png"} == Local.put(DummyDefinition, :thumb, {Waffle.File.new(%{filename: "1/thumb-image.png", path: @img}), nil})
 
       assert File.exists?("waffletest/uploads/original-image.png")
       assert File.exists?("waffletest/uploads/1/thumb-image.png")
       assert @custom_asset_host <> "/waffletest/uploads/original-image.png" == DummyDefinition.url("image.png", :original)
       assert @custom_asset_host <> "/waffletest/uploads/1/thumb-image.png" == DummyDefinition.url("1/image.png", :thumb)
 
-      :ok = Waffle.Storage.Local.delete(DummyDefinition, :original, {%{file_name: "image.png"}, nil})
-      :ok = Waffle.Storage.Local.delete(DummyDefinition, :thumb, {%{file_name: "image.png"}, nil})
+      :ok = Local.delete(DummyDefinition, :original, {%{file_name: "image.png"}, nil})
+      :ok = Local.delete(DummyDefinition, :thumb, {%{file_name: "image.png"}, nil})
       refute File.exists?("waffletest/uploads/original-image.png")
       refute File.exists?("waffletest/uploads/1/thumb-image.png")
     end
   end
 
   test "save binary" do
-    Waffle.Storage.Local.put(DummyDefinition, :original, {Waffle.File.new(%{binary: "binary", filename: "binary.png"}), nil})
+    Local.put(DummyDefinition, :original, {Waffle.File.new(%{binary: "binary", filename: "binary.png"}), nil})
     assert true == File.exists?("waffletest/uploads/binary.png")
   end
 

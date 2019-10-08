@@ -1,7 +1,10 @@
 defmodule Waffle.Actions.Store do
+  alias Waffle.Actions.Store
+  alias Waffle.Definition.Versioning
+
   defmacro __using__(_) do
     quote do
-      def store(args), do: Waffle.Actions.Store.store(__MODULE__, args)
+      def store(args), do: Store.store(__MODULE__, args)
     end
   end
 
@@ -80,7 +83,7 @@ defmodule Waffle.Actions.Store do
       {:error, error} -> {:error, error}
       {:ok, nil} -> {:ok, nil}
       {:ok, file} ->
-        file_name = Waffle.Definition.Versioning.resolve_file_name(definition, version, {file, scope})
+        file_name = Versioning.resolve_file_name(definition, version, {file, scope})
         file      = %Waffle.File{file | file_name: file_name}
         result    = definition.__storage.put(definition, version, {file, scope})
 

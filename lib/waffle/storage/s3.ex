@@ -1,5 +1,10 @@
 defmodule Waffle.Storage.S3 do
   require Logger
+
+  alias ExAws.S3
+  alias ExAws.S3.Upload
+  alias Waffle.Definition.Versioning
+
   @default_expiry_time 60 * 5
 
   def put(definition, version, {file, scope}) do
@@ -51,8 +56,8 @@ defmodule Waffle.Storage.S3 do
   # Stream the file and upload to AWS as a multi-part upload
   defp do_put(file, {s3_bucket, s3_key, s3_options}) do
     file.path
-    |> ExAws.S3.Upload.stream_file()
-    |> ExAws.S3.upload(s3_bucket, s3_key, s3_options)
+    |> Upload.stream_file()
+    |> S3.upload(s3_bucket, s3_key, s3_options)
     |> ExAws.request()
     |> case do
       {:ok, %{status_code: 200}} -> {:ok, file.file_name}
@@ -88,7 +93,7 @@ defmodule Waffle.Storage.S3 do
   defp s3_key(definition, version, file_and_scope) do
     Path.join([
       definition.storage_dir(version, file_and_scope),
-      Waffle.Definition.Versioning.resolve_file_name(definition, version, file_and_scope)
+      Versioning.resolve_file_name(definition, version, file_and_scope)
     ])
   end
 

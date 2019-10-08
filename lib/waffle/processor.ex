@@ -1,4 +1,6 @@
 defmodule Waffle.Processor do
+  alias Waffle.Transformations.Convert
+
   def process(definition, version, {file, scope}) do
     transform = definition.transform(version, {file, scope})
     apply_transformation(file, transform)
@@ -12,6 +14,6 @@ defmodule Waffle.Processor do
   end
 
   defp apply_transformation(file, {cmd, conversion}) do
-    Waffle.Transformations.Convert.apply(cmd, file, conversion)
+    Convert.apply(cmd, file, conversion)
   end
 end
