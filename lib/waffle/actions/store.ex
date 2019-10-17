@@ -17,43 +17,48 @@ defmodule Waffle.Actions.Store do
   # Private
   #
 
-  defp put(_definition, { error = {:error, _msg}, _scope}), do: error
-  defp put(definition, {%Waffle.File{}=file, scope}) do
+  defp put(_definition, {error = {:error, _msg}, _scope}), do: error
+
+  defp put(definition, {%Waffle.File{} = file, scope}) do
     case definition.validate({file, scope}) do
       true ->
         put_versions(definition, {file, scope})
         |> cleanup!(file)
-      _    -> {:error, :invalid_file}
+
+      _ ->
+        {:error, :invalid_file}
     end
   end
-
 
   defp put_versions(definition, {file, scope}) do
     if definition.async do
       definition.__versions
-      |> Enum.map(fn(r)    -> async_process_version(definition, r, {file, scope}) end)
-      |> Enum.map(fn(task) -> Task.await(task, version_timeout()) end)
+      |> Enum.map(fn r -> async_process_version(definition, r, {file, scope}) end)
+      |> Enum.map(fn task -> Task.await(task, version_timeout()) end)
       |> ensure_all_success
-      |> Enum.map(fn({v, r})    -> async_put_version(definition, v, {r, scope}) end)
-      |> Enum.map(fn(task) -> Task.await(task, version_timeout()) end)
-      |> handle_responses(file.file_name)
+      |> Enum.map(fn {v, r} -> async_put_version(definition, v, {r, scope}) end)
+      |> Enum.map(fn task -> Task.await(task, version_timeout()) end)
+      |> handle_responses()
     else
       definition.__versions
-      |> Enum.map(fn(version) -> process_version(definition, version, {file, scope}) end)
+      |> Enum.map(fn version -> process_version(definition, version, {file, scope}) end)
       |> ensure_all_success
-      |> Enum.map(fn({version, result}) -> put_version(definition, version, {result, scope}) end)
-      |> handle_responses(file.file_name)
+      |> Enum.map(fn {version, result} -> put_version(definition, version, {result, scope}) end)
+      |> handle_responses()
     end
   end
 
   defp ensure_all_success(responses) do
-    errors = Enum.filter(responses, fn({_version, resp}) -> elem(resp, 0) == :error end)
+    errors = Enum.filter(responses, fn {_version, resp} -> elem(resp, 0) == :error end)
     if Enum.empty?(errors), do: responses, else: errors
   end
 
-  defp handle_responses(responses, filename) do
-    errors = Enum.filter(responses, fn(resp) -> elem(resp, 0) == :error end) |> Enum.map(fn(err) -> elem(err, 1) end)
-    if Enum.empty?(errors), do: {:ok, filename}, else: {:error, errors}
+  defp handle_responses(responses) do
+    errors =
+      Enum.filter(responses, fn resp -> elem(resp, 0) == :error end)
+      |> Enum.map(fn err -> elem(err, 1) end)
+
+    if Enum.empty?(errors), do: {:ok, responses}, else: {:error, errors}
   end
 
   defp version_timeout do
@@ -78,20 +83,34 @@ defmodule Waffle.Actions.Store do
 
   defp put_version(definition, version, {result, scope}) do
     case result do
-      {:error, error} -> {:error, error}
-      {:ok, nil} -> {:ok, nil}
+      {:error, error} ->
+        {:error, error}
+
+      {:ok, nil} ->
+        {:ok, nil}
+
       {:ok, file} ->
-        file_name = Waffle.Definition.Versioning.resolve_file_name(definition, version, {file, scope})
-        file      = %Waffle.File{file | file_name: file_name}
-        result    = definition.__storage.put(definition, version, {file, scope})
+        file_name =
+          Waffle.Definition.Versioning.resolve_file_name(definition, version, {file, scope})
+
+        file = %Waffle.File{file | file_name: file_name}
+        result = definition.__storage.put(definition, version, {file, scope})
 
         case definition.transform(version, {file, scope}) do
           :noaction ->
             # we don't have to cleanup after `:noaction` transofmations
             # because final `cleanup!` will remove the original temporary file
             result
-          _ ->
-            cleanup!(result, file)
+
+          {_, _, ext} ->
+            if definition.get_data?(version) do
+              cleanup!(
+                {:ok, file_name, Waffle.Transformations.Data.get_file_data(ext, file.path)},
+                file
+              )
+            else
+              cleanup!({:ok, file_name}, file)
+            end
         end
     end
   end
@@ -105,5 +124,4 @@ defmodule Waffle.Actions.Store do
 
     result
   end
-
 end

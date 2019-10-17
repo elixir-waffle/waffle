@@ -6,12 +6,10 @@ defmodule Waffle.Processor do
 
   defp apply_transformation(_, :skip), do: {:ok, nil}
   defp apply_transformation(file, :noaction), do: {:ok, file}
-  defp apply_transformation(file, {:noaction}), do: {:ok, file} # Deprecated
-  defp apply_transformation(file, {cmd, conversion, _}) do
-    apply_transformation(file, {cmd, conversion})
-  end
 
-  defp apply_transformation(file, {cmd, conversion}) do
-    Waffle.Transformations.Convert.apply(cmd, file, conversion)
-  end
+  defp apply_transformation(file, {cmd, conversion, _}),
+    do: apply_transformation(file, {cmd, conversion})
+
+  defp apply_transformation(file, {cmd, conversion}),
+    do: Waffle.Transformations.Convert.apply(cmd, file, conversion)
 end

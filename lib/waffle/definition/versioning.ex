@@ -11,15 +11,16 @@ defmodule Waffle.Definition.Versioning do
     conversion = definition.transform(version, {file, scope})
 
     case conversion do
-      :skip       -> nil
+      :skip -> nil
       {_, _, ext} -> "#{name}.#{ext}"
-       _          -> "#{name}#{Path.extname(file.file_name)}"
+      _ -> "#{name}#{Path.extname(file.file_name)}"
     end
   end
 
   defmacro __before_compile__(_env) do
     quote do
       def transform(_, _), do: :noaction
+      def get_data?(_), do: false
       def __versions, do: @versions
     end
   end
