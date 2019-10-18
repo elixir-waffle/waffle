@@ -13,10 +13,8 @@ defmodule Waffle.Transformations.Data do
 
   defp identify_sizes(filepath) do
     with {output, 0} <- Command.execute("identify", [filepath]) do
-      data = String.split(output)
-
-      [_, w, h] = Regex.run(~r/(\d+)x(\d+)/u, Enum.fetch!(data, 2))
-      [_, size] = Regex.run(~r/(\d+)B/u, Enum.fetch!(data, 7))
+      [_, w, h] = Regex.run(~r/(\d+)x(\d+)/u, output)
+      [_, size] = Regex.run(~r/(\d+)B/u, output)
 
       %{
         width: String.to_integer(w),
