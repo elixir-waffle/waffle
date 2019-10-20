@@ -50,7 +50,6 @@ defmodule Waffle.File do
     |> write_binary()
   end
 
-
   #
   # Handle a local file
   #
@@ -139,14 +138,13 @@ defmodule Waffle.File do
   end
 
   defp retry(tries, options) do
-    cond do
-      tries < options[:max_retries] ->
-        backoff = round(options[:backoff_factor] * :math.pow(2, tries - 1))
-        backoff = :erlang.min(backoff, options[:backoff_max])
-        :timer.sleep(backoff)
-        {:ok, :retry}
-
-      true -> {:error, :out_of_tries}
+    if tries < options[:max_retries] do
+      backoff = round(options[:backoff_factor] * :math.pow(2, tries - 1))
+      backoff = :erlang.min(backoff, options[:backoff_max])
+      :timer.sleep(backoff)
+      {:ok, :retry}
+    else
+      {:error, :out_of_tries}
     end
   end
 end

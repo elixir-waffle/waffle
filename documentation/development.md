@@ -15,14 +15,7 @@ $ docker-compose exec waffle sh
 $ > mix deps.get
 ```
 
-## Run tests
-
-### Tests without S3 integration
-```sh
-$ mix test
-```
-
-### Tests with S3 integration
+## Tests with S3 integration
 
 AWS S3 setup
 - create a new user with FullS3Access
@@ -36,3 +29,19 @@ $ export WAFFLE_TEST_S3_KEY=
 $ export WAFFLE_TEST_S3_SECRET=
 $ mix test
 ```
+
+## Common tasks
+
+```sh
+# to run linter
+$ mix credo --strict
+
+# to generate documentation
+$ MIX_ENV=dev mix docs
+
+# to publish package
+$ MIX_ENV=dev mix hex.publish
+
+# to publish only documentation
+$ MIX_ENV=dev mix hex.publish docs
+ ```

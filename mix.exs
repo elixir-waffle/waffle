@@ -53,7 +53,10 @@ defmodule Waffle.Mixfile do
       {:mock, "~> 0.1", only: :test},
 
       # Dev
-      {:ex_doc, "~> 0.14", only: :dev}
+      {:ex_doc, "~> 0.14", only: :dev},
+
+      # Dev, Test
+      {:credo, "~> 1.1.0", only: [:dev, :test], runtime: false}
     ]
   end
 end

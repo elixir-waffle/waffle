@@ -1,7 +1,9 @@
 defmodule Waffle.Actions.Delete do
+  alias Waffle.Actions.Delete
+
   defmacro __using__(_) do
     quote do
-      def delete(args), do: Waffle.Actions.Delete.delete(__MODULE__, args)
+      def delete(args), do: Delete.delete(__MODULE__, args)
 
       defoverridable [{:delete, 1}]
     end
@@ -30,7 +32,7 @@ defmodule Waffle.Actions.Delete do
       |> Enum.each(fn(task) -> Task.await(task, version_timeout()) end)
     else
       definition.__versions
-      |> Enum.map(fn(version) -> delete_version(definition, version, {file, scope}) end)
+      |> Enum.each(fn(version) -> delete_version(definition, version, {file, scope}) end)
     end
     :ok
   end

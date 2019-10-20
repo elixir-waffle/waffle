@@ -27,7 +27,7 @@ defmodule Mix.Tasks.Waffle do
 
     def run([model_name]) do
       app_name = Mix.Project.config[:app]
-      if (File.exists?("lib/#{app_name}_web/")) do
+      if File.exists?("lib/#{app_name}_web/") do
         project_module_name = camelize(to_string(app_name))
         generate_phx_uploader_file(model_name, project_module_name)
       else
