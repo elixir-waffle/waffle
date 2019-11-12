@@ -76,7 +76,7 @@ Waffle ships with integrations for Local Storage and S3.  Alternative storage pr
 * **Rackspace** - https://github.com/lokalebasen/arc_rackspace
 * **Manta** - https://github.com/onyxrev/arc_manta
 * **OVH** - https://github.com/stephenmoloney/arc_ovh
-* **Google Cloud Storage** - https://github.com/martide/arc_gcs
+* **Google Cloud Storage** - https://github.com/kolorahl/waffle_gcs
 * **Microsoft Azure Storage** - https://github.com/phil-a/arc_azure
 
 ### Usage with Ecto
