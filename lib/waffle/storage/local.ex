@@ -11,11 +11,14 @@ defmodule Waffle.Storage.Local do
         # add custom host to url
         asset_host: "https://example.com"
 
-  If you want to handle your attachements by phoenix application, configure the endpoint to serve it.
+  If you want to handle your attachements by phoenix application,
+  configure the endpoint to serve it.
 
       defmodule AppWeb.Endpoint do
         plug Plug.Static,
-          at: "/uploads", from: Path.expand("./priv/waffle/public/uploads"), gzip: false
+          at: "/uploads",
+          from: Path.expand("./priv/waffle/public/uploads"),
+          gzip: false
       end
   """
 

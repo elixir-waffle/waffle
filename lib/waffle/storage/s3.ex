@@ -100,6 +100,28 @@ defmodule Waffle.Storage.S3 do
       def s3_object_headers(version, {file, scope}) do
         [content_type: MIME.from_path(file.file_name)] # for "image.png", would produce: "image/png"
       end
+
+  ## Alternate S3 configuration example
+
+  If you are using a region other than US-Standard, it is necessary to
+  specify the correct configuration for `ex_aws`.  A full example
+  configuration for both waffle and ex_aws is as follows:
+
+      config :waffle,
+        bucket: "my-frankfurt-bucket"
+
+      config :ex_aws,
+        access_key_id: "my_access_key_id",
+        secret_access_key: "my_secret_access_key",
+        region: "eu-central-1",
+        s3: [
+          scheme: "https://",
+          host: "s3.eu-central-1.amazonaws.com",
+          region: "eu-central-1"
+        ]
+
+  > For your host configuration, please examine the approved [AWS Hostnames](http://docs.aws.amazon.com/general/latest/gr/rande.html).  There are often multiple hostname formats for AWS regions, and it will not work unless you specify the correct one.
+
   """
   require Logger
 
