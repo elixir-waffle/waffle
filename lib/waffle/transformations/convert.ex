@@ -1,4 +1,6 @@
 defmodule Waffle.Transformations.Convert do
+  @moduledoc false
+
   def apply(cmd, file, args) do
     new_path = Waffle.File.generate_temporary_path(file)
     args     = if is_function(args), do: args.(file.path, new_path), else: [file.path | (String.split(args, " ") ++ [new_path])]
