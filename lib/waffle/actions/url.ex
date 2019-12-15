@@ -75,7 +75,7 @@ defmodule Waffle.Actions.Url do
         asset_host: {:system, "ASSET_HOST"} # For a value not known until runtime
 
   """
-  
+
   alias Waffle.Actions.Url
   alias Waffle.Definition.Versioning
 
