@@ -8,6 +8,7 @@ defmodule Waffle.Mixfile do
      version: @version,
      elixir: "~> 1.4",
      deps: deps(),
+     docs: docs(),
 
     # Hex
      description: description(),
@@ -25,6 +26,13 @@ defmodule Waffle.Mixfile do
      licenses: ["Apache 2.0"],
      links: %{"GitHub" => "https://github.com/elixir-waffle/waffle"},
      files: ~w(mix.exs README.md CHANGELOG.md lib)]
+  end
+
+  defp docs do
+    [
+      main: "Waffle",
+      extras: ["documentation/examples/full.md"]
+    ]
   end
 
   def application do
