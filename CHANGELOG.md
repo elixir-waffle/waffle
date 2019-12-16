@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.0.4 (2019-12-16)
+  * Fixes link to waffle_ecto (#16)
+  * add credo to project (#17)
+  * correct misspellings in documentation (#19)
+  * Change reference to arc_gcs to refer to waffle_gcs instead (#22)
+  * add documentation for modules (#25)
+  * upgrade hackney to fix remote file downloading (#26)
+
 ## v0.0.3 (2019-09-09)
   * add new file from remote path with new filename (#13)
   * support specifying asset host for local storage (#12)

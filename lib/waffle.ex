@@ -9,7 +9,7 @@ defmodule Waffle do
 
       defp deps do
         [
-          waffle: "~> 0.0.1",
+          waffle: "~> 0.0.4",
 
           # If using Amazon S3:
           ex_aws: "~> 2.0",
