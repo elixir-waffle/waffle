@@ -21,7 +21,8 @@ defmodule Waffle.File do
   # Given a remote file
   def new(remote_path = "http" <> _) do
     uri = URI.parse(remote_path)
-    filename = Path.basename(uri.path)
+    filename = uri.path |> Path.basename() |> URI.decode()
+
 
     case save_file(uri, filename) do
       {:ok, local_path} -> %Waffle.File{path: local_path, file_name: filename, is_tempfile?: true}
