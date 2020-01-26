@@ -1,6 +1,9 @@
 defmodule WaffleTest.Actions.Store do
   use ExUnit.Case, async: false
+
   @img "test/support/image.png"
+  @remote_img_with_space "https://github.com/elixir-waffle/waffle/blob/master/test/support/image%20two.png"
+
   import Mock
 
   defmodule DummyDefinition do
@@ -100,7 +103,7 @@ defmodule WaffleTest.Actions.Store do
       put: fn DummyDefinition, _, {%{file_name: "image two.png", path: _}, nil} ->
         {:ok, "image two.png"}
       end do
-      assert DummyDefinition.store("https://github.com/elixir-waffle/waffle/blob/master/test/support/image%20two.png") == {:ok, "image two.png"}
+      assert DummyDefinition.store(@remote_img_with_space) == {:ok, "image two.png"}
     end
   end
 
