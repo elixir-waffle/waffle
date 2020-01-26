@@ -23,7 +23,6 @@ defmodule Waffle.File do
     uri = URI.parse(remote_path)
     filename = uri.path |> Path.basename() |> URI.decode()
 
-
     case save_file(uri, filename) do
       {:ok, local_path} -> %Waffle.File{path: local_path, file_name: filename, is_tempfile?: true}
       :error -> {:error, :invalid_file_path}
