@@ -95,6 +95,15 @@ defmodule WaffleTest.Actions.Store do
     end
   end
 
+  test "accepts remote files with spaces" do
+    with_mock Waffle.Storage.S3,
+      put: fn DummyDefinition, _, {%{file_name: "image two.png", path: _}, nil} ->
+        {:ok, "image two.png"}
+      end do
+      assert DummyDefinition.store("https://github.com/elixir-waffle/waffle/blob/master/test/support/image%20two.png") == {:ok, "image two.png"}
+    end
+  end
+
   test "accepts remote files with filenames" do
     with_mock Waffle.Storage.S3,
       put: fn DummyDefinition, _, {%{file_name: "newfavicon.ico", path: _}, nil} ->
