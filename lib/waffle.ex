@@ -9,14 +9,13 @@ defmodule Waffle do
 
       defp deps do
         [
-          waffle: "~> 0.0.4",
+          {:waffle, "~> 0.0.4"},
 
           # If using Amazon S3:
-          ex_aws: "~> 2.0",
-          ex_aws_s3: "~> 2.0",
-          hackney: "~> 1.6",
-          poison: "~> 3.1",
-          sweet_xml: "~> 0.6"
+          {:ex_aws, "~> 2.1"},
+          {:ex_aws_s3, "~> 2.0"},
+          {:hackney, "~> 1.9"},
+          {:sweet_xml, "~> 0.6"}
         ]
       end
 

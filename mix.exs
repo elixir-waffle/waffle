@@ -44,24 +44,23 @@ defmodule Waffle.Mixfile do
     ]
   end
 
-  def applications(:test), do: [:ex_aws, :ex_aws_s3, :poison]
+  def applications(:test), do: [:ex_aws, :ex_aws_s3]
   def applications(_), do: []
 
   defp deps do
     [
-      {:hackney, "~> 1.0"},
+      {:hackney, "~> 1.9"},
 
       # If using Amazon S3
-      {:ex_aws, "~> 2.0", optional: true},
+      {:ex_aws, "~> 2.1", optional: true},
       {:ex_aws_s3, "~> 2.0", optional: true},
-      {:poison, "~> 2.2 or ~> 3.1", optional: true},
       {:sweet_xml, "~> 0.6", optional: true},
 
       # Test
-      {:mock, "~> 0.1", only: :test},
+      {:mock, "~> 0.3", only: :test},
 
       # Dev
-      {:ex_doc, "~> 0.14", only: :dev},
+      {:ex_doc, "~> 0.21", only: :dev},
 
       # Dev, Test
       {:credo, "~> 1.1.0", only: [:dev, :test], runtime: false}
