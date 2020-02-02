@@ -107,9 +107,8 @@ defmodule Waffle.File do
     end
   end
 
-  # hakney :connect_timeout - timeout used when establishing a connection, in milliseconds
-  # hakney :recv_timeout - timeout used when receiving from a connection, in milliseconds
-  # poison :timeout - timeout to establish a connection, in milliseconds
+  # hackney :connect_timeout - timeout used when establishing a connection, in milliseconds
+  # hackney :recv_timeout - timeout used when receiving from a connection, in milliseconds
   # :backoff_max - maximum backoff time, in milliseconds
   # :backoff_factor - a backoff factor to apply between attempts, in milliseconds
   defp get_remote_path(remote_path) do
@@ -117,7 +116,6 @@ defmodule Waffle.File do
       follow_redirect: true,
       recv_timeout: Application.get_env(:waffle, :recv_timeout, 5_000),
       connect_timeout: Application.get_env(:waffle, :connect_timeout, 10_000),
-      timeout: Application.get_env(:waffle, :timeout, 10_000),
       max_retries: Application.get_env(:waffle, :max_retries, 3),
       backoff_factor: Application.get_env(:waffle, :backoff_factor, 1000),
       backoff_max: Application.get_env(:waffle, :backoff_max, 30_000),
@@ -135,7 +133,7 @@ defmodule Waffle.File do
           {:error, :out_of_tries} -> {:error, :timeout}
         end
 
-      _ -> {:error, :waffle_httpoison_error}
+      _ -> {:error, :waffle_hackney_error}
     end
   end
 
