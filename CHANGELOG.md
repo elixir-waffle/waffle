@@ -1,5 +1,28 @@
 # Changelog
 
+## v1.0.0 (2020-02-04)
+  * remove poison and update dependencies (#30)
+  * define remote url as an attribute #29
+  * respect spaces in remote filenames (#28)
+
+### Upgrade instructions
+`ExAws` dependency was upgraded to the current version. Since most of
+community packages are migrating to `Jason` as a default library to
+work with JSON, we've decided to migrate `Waffle` as well. You can
+still use `Poison` as your JSON adapter, in such case just add it as a
+dependency.
+
+#### Before
+```
+config :ex_aws,
+  ...
+```
+#### After
+```
+config :ex_aws,
+  json_codec: Jason
+```
+
 ## v0.0.4 (2019-12-16)
   * Fixes link to waffle_ecto (#16)
   * add credo to project (#17)
