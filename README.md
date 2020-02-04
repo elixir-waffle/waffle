@@ -25,14 +25,13 @@ Add the latest stable release to your `mix.exs` file, along with the required de
 ```elixir
 defp deps do
   [
-    waffle: "~> 0.0.4",
+    {:waffle, "~> 0.0.4"},
 
-    # If using Amazon S3:
-    ex_aws: "~> 2.0",
-    ex_aws_s3: "~> 2.0",
-    hackney: "~> 1.6",
-    poison: "~> 3.1",
-    sweet_xml: "~> 0.6"
+    # If using S3:
+    {:ex_aws, "~> 2.1"},
+    {:ex_aws_s3, "~> 2.0"},
+    {:hackney, "~> 1.9"},
+    {:sweet_xml, "~> 0.6"}
   ]
 end
 ```
@@ -48,6 +47,10 @@ config :waffle,
   storage: Waffle.Storage.S3, # or Waffle.Storage.Local
   bucket: {:system, "AWS_S3_BUCKET"}, # if using Amazon s3
   asset_host: "http://static.example.com" # or {:system, "ASSET_HOST"}
+
+# If using S3:
+config :ex_aws,
+  json_codec: Jason
 ```
 
 Along with any configuration necessary for ExAws.

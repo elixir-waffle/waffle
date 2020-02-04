@@ -28,6 +28,7 @@ defmodule Waffle.Storage.S3 do
   override if you wish):
 
       config :ex_aws,
+        json_codec: Jason,
         access_key_id: [{:system, "AWS_ACCESS_KEY_ID"}, :instance_role],
         secret_access_key: [{:system, "AWS_SECRET_ACCESS_KEY"}, :instance_role]
 
@@ -111,6 +112,7 @@ defmodule Waffle.Storage.S3 do
         bucket: "my-frankfurt-bucket"
 
       config :ex_aws,
+        json_codec: Jason,
         access_key_id: "my_access_key_id",
         secret_access_key: "my_secret_access_key",
         region: "eu-central-1",
