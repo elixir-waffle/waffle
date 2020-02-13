@@ -1,7 +1,53 @@
 defmodule Waffle.Actions.Store do
+  @moduledoc ~S"""
+  Store files to a defined adapter.
+
+  The upload definition file responds to `Avatar.store/1` which
+  accepts either:
+
+    * A path to a local file
+
+    * A path to a remote `http` or `https` file
+
+    * A map with a filename and path keys (eg, a `%Plug.Upload{}`)
+
+    * A map with a filename and binary keys (eg, `%{filename:
+      "image.png", binary: <<255,255,255,...>>}`)
+
+    * A two-tuple consisting of one of the above file formats as well as a scope object.
+
+  Example usage as general file store:
+
+      # Store any locally accessible file
+      Avatar.store("/path/to/my/file.png") #=> {:ok, "file.png"}
+
+      # Store any remotely accessible file
+      Avatar.store("http://example.com/file.png") #=> {:ok, "file.png"}
+
+      # Store a file directly from a `%Plug.Upload{}`
+      Avatar.store(%Plug.Upload{filename: "file.png", path: "/a/b/c"}) #=> {:ok, "file.png"}
+
+      # Store a file from a connection body
+      {:ok, data, _conn} = Plug.Conn.read_body(conn)
+      Avatar.store(%{filename: "file.png", binary: data})
+
+  Example usage as a file attached to a `scope`:
+
+      scope = Repo.get(User, 1)
+      Avatar.store({%Plug.Upload{}, scope}) #=> {:ok, "file.png"}
+
+  This scope will be available throughout the definition module to be
+  used as an input to the storage parameters (eg, store files in
+  `/uploads/#{scope.id}`).
+
+  """
+
+  alias Waffle.Actions.Store
+  alias Waffle.Definition.Versioning
+
   defmacro __using__(_) do
     quote do
-      def store(args), do: Waffle.Actions.Store.store(__MODULE__, args)
+      def store(args), do: Store.store(__MODULE__, args)
     end
   end
 
@@ -90,11 +136,9 @@ defmodule Waffle.Actions.Store do
         {:ok, nil}
 
       {:ok, file} ->
-        file_name =
-          Waffle.Definition.Versioning.resolve_file_name(definition, version, {file, scope})
-
+        file_name = Versioning.resolve_file_name(definition, version, {file, scope})
         file = %Waffle.File{file | file_name: file_name}
-        definition.__storage.put(definition, version, {file, scope})
+        result = definition.__storage.put(definition, version, {file, scope})
 
         case definition.transform(version, {file, scope}) do
           :noaction ->

@@ -1,4 +1,29 @@
 defmodule Waffle.Definition.Versioning do
+  @moduledoc ~S"""
+  Define proper name for a version.
+
+  It may be undesirable to retain original filenames (eg, it may
+  contain personally identifiable information, vulgarity,
+  vulnerabilities with Unicode characters, etc).
+
+  You may specify the destination filename for uploaded versions
+  through your definition module.
+
+  A common pattern is to combine directories scoped to a particular
+  model's primary key, along with static filenames. (eg:
+  `user_avatars/1/thumb.png`).
+
+      # To retain the original filename, but prefix the version and user id:
+      def filename(version, {file, scope}) do
+        file_name = Path.basename(file.file_name, Path.extname(file.file_name))
+        "#{scope.id}_#{version}_#{file_name}"
+      end
+
+      # To make the destination file the same as the version:
+      def filename(version, _), do: version
+
+  """
+
   defmacro __using__(_) do
     quote do
       @versions [:original]

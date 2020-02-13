@@ -1,4 +1,5 @@
 defmodule Waffle.Transformations.Convert do
+  @moduledoc false
   alias Waffle.Transformations.Command
 
   def apply(cmd, file, args) do

@@ -11,13 +11,18 @@ defmodule Waffle.Storage.Local do
         # add custom host to url
         asset_host: "https://example.com"
 
-  If you want to handle your attachements by phoenix application, configure the endpoint to serve it.
+  If you want to handle your attachements by phoenix application,
+  configure the endpoint to serve it.
 
       defmodule AppWeb.Endpoint do
         plug Plug.Static,
-          at: "/uploads", from: Path.expand("./priv/waffle/public/uploads"), gzip: false
+          at: "/uploads",
+          from: Path.expand("./priv/waffle/public/uploads"),
+          gzip: false
       end
   """
+
+  alias Waffle.Definition.Versioning
 
   def put(definition, version, {file, scope}) do
     destination_path = Path.join([
@@ -39,7 +44,7 @@ defmodule Waffle.Storage.Local do
   def url(definition, version, file_and_scope, _options \\ []) do
     local_path = Path.join([
       definition.storage_dir(version, file_and_scope),
-      Waffle.Definition.Versioning.resolve_file_name(definition, version, file_and_scope)
+      Versioning.resolve_file_name(definition, version, file_and_scope)
     ])
     host = host(definition)
 
@@ -55,11 +60,10 @@ defmodule Waffle.Storage.Local do
     Path.join([
       definition.storage_dir_prefix(),
       definition.storage_dir(version, file_and_scope),
-      Waffle.Definition.Versioning.resolve_file_name(definition, version, file_and_scope)
+      Versioning.resolve_file_name(definition, version, file_and_scope)
     ])
     |> File.rm()
   end
-
 
   defp host(definition) do
     case definition.asset_host() do

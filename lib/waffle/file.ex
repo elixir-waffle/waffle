@@ -1,4 +1,6 @@
 defmodule Waffle.File do
+  @moduledoc false
+
   defstruct [:path, :file_name, :binary, :is_tempfile?]
 
   def generate_temporary_path(file \\ nil) do
@@ -19,7 +21,7 @@ defmodule Waffle.File do
   # Given a remote file
   def new(remote_path = "http" <> _) do
     uri = URI.parse(remote_path)
-    filename = Path.basename(uri.path)
+    filename = uri.path |> Path.basename() |> URI.decode()
 
     case save_file(uri, filename) do
       {:ok, local_path} -> %Waffle.File{path: local_path, file_name: filename, is_tempfile?: true}
@@ -49,7 +51,6 @@ defmodule Waffle.File do
     %Waffle.File{binary: binary, file_name: Path.basename(filename)}
     |> write_binary()
   end
-
 
   #
   # Handle a local file
@@ -106,9 +107,8 @@ defmodule Waffle.File do
     end
   end
 
-  # hakney :connect_timeout - timeout used when establishing a connection, in milliseconds
-  # hakney :recv_timeout - timeout used when receiving from a connection, in milliseconds
-  # poison :timeout - timeout to establish a connection, in milliseconds
+  # hackney :connect_timeout - timeout used when establishing a connection, in milliseconds
+  # hackney :recv_timeout - timeout used when receiving from a connection, in milliseconds
   # :backoff_max - maximum backoff time, in milliseconds
   # :backoff_factor - a backoff factor to apply between attempts, in milliseconds
   defp get_remote_path(remote_path) do
@@ -116,7 +116,6 @@ defmodule Waffle.File do
       follow_redirect: true,
       recv_timeout: Application.get_env(:waffle, :recv_timeout, 5_000),
       connect_timeout: Application.get_env(:waffle, :connect_timeout, 10_000),
-      timeout: Application.get_env(:waffle, :timeout, 10_000),
       max_retries: Application.get_env(:waffle, :max_retries, 3),
       backoff_factor: Application.get_env(:waffle, :backoff_factor, 1000),
       backoff_max: Application.get_env(:waffle, :backoff_max, 30_000),
@@ -134,19 +133,18 @@ defmodule Waffle.File do
           {:error, :out_of_tries} -> {:error, :timeout}
         end
 
-      _ -> {:error, :waffle_httpoison_error}
+      _ -> {:error, :waffle_hackney_error}
     end
   end
 
   defp retry(tries, options) do
-    cond do
-      tries < options[:max_retries] ->
-        backoff = round(options[:backoff_factor] * :math.pow(2, tries - 1))
-        backoff = :erlang.min(backoff, options[:backoff_max])
-        :timer.sleep(backoff)
-        {:ok, :retry}
-
-      true -> {:error, :out_of_tries}
+    if tries < options[:max_retries] do
+      backoff = round(options[:backoff_factor] * :math.pow(2, tries - 1))
+      backoff = :erlang.min(backoff, options[:backoff_max])
+      :timer.sleep(backoff)
+      {:ok, :retry}
+    else
+      {:error, :out_of_tries}
     end
   end
 end
