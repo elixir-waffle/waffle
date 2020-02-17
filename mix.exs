@@ -4,15 +4,17 @@ defmodule Waffle.Mixfile do
   @version "1.0.0"
 
   def project do
-    [app: :waffle,
-     version: @version,
-     elixir: "~> 1.4",
-     deps: deps(),
-     docs: docs(),
+    [
+      app: :waffle,
+      version: @version,
+      elixir: "~> 1.4",
+      deps: deps(),
+      docs: docs(),
 
-    # Hex
-     description: description(),
-     package: package()]
+      # Hex
+      description: description(),
+      package: package()
+    ]
   end
 
   defp description do
@@ -22,10 +24,12 @@ defmodule Waffle.Mixfile do
   end
 
   defp package do
-    [maintainers: ["Boris Kuznetsov"],
-     licenses: ["Apache 2.0"],
-     links: %{"GitHub" => "https://github.com/elixir-waffle/waffle"},
-     files: ~w(mix.exs README.md CHANGELOG.md lib)]
+    [
+      maintainers: ["Boris Kuznetsov"],
+      licenses: ["Apache 2.0"],
+      links: %{"GitHub" => "https://github.com/elixir-waffle/waffle"},
+      files: ~w(mix.exs README.md CHANGELOG.md lib)
+    ]
   end
 
   defp docs do
@@ -37,10 +41,11 @@ defmodule Waffle.Mixfile do
 
   def application do
     [
-      applications: [
-        :logger,
-        :hackney,
-      ] ++ applications(Mix.env)
+      applications:
+        [
+          :logger,
+          :hackney
+        ] ++ applications(Mix.env())
     ]
   end
 
