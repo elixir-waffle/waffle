@@ -80,6 +80,10 @@ defmodule Mix.Tasks.Waffle do
       #   :custom_bucket_name
       # end
 
+      # def bucket({_file, scope}) do
+      #   scope.bucket || bucket()
+      # end
+
       # Whitelist file extensions:
       # def validate({file, _}) do
       #   file_extension = file.file_name |> Path.extname() |> String.downcase()
