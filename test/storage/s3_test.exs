@@ -3,6 +3,7 @@ defmodule WaffleTest.Storage.S3 do
 
   @img "test/support/image.png"
   @img_with_space "test/support/image two.png"
+  @img_with_plus "test/support/image+three.png"
 
   defmodule DummyDefinition do
     use Waffle.Definition
@@ -181,6 +182,13 @@ defmodule WaffleTest.Storage.S3 do
   test "encoded url" do
     url = DummyDefinition.url(@img_with_space)
     assert "https://s3.amazonaws.com/#{env_bucket()}/waffletest/uploads/image%20two.png" == url
+  end
+
+  @tag :s3
+  @tag timeout: 15_000
+  test "encoded url with S3-specific escaping" do
+    url = DummyDefinition.url(@img_with_plus)
+    assert "https://s3.amazonaws.com/#{env_bucket()}/waffletest/uploads/image%2Bthree.png" == url
   end
 
   @tag :s3
