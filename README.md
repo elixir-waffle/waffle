@@ -1,7 +1,4 @@
-# Waffle [![Sponsored by Evrone][evrone-img]][evrome-url]
-
-[evrone-img]: https://img.shields.io/badge/Sponsored_by-Evrone-brightgreen.svg
-[evrome-url]: https://evrone.com?utm_source=waffle
+# Waffle
 
 [![Codeship Status for elixir-waffle/waffle][codeship-img]][codeship-url]
 [![Hex.pm Version][hex-img]][hex-url]
@@ -14,9 +11,24 @@
 [hexdocs-img]: http://img.shields.io/badge/hexdocs-documentation-brightgreen.svg
 [hexdocs-url]: https://hexdocs.pm/waffle
 
+[logo-img]: https://elixir-waffle.github.io/waffle/assets/logo.svg
+[Waffle]: https://evrone.com/waffle-elixir-library?utm_source=github&utm_campaign=waffle
+[Evrone design team]: https://evrone.com/branding?utm_source=github&utm_campaign=waffle
+[build with Elixir]: https://evrone.com/elixir?utm_source=github&utm_campaign=waffle
+
+<img align="right" width="176" height="120"
+     alt="Waffle is a flexible file upload library for Elixir"
+     src="https://elixir-waffle.github.io/waffle/assets/logo.svg">
+
+[Waffle] is a flexible file upload library for Elixir with straightforward integrations for Amazon S3 and ImageMagick.
+
 Waffle is a flexible file upload library for Elixir with straightforward integrations for Amazon S3 and ImageMagick.
 
 [Documentation](https://hexdocs.pm/waffle)
+
+Thanks [Evrone design team] for Waffle's branding.
+
+What else we [build with Elixir] at Evrone.
 
 ## Installation
 
