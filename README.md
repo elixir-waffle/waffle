@@ -22,8 +22,6 @@
 
 [Waffle] is a flexible file upload library for Elixir with straightforward integrations for Amazon S3 and ImageMagick.
 
-Waffle is a flexible file upload library for Elixir with straightforward integrations for Amazon S3 and ImageMagick.
-
 [Documentation](https://hexdocs.pm/waffle)
 
 Thanks [Evrone design team] for Waffle's branding.
