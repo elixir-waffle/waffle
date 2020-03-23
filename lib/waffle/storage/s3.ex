@@ -198,13 +198,11 @@ defmodule Waffle.Storage.S3 do
   end
 
   defp build_url(definition, version, file_and_scope, _options) do
-    Path.join host(definition), URI.encode(s3_key(definition, version, file_and_scope), fn char ->
-      if char in 0..31 || char in [?&, ?$, ?@, ?=, ?;, ?:, ?+, ?,, ??, 127] do
-        false
-      else
-        URI.char_unescaped?(char)
-      end
-    end)
+    asset_path =
+      s3_key(definition, version, file_and_scope)
+      |> ExAws.Request.Url.sanitize(:s3)
+
+    Path.join(host(definition), asset_path)
   end
 
   defp build_signed_url(definition, version, file_and_scope, options) do
