@@ -127,6 +127,8 @@ defmodule Waffle.Storage.S3 do
   """
   require Logger
 
+  alias ExAws.Config
+  alias ExAws.Request.Url
   alias ExAws.S3
   alias ExAws.S3.Upload
   alias Waffle.Definition.Versioning
@@ -156,7 +158,7 @@ defmodule Waffle.Storage.S3 do
 
   def delete(definition, version, {file, scope}) do
     s3_bucket(definition)
-    |> ExAws.S3.delete_object(s3_key(definition, version, {file, scope}))
+    |> S3.delete_object(s3_key(definition, version, {file, scope}))
     |> ExAws.request()
 
     :ok
@@ -171,7 +173,7 @@ defmodule Waffle.Storage.S3 do
 
   # If the file is stored as a binary in-memory, send to AWS in a single request
   defp do_put(file = %Waffle.File{binary: file_binary}, {s3_bucket, s3_key, s3_options}) when is_binary(file_binary) do
-    ExAws.S3.put_object(s3_bucket, s3_key, file_binary, s3_options)
+    S3.put_object(s3_bucket, s3_key, file_binary, s3_options)
     |> ExAws.request()
     |> case do
       {:ok, _res}     -> {:ok, file.file_name}
@@ -200,7 +202,7 @@ defmodule Waffle.Storage.S3 do
   defp build_url(definition, version, file_and_scope, _options) do
     asset_path =
       s3_key(definition, version, file_and_scope)
-      |> ExAws.Request.Url.sanitize(:s3)
+      |> Url.sanitize(:s3)
 
     Path.join(host(definition), asset_path)
   end
@@ -212,10 +214,10 @@ defmodule Waffle.Storage.S3 do
     # fallback to default, if neither is present.
     options = put_in options[:expires_in], options[:expires_in] || @default_expiry_time
     options = put_in options[:virtual_host], virtual_host()
-    config = ExAws.Config.new(:s3, Application.get_all_env(:ex_aws))
+    config = Config.new(:s3, Application.get_all_env(:ex_aws))
     s3_key = s3_key(definition, version, file_and_scope)
     s3_bucket = s3_bucket(definition)
-    {:ok, url} = ExAws.S3.presigned_url(config, :get, s3_bucket, s3_key, options)
+    {:ok, url} = S3.presigned_url(config, :get, s3_bucket, s3_key, options)
     url
   end
 
