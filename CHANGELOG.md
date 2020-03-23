@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.0.1 (2020-03-23)
+  * Handle special S3 escaping (#32)
+  * add branding for project (#34)
+
 ## v1.0.0 (2020-02-04)
   * remove poison and update dependencies (#30)
   * define remote url as an attribute #29
