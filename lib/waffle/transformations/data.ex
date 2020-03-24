@@ -38,8 +38,8 @@ defmodule Waffle.Transformations.Data do
 
   defp identify_sizes_imagick(filepath) do
     with {output, 0} <- Command.execute("identify", ["-precision", "10", filepath]) do
-      [_, w, h] = Regex.run(~r/(\d+)x(\d+)/u, output)
-      [_, size] = Regex.run(~r/(\d+)B/u, output)
+      [_, w, h] = Regex.run(~r/\s(\d+)x(\d+)\s/u, output)
+      [_, size] = Regex.run(~r/\s(\d+)B\s/u, output)
 
       %{
         width: String.to_integer(w),
