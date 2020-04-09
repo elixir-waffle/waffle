@@ -24,6 +24,7 @@ defmodule Waffle.File do
     filename = uri.path |> Path.basename() |> URI.decode()
 
     case save_file(uri, filename) do
+      {:ok, filename, local_path} -> %Waffle.File{path: local_path, file_name: filename, is_tempfile?: true}
       {:ok, local_path} -> %Waffle.File{path: local_path, file_name: filename, is_tempfile?: true}
       :error -> {:error, :invalid_file_path}
     end
@@ -93,6 +94,7 @@ defmodule Waffle.File do
       |> Kernel.<>(Path.extname(filename))
 
     case save_temp_file(local_path, uri) do
+      {:ok, filename} -> {:ok, filename, local_path}
       :ok -> {:ok, local_path}
       _ -> :error
     end
@@ -102,6 +104,11 @@ defmodule Waffle.File do
     remote_file = get_remote_path(remote_path)
 
     case remote_file do
+      {:ok, filename, body} -> 
+        case File.write(local_path, body) do
+          :ok -> {:ok, filename}
+          _ -> :error
+        end
       {:ok, body} -> File.write(local_path, body)
       {:error, error} -> {:error, error}
     end
@@ -126,7 +133,28 @@ defmodule Waffle.File do
 
   defp request(remote_path, options, tries \\ 0) do
     case :hackney.get(URI.to_string(remote_path), [], "", options) do
-      {:ok, 200, _headers, client_ref} -> :hackney.body(client_ref)
+      {:ok, 200, headers, client_ref} -> 
+        {:ok, body} = :hackney.body(client_ref)
+        headers = :hackney_headers.new(headers)
+        filename = case :hackney_headers.get_value("content-disposition", headers) do
+          :undefined ->
+            nil
+
+          value ->
+            case :hackney_headers.content_disposition(value) do
+              {_, [{"filename", filename} | _]} ->
+                filename
+
+              _ ->
+                nil
+            end
+        end
+
+        if is_nil(filename) do
+          {:ok, body}
+        else
+          {:ok, filename, body}
+        end
       {:error, %{reason: :timeout}} ->
         case retry(tries, options) do
           {:ok, :retry} -> request(remote_path, options, tries + 1)
