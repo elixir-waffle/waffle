@@ -24,7 +24,7 @@ defmodule Waffle.File do
     filename = uri.path |> Path.basename() |> URI.decode()
 
     case save_file(uri, filename) do
-      {:ok, filename, local_path} -> %Waffle.File{path: local_path, file_name: filename, is_tempfile?: true}
+      {:ok, local_path, filename} -> %Waffle.File{path: local_path, file_name: filename, is_tempfile?: true}
       {:ok, local_path} -> %Waffle.File{path: local_path, file_name: filename, is_tempfile?: true}
       :error -> {:error, :invalid_file_path}
     end
@@ -94,7 +94,7 @@ defmodule Waffle.File do
       |> Kernel.<>(Path.extname(filename))
 
     case save_temp_file(local_path, uri) do
-      {:ok, filename} -> {:ok, filename, local_path}
+      {:ok, filename} -> {:ok, local_path, filename}
       :ok -> {:ok, local_path}
       _ -> :error
     end
