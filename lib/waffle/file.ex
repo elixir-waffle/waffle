@@ -136,20 +136,7 @@ defmodule Waffle.File do
       {:ok, 200, headers, client_ref} -> 
         {:ok, body} = :hackney.body(client_ref)
         headers = :hackney_headers.new(headers)
-        filename = case :hackney_headers.get_value("content-disposition", headers) do
-          :undefined ->
-            nil
-
-          value ->
-            case :hackney_headers.content_disposition(value) do
-              {_, [{"filename", filename} | _]} ->
-                filename
-
-              _ ->
-                nil
-            end
-        end
-
+        filename = content_disposition(headers)
         if is_nil(filename) do
           {:ok, body}
         else
@@ -162,6 +149,22 @@ defmodule Waffle.File do
         end
 
       _ -> {:error, :waffle_hackney_error}
+    end
+  end
+
+  defp content_disposition(headers) do
+    case :hackney_headers.get_value("content-disposition", headers) do
+      :undefined ->
+        nil
+
+      value ->
+        case :hackney_headers.content_disposition(value) do
+          {_, [{"filename", filename} | _]} ->
+            filename
+
+          _ ->
+            nil
+        end
     end
   end
 
