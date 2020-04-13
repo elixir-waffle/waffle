@@ -98,6 +98,25 @@ defmodule WaffleTest.Actions.Store do
     end
   end
 
+  test "sets remote filename from content-disposition header when available" do
+    with_mocks ([
+      {Waffle.Storage.S3,
+        [],
+        [put: fn DummyDefinition, _, {%{file_name: "favicon.ico", path: _}, nil} ->
+          {:ok, "favicon.ico"}
+        end]
+      },
+      {Waffle.File,
+        [],
+        [content_disposition: fn _ ->
+          "favicon.ico"
+        end]
+      },
+      ]) do
+      assert DummyDefinition.store("https://www.google.com/favicon2.ico") == {:ok, "favicon.ico"}
+    end
+  end
+
   test "accepts remote files with spaces" do
     with_mock Waffle.Storage.S3,
       put: fn DummyDefinition, _, {%{file_name: "image two.png", path: _}, nil} ->
