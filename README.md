@@ -72,9 +72,16 @@ Waffle comes with a companion package for use with Ecto.  If you intend to use W
   * Changeset integration
   * Versioned urls for cache busting (`.../thumb.png?v=63601457477`)
 
+## Attribution
+
+Great thanks to Sean Stavropoulos (@stavro) for the original awesome work on the library.
+
+This project is forked from [Arc](https://github.com/stavro/arc) from the version `v0.11.0`.
+
 ## License
 
-Copyright 2019 Boris Kuznetsov
+Copyright 2019 Boris Kuznetsov <me@achempion.com>
+
 Copyright 2015 Sean Stavropoulos
 
   Licensed under the Apache License, Version 2.0 (the "License");
