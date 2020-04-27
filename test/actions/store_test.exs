@@ -11,7 +11,7 @@ defmodule WaffleTest.Actions.Store do
     use Waffle.Definition.Storage
 
     def validate({file, _}),
-      do: String.ends_with?(file.file_name, ".png") || String.ends_with?(file.file_name, ".ico")
+      do: String.ends_with?(file.file_name, ".png") || String.ends_with?(file.file_name, ".ico") || file.file_name == "download"
 
     def transform(:skipped, _), do: :skip
     def transform(_, _), do: :noaction
@@ -104,6 +104,15 @@ defmodule WaffleTest.Actions.Store do
         {:ok, "image two.png"}
       end do
       assert DummyDefinition.store(@remote_img_with_space) == {:ok, "image two.png"}
+    end
+  end
+
+  test "sets a filename if passed a URL root" do
+    with_mock Waffle.Storage.S3,
+      put: fn DummyDefinition, _, {%{file_name: "download", path: _}, nil} ->
+        {:ok, "download"}
+      end do
+      assert DummyDefinition.store("https://google.com/") == {:ok, "download"}
     end
   end
 
