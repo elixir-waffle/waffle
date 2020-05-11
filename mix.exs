@@ -63,7 +63,7 @@ defmodule Waffle.Mixfile do
       {:ex_doc, "~> 0.21", only: :dev},
 
       # Dev, Test
-      {:credo, "~> 1.1.0", only: [:dev, :test], runtime: false}
+      {:credo, "~> 1.4", only: [:dev, :test], runtime: false}
     ]
   end
 end
