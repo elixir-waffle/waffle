@@ -35,7 +35,7 @@ Add the latest stable release to your `mix.exs` file, along with the required de
 ```elixir
 defp deps do
   [
-    {:waffle, "~> 1.0.1"},
+    {:waffle, "~> 1.1.0"},
 
     # If using S3:
     {:ex_aws, "~> 2.1.2"},

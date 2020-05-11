@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.1.0 (2020-05-12)
+  * update dependencies
+  * respect `content-disposition` header (#41)
+  * `ex_aws` needs to be at least 2.1.2 (#43)
+  * add attribution to the original work (#39)
+
+### Notes
+Now, the Waffle respects `content-disposition` header. It means that
+for remote uploads by url, we'll check for this header and will
+respect the filename from it. In other words, we'll save a file with a
+name from `content-disposition` header.
+
 ## v1.0.1 (2020-03-23)
   * Handle special S3 escaping (#32)
   * add branding for project (#34)
