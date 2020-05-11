@@ -104,7 +104,7 @@ defmodule Waffle.File do
     remote_file = get_remote_path(remote_path)
 
     case remote_file do
-      {:ok, filename, body} -> 
+      {:ok, body, filename} ->
         case File.write(local_path, body) do
           :ok -> {:ok, filename}
           _ -> :error
@@ -133,14 +133,14 @@ defmodule Waffle.File do
 
   defp request(remote_path, options, tries \\ 0) do
     case :hackney.get(URI.to_string(remote_path), [], "", options) do
-      {:ok, 200, headers, client_ref} -> 
+      {:ok, 200, headers, client_ref} ->
         {:ok, body} = :hackney.body(client_ref)
         headers = :hackney_headers.new(headers)
         filename = content_disposition(headers)
         if is_nil(filename) do
           {:ok, body}
         else
-          {:ok, filename, body}
+          {:ok, body, filename}
         end
       {:error, %{reason: :timeout}} ->
         case retry(tries, options) do
