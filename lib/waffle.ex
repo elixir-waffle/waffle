@@ -12,7 +12,7 @@ defmodule Waffle do
           {:waffle, "~> 1.0.1"},
 
           # If using S3:
-          {:ex_aws, "~> 2.1"},
+          {:ex_aws, "~> 2.1.2"},
           {:ex_aws_s3, "~> 2.0"},
           {:hackney, "~> 1.9"},
           {:sweet_xml, "~> 0.6"}
