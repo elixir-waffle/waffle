@@ -62,7 +62,6 @@ defmodule Waffle.Actions.Url do
 
   > When using virtual hosted–style buckets with SSL, the SSL wild card certificate only matches buckets that do not contain periods. To work around this, use HTTP or write your own certificate verification logic.
 
-
   **Asset Host**
 
   You may optionally specify an asset host rather than using the

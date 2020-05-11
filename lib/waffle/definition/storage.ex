@@ -21,11 +21,9 @@ defmodule Waffle.Definition.Storage do
         "uploads/users/avatars/#{scope.id}"
       end
 
-
   > **Note**: If you are "attaching" a file to a record on creation (eg, while inserting the record at the same time), then you cannot use the model's `id` as a path component.  You must either (1) use a different storage path format, such as UUIDs, or (2) attach and update the model after an id has been given. [Read more about how to integrate it with Ecto](https://hexdocs.pm/waffle_ecto/filepath-with-id.html#content)
 
   > **Note**: The storage directory is used for both local filestorage (as the relative or absolute directory), and S3 storage, as the path name (not including the bucket).
-
 
   ## Asynchronous File Uploading
 
@@ -76,7 +74,6 @@ defmodule Waffle.Definition.Storage do
 
   Any uploaded file failing validation will return `{:error,
   :invalid_file}` when passed through to `Avatar.store`.
-
 
   """
   defmacro __using__(_) do

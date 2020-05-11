@@ -93,7 +93,6 @@ defmodule Waffle.Storage.S3 do
     *  `:website_redirect_location`
     *  `:encryption` (set to "AES256" for encryption at rest)
 
-
   As an example, to explicitly specify the content-type of an object,
   you may define a `s3_object_headers/2` function in your definition,
   which returns a Keyword list, or Map of desired headers.
