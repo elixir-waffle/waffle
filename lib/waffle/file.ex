@@ -11,7 +11,7 @@ defmodule Waffle.File do
       |> Base.encode32()
       |> Kernel.<>(extension)
 
-    Path.join(System.tmp_dir, file_name)
+    Path.join(System.tmp_dir(), file_name)
   end
 
   #
@@ -19,19 +19,33 @@ defmodule Waffle.File do
   #
 
   # Given a remote file
+  # (respects content-disposition header)
   def new(remote_path = "http" <> _) do
     uri = URI.parse(remote_path)
     filename = uri.path |> Path.basename() |> URI.decode()
 
     case save_file(uri, filename) do
-      {:ok, local_path} -> %Waffle.File{path: local_path, file_name: filename, is_tempfile?: true}
-      :error -> {:error, :invalid_file_path}
+      {:ok, local_path, filename_from_content_disposition} ->
+        %Waffle.File{
+          path: local_path,
+          file_name: filename_from_content_disposition,
+          is_tempfile?: true
+        }
+
+      {:ok, local_path} ->
+        %Waffle.File{path: local_path, file_name: filename, is_tempfile?: true}
+
+      :error ->
+        {:error, :invalid_file_path}
     end
   end
 
   # Given a remote file with a filename
-  def new(%{filename: filename, remote_path: remote_path} = %{filename: _, remote_path: "http" <> _}) do
+  def new(
+        %{filename: filename, remote_path: remote_path} = %{filename: _, remote_path: "http" <> _}
+      ) do
     uri = URI.parse(remote_path)
+
     case save_file(uri, filename) do
       {:ok, local_path} -> %Waffle.File{path: local_path, file_name: filename, is_tempfile?: true}
       :error -> {:error, :invalid_file_path}
@@ -93,6 +107,7 @@ defmodule Waffle.File do
       |> Kernel.<>(Path.extname(filename))
 
     case save_temp_file(local_path, uri) do
+      {:ok, filename} -> {:ok, local_path, filename}
       :ok -> {:ok, local_path}
       _ -> :error
     end
@@ -102,8 +117,17 @@ defmodule Waffle.File do
     remote_file = get_remote_path(remote_path)
 
     case remote_file do
-      {:ok, body} -> File.write(local_path, body)
-      {:error, error} -> {:error, error}
+      {:ok, body, filename} ->
+        case File.write(local_path, body) do
+          :ok -> {:ok, filename}
+          _ -> :error
+        end
+
+      {:ok, body} ->
+        File.write(local_path, body)
+
+      {:error, error} ->
+        {:error, error}
     end
   end
 
@@ -118,7 +142,7 @@ defmodule Waffle.File do
       connect_timeout: Application.get_env(:waffle, :connect_timeout, 10_000),
       max_retries: Application.get_env(:waffle, :max_retries, 3),
       backoff_factor: Application.get_env(:waffle, :backoff_factor, 1000),
-      backoff_max: Application.get_env(:waffle, :backoff_max, 30_000),
+      backoff_max: Application.get_env(:waffle, :backoff_max, 30_000)
     ]
 
     request(remote_path, options)
@@ -126,14 +150,41 @@ defmodule Waffle.File do
 
   defp request(remote_path, options, tries \\ 0) do
     case :hackney.get(URI.to_string(remote_path), [], "", options) do
-      {:ok, 200, _headers, client_ref} -> :hackney.body(client_ref)
+      {:ok, 200, headers, client_ref} ->
+        {:ok, body} = :hackney.body(client_ref)
+        headers = :hackney_headers.new(headers)
+        filename = content_disposition(headers)
+
+        if is_nil(filename) do
+          {:ok, body}
+        else
+          {:ok, body, filename}
+        end
+
       {:error, %{reason: :timeout}} ->
         case retry(tries, options) do
           {:ok, :retry} -> request(remote_path, options, tries + 1)
           {:error, :out_of_tries} -> {:error, :timeout}
         end
 
-      _ -> {:error, :waffle_hackney_error}
+      _ ->
+        {:error, :waffle_hackney_error}
+    end
+  end
+
+  defp content_disposition(headers) do
+    case :hackney_headers.get_value("content-disposition", headers) do
+      :undefined ->
+        nil
+
+      value ->
+        case :hackney_headers.content_disposition(value) do
+          {_, [{"filename", filename} | _]} ->
+            filename
+
+          _ ->
+            nil
+        end
     end
   end
 

@@ -2,7 +2,7 @@ defmodule WaffleTest.Actions.Store do
   use ExUnit.Case, async: false
 
   @img "test/support/image.png"
-  @remote_img_with_space "https://github.com/elixir-waffle/waffle/blob/master/test/support/image%20two.png"
+  @remote_img_with_space_image_two "https://github.com/elixir-waffle/waffle/blob/master/test/support/image%20two.png"
 
   import Mock
 
@@ -98,12 +98,34 @@ defmodule WaffleTest.Actions.Store do
     end
   end
 
+  test "sets remote filename from content-disposition header when available" do
+    with_mocks([
+      {
+        :hackney_headers,
+        [:passthrough],
+        get_value: fn "content-disposition", _headers ->
+          "attachment; filename=\"image three.png\""
+        end
+      },
+      {
+        Waffle.Storage.S3,
+        [],
+        put: fn DummyDefinition, _, {%{file_name: "image three.png", path: _}, nil} ->
+          {:ok, "image three.png"}
+        end
+      }
+    ]) do
+      assert DummyDefinition.store(@remote_img_with_space_image_two) ==
+               {:ok, "image three.png"}
+    end
+  end
+
   test "accepts remote files with spaces" do
     with_mock Waffle.Storage.S3,
       put: fn DummyDefinition, _, {%{file_name: "image two.png", path: _}, nil} ->
         {:ok, "image two.png"}
       end do
-      assert DummyDefinition.store(@remote_img_with_space) == {:ok, "image two.png"}
+      assert DummyDefinition.store(@remote_img_with_space_image_two) == {:ok, "image two.png"}
     end
   end
 
