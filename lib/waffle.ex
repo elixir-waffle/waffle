@@ -52,6 +52,8 @@ defmodule Waffle do
 
     * **Microsoft Azure Storage** - [arc_azure](https://github.com/phil-a/arc_azure])
 
+    * **Aliyun OSS Storage** - [waffle_aliyun_oss](https://github.com/ug0/waffle_aliyun_oss)
+
   ## Usage with Ecto
 
   Waffle comes with a companion package for use with Ecto.  If you
