@@ -83,7 +83,7 @@ defmodule Waffle do
 
   This should give you a basic file in:
 
-      web/uploaders/avatar.ex
+      lib/[APP_NAME]_web/uploaders/avatar.ex
 
   Check this file for descriptions of configurable options.
 
