@@ -3,6 +3,19 @@ defmodule Waffle.File do
 
   defstruct [:path, :file_name, :binary, :is_tempfile?]
 
+  #
+  # Temp file with exact extension. Used for converting formats
+  # Used when passing extension in transformations
+  #
+  def generate_temporary_path(extension) when is_atom(extension) do
+    file_name =
+      :crypto.strong_rand_bytes(20)
+      |> Base.encode32()
+      |> Kernel.<>("." <> to_string(extension))
+
+    Path.join(System.tmp_dir(), file_name)
+  end
+
   def generate_temporary_path(file \\ nil) do
     extension = Path.extname((file && file.path) || "")
 
