@@ -132,8 +132,8 @@ defmodule Waffle.Actions.Store do
 
         case definition.transform(version, {file, scope}) do
           :noaction ->
-            # we don't have to cleanup after `:noaction` transofmations
-            # because final `cleanup!` will remove the original temporary file
+            # We don't have to cleanup after `:noaction` transformations
+            # because final `cleanup!` will remove the original temporary file.
             result
           _ ->
             cleanup!(result, file)
