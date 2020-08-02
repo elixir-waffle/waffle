@@ -18,8 +18,6 @@ defmodule WaffleTest.Processor do
       do:
         {:convert, fn input, output -> [input, "-strip", "-thumbnail", "10x10", output] end, :jpg}
 
-    def transform(:new_format, _), do: {:convert, "-quality 40", :webp}
-
     def transform(:skipped, _), do: :skip
 
     def __versions, do: [:original, :thumb]
@@ -72,6 +70,8 @@ defmodule WaffleTest.Processor do
     # original file untouched
     assert "128x128" == geometry(@img)
     assert "10x10" == geometry(new_file.path)
+    # new tmp file has correct extension
+    assert Path.extname(new_file.path) == ".jpg"
     cleanup(new_file.path)
   end
 
@@ -100,6 +100,8 @@ defmodule WaffleTest.Processor do
     # original file untouched
     assert "128x128" == geometry(@img)
     assert "10x10" == geometry(new_file.path)
+    # new tmp file has correct extension
+    assert Path.extname(new_file.path) == ".jpg"
     cleanup(new_file.path)
   end
 
@@ -111,26 +113,6 @@ defmodule WaffleTest.Processor do
     # original file untouched
     assert "128x128" == geometry(@img2)
     assert "10x10" == geometry(new_file.path)
-    cleanup(new_file.path)
-  end
-
-  test "converts file to correct format" do
-    {:ok, new_file} =
-      Waffle.Processor.process(DummyDefinition, :new_format, {Waffle.File.new(@img), nil})
-
-    # new tmp file has correct extension
-    assert Path.extname(new_file.path) == ".webp"
-
-    cleanup(new_file.path)
-  end
-
-  test "converts file to correct format via function transfomations" do
-    {:ok, new_file} =
-      Waffle.Processor.process(DummyDefinition, :small, {Waffle.File.new(@img), nil})
-
-    # new tmp file has correct extension
-    assert Path.extname(new_file.path) == ".jpg"
-
     cleanup(new_file.path)
   end
 
