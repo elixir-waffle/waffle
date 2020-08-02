@@ -3,15 +3,8 @@ defmodule Waffle.File do
 
   defstruct [:path, :file_name, :binary, :is_tempfile?]
 
-  def generate_temporary_path(file \\ nil) do
-    extension = Path.extname((file && file.path) || "")
-
-    file_name =
-      :crypto.strong_rand_bytes(20)
-      |> Base.encode32()
-      |> Kernel.<>(extension)
-
-    Path.join(System.tmp_dir(), file_name)
+  def generate_temporary_path(item \\ nil) do
+    do_generate_temporary_path(item)
   end
 
   #
@@ -89,6 +82,31 @@ defmodule Waffle.File do
   #
   # Support functions
   #
+
+  #
+  #
+  # Temp file with exact extension.
+  # Used for converting formats when passing extension in transformations
+  #
+
+  defp do_generate_temporary_path(%Waffle.File{path: path}) do
+    Path.extname(path || "")
+    |> do_generate_temporary_path()
+  end
+
+  defp do_generate_temporary_path(extension) do
+    string_extension =
+      extension
+      |> to_string()
+      |> (fn ext -> if String.starts_with?(ext, ["", "."]), do: ext, else: ".#{ext}" end).()
+
+    file_name =
+      :crypto.strong_rand_bytes(20)
+      |> Base.encode32()
+      |> Kernel.<>("." <> string_extension)
+
+    Path.join(System.tmp_dir(), file_name)
+  end
 
   defp write_binary(file) do
     path = generate_temporary_path(file)
