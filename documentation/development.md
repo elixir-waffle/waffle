@@ -8,6 +8,7 @@ Development documentation with instructions how to setup the project for local d
 
 ```sh
 # screen 1
+$ cp example.env .env
 $ docker-compose up
 
 # screen 2
@@ -22,11 +23,9 @@ AWS S3 setup
 - copy `key_id` and `secret`
 - create a new backet with *public access*
 - comment the `s3` exlusion inside `test/test_helper.exs`
+- update `.env` file
 
 ```sh
-$ export WAFFLE_TEST_BUCKET=
-$ export WAFFLE_TEST_S3_KEY=
-$ export WAFFLE_TEST_S3_SECRET=
 $ mix test
 ```
 
