@@ -98,7 +98,7 @@ defmodule Waffle.File do
     string_extension =
       extension
       |> to_string()
-      |> (fn ext -> if !String.starts_with?(ext, ["", "."]), do: ".#{ext}", else: ext end).()
+      |> (fn ext -> if String.starts_with?(ext, ["", "."]), do: ext, else: ".#{ext}" end).()
 
     file_name =
       :crypto.strong_rand_bytes(20)
