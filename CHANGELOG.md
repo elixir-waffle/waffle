@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.1.1 (2020-08-02)
+  * update dependencies
+  * add correct S3 setup to documentation
+  * Use correct extension for temp files (#53)
+  * Fix typo in comment (#52)
+  * Update path in getting started guide to the correct generated path (#48)
+  * add Aliyun OSS storage provider link (#45)
+
 ## v1.1.0 (2020-05-12)
   * update dependencies
   * respect `content-disposition` header (#41)

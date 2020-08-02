@@ -9,7 +9,7 @@ defmodule Waffle do
 
       defp deps do
         [
-          {:waffle, "~> 1.1.0"},
+          {:waffle, "~> 1.1.1"},
 
           # If using S3:
           {:ex_aws, "~> 2.1.2"},
