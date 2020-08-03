@@ -6,16 +6,22 @@ defmodule Waffle.Definition.Storage do
 
   ## Storage directory
 
+  By default, the storage directory is `uploads`. But, it can be customized
+  in two ways.
+
+  ### By setting up configuration
+
+  Customize storage directory via configuration option `:storage_dir`.
+
       config :waffle,
         storage_dir: "my/dir"
 
-  The storage directory to place files. Defaults to `uploads`, but can
-  be overwritten via configuration options `:storage_dir`
+  ### By overriding the relevent functions in upload definitions
 
-  The storage dir can also be overwritten on an individual basis, in
-  each separate definition. A common pattern for user profile pictures
-  is to store each user's uploaded images in a separate subdirectory
-  based on their primary key:
+  Every upload definition has a default `storage_dir/2` which is overridable.
+
+  For example, a common pattern for user avatars is to store each user's
+  uploaded images in a separate subdirectory based on primary key:
 
       def storage_dir(version, {file, scope}) do
         "uploads/users/avatars/#{scope.id}"
@@ -31,10 +37,10 @@ defmodule Waffle.Definition.Storage do
   version is processed and stored concurrently as independent Tasks.
   To prevent an overconsumption of system resources, each Task is
   given a specified timeout to wait, after which the process will
-  fail.  By default this is `15 seconds`.
+  fail.  By default, the timeout is `15_000` milliseconds.
 
   If you wish to change the time allocated to version transformation
-  and storage, you may add a configuration parameter:
+  and storage, you can add a configuration option:
 
       config :waffle,
         :version_timeout, 15_000 # milliseconds
@@ -44,23 +50,23 @@ defmodule Waffle.Definition.Storage do
 
   ## Storage of files
 
-  Waffle currently supports
+  Waffle currently supports:
 
-    * `Waffle.Storage.S3`
     * `Waffle.Storage.Local`
+    * `Waffle.Storage.S3`
 
   Override the `__storage` function in your definition module if you
   want to use a different type of storage for a particular uploader.
 
   ## File Validation
 
-  While storing files on S3 (rather than your harddrive) eliminates
-  some malicious attack vectors, it is strongly encouraged to validate
-  the extensions of uploaded files as well.
+  While storing files on S3 eliminates some malicious attack vectors,
+  it is strongly encouraged to validate the extensions of uploaded
+  files as well.
 
   Waffle delegates validation to a `validate/1` function with a tuple
-  of the file and scope.  As an example, to validate that an uploaded
-  file conforms to popular image formats, you may use:
+  of the file and scope.  As an example, in order to validate that an
+  uploaded file conforms to popular image formats, you can use:
 
       defmodule Avatar do
         use Waffle.Definition
@@ -72,8 +78,8 @@ defmodule Waffle.Definition.Storage do
         end
       end
 
-  Any uploaded file failing validation will return `{:error,
-  :invalid_file}` when passed through to `Avatar.store`.
+  Any uploaded file failing validation will return `{:error, :invalid_file}` when
+  passed through to `Avatar.store`.
 
   """
   defmacro __using__(_) do
