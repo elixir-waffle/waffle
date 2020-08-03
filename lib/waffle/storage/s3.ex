@@ -43,7 +43,7 @@ defmodule Waffle.Storage.S3 do
 
   Waffle lets you specify a bucket on a per definition basis. In case
   you want to use multiple buckets, you can specify a bucket in the
-  uploader definition file like this:
+  definition module like this:
 
       def bucket, do: :some_custom_bucket_name
 

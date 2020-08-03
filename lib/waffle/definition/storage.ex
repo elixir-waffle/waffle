@@ -16,9 +16,9 @@ defmodule Waffle.Definition.Storage do
       config :waffle,
         storage_dir: "my/dir"
 
-  ### By overriding the relevent functions in upload definitions
+  ### By overriding the relevent functions in definition modules
 
-  Every upload definition has a default `storage_dir/2` which is overridable.
+  Every definition module has a default `storage_dir/2` which is overridable.
 
   For example, a common pattern for user avatars is to store each user's
   uploaded images in a separate subdirectory based on primary key:
@@ -46,7 +46,7 @@ defmodule Waffle.Definition.Storage do
         :version_timeout, 15_000 # milliseconds
 
   To disable asynchronous processing, add `@async false` to your
-  upload definition.
+  definition module.
 
   ## Storage of files
 

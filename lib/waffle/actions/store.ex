@@ -2,7 +2,7 @@ defmodule Waffle.Actions.Store do
   @moduledoc ~S"""
   Store files to a defined adapter.
 
-  The upload definition file responds to `Avatar.store/1` which
+  The definition module responds to `Avatar.store/1` which
   accepts either:
 
     * A path to a local file
