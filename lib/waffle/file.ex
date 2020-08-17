@@ -154,6 +154,8 @@ defmodule Waffle.File do
   # :backoff_max - maximum backoff time, in milliseconds
   # :backoff_factor - a backoff factor to apply between attempts, in milliseconds
   defp get_remote_path(remote_path) do
+    headers = Application.get_env(:waffle, :headers, [])
+
     options = [
       follow_redirect: true,
       recv_timeout: Application.get_env(:waffle, :recv_timeout, 5_000),
@@ -163,15 +165,15 @@ defmodule Waffle.File do
       backoff_max: Application.get_env(:waffle, :backoff_max, 30_000)
     ]
 
-    request(remote_path, options)
+    request(remote_path, headers, options)
   end
 
-  defp request(remote_path, options, tries \\ 0) do
-    case :hackney.get(URI.to_string(remote_path), [], "", options) do
-      {:ok, 200, headers, client_ref} ->
+  defp request(remote_path, headers, options, tries \\ 0) do
+    case :hackney.get(URI.to_string(remote_path), headers, "", options) do
+      {:ok, 200, response_headers, client_ref} ->
         {:ok, body} = :hackney.body(client_ref)
-        headers = :hackney_headers.new(headers)
-        filename = content_disposition(headers)
+        response_headers = :hackney_headers.new(response_headers)
+        filename = content_disposition(response_headers)
 
         if is_nil(filename) do
           {:ok, body}
@@ -181,7 +183,7 @@ defmodule Waffle.File do
 
       {:error, %{reason: :timeout}} ->
         case retry(tries, options) do
-          {:ok, :retry} -> request(remote_path, options, tries + 1)
+          {:ok, :retry} -> request(remote_path, headers, options, tries + 1)
           {:error, :out_of_tries} -> {:error, :timeout}
         end
 
