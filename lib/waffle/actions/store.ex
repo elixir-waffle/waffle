@@ -2,7 +2,7 @@ defmodule Waffle.Actions.Store do
   @moduledoc ~S"""
   Store files to a defined adapter.
 
-  The upload definition file responds to `Avatar.store/1` which
+  The definition module responds to `Avatar.store/1` which
   accepts either:
 
     * A path to a local file
@@ -11,10 +11,9 @@ defmodule Waffle.Actions.Store do
 
     * A map with a filename and path keys (eg, a `%Plug.Upload{}`)
 
-    * A map with a filename and binary keys (eg, `%{filename:
-      "image.png", binary: <<255,255,255,...>>}`)
+    * A map with a filename and binary keys (eg, `%{filename: "image.png", binary: <<255,255,255,...>>}`)
 
-    * A two-tuple consisting of one of the above file formats as well as a scope object.
+    * A two-element tuple consisting of one of the above file formats as well as a scope map
 
   Example usage as general file store:
 

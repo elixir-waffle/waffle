@@ -31,7 +31,10 @@ defmodule Waffle.Mixfile do
   defp docs do
     [
       main: "Waffle",
-      extras: ["documentation/examples/full.md"]
+      extras: [
+        "documentation/examples/local.md",
+        "documentation/examples/s3.md"
+      ]
     ]
   end
 
