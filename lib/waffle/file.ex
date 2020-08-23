@@ -98,12 +98,23 @@ defmodule Waffle.File do
     string_extension =
       extension
       |> to_string()
-      |> (fn ext -> if String.starts_with?(ext, ["", "."]), do: ext, else: ".#{ext}" end).()
+      |> (fn ext ->
+            cond do
+              String.starts_with?(ext, ".") ->
+                ext
+
+              ext == "" ->
+                ""
+
+              true ->
+                ".#{ext}"
+            end
+          end).()
 
     file_name =
       :crypto.strong_rand_bytes(20)
       |> Base.encode32()
-      |> Kernel.<>("." <> string_extension)
+      |> Kernel.<>(string_extension)
 
     Path.join(System.tmp_dir(), file_name)
   end
