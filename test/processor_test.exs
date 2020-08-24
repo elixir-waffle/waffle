@@ -41,19 +41,31 @@ defmodule WaffleTest.Processor do
 
   test "returns the original path for :noaction transformations" do
     {:ok, file} =
-      Waffle.Processor.process(DummyDefinition, :original, {Waffle.File.new(@img), nil})
+      Waffle.Processor.process(
+        DummyDefinition,
+        :original,
+        {Waffle.File.new(@img, DummyDefinition), nil}
+      )
 
     assert file.path == @img
   end
 
   test "returns nil for :skip transformations" do
     assert {:ok, nil} =
-             Waffle.Processor.process(DummyDefinition, :skipped, {Waffle.File.new(@img), nil})
+             Waffle.Processor.process(
+               DummyDefinition,
+               :skipped,
+               {Waffle.File.new(@img, DummyDefinition), nil}
+             )
   end
 
   test "transforms a copied version of file according to the specified transformation" do
     {:ok, new_file} =
-      Waffle.Processor.process(DummyDefinition, :thumb, {Waffle.File.new(@img), nil})
+      Waffle.Processor.process(
+        DummyDefinition,
+        :thumb,
+        {Waffle.File.new(@img, DummyDefinition), nil}
+      )
 
     assert new_file.path != @img
     # original file untouched
@@ -64,7 +76,11 @@ defmodule WaffleTest.Processor do
 
   test "transforms a copied version of file according to a function transformation that returns a string" do
     {:ok, new_file} =
-      Waffle.Processor.process(DummyDefinition, :med, {Waffle.File.new(@img), nil})
+      Waffle.Processor.process(
+        DummyDefinition,
+        :med,
+        {Waffle.File.new(@img, DummyDefinition), nil}
+      )
 
     assert new_file.path != @img
     # original file untouched
@@ -77,7 +93,11 @@ defmodule WaffleTest.Processor do
 
   test "transforms a copied version of file according to a function transformation that returns a list" do
     {:ok, new_file} =
-      Waffle.Processor.process(DummyDefinition, :small, {Waffle.File.new(@img), nil})
+      Waffle.Processor.process(
+        DummyDefinition,
+        :small,
+        {Waffle.File.new(@img, DummyDefinition), nil}
+      )
 
     assert new_file.path != @img
     # original file untouched
@@ -93,7 +113,7 @@ defmodule WaffleTest.Processor do
       Waffle.Processor.process(
         DummyDefinition,
         :small,
-        {Waffle.File.new(%{binary: img_binary, filename: "image.png"}), nil}
+        {Waffle.File.new(%{binary: img_binary, filename: "image.png"}, DummyDefinition), nil}
       )
 
     assert new_file.path != @img
@@ -107,7 +127,11 @@ defmodule WaffleTest.Processor do
 
   test "file names with spaces" do
     {:ok, new_file} =
-      Waffle.Processor.process(DummyDefinition, :thumb, {Waffle.File.new(@img2), nil})
+      Waffle.Processor.process(
+        DummyDefinition,
+        :thumb,
+        {Waffle.File.new(@img2, DummyDefinition), nil}
+      )
 
     assert new_file.path != @img2
     # original file untouched
@@ -118,7 +142,11 @@ defmodule WaffleTest.Processor do
 
   test "returns tuple in an invalid transformation" do
     assert {:error, _} =
-             Waffle.Processor.process(BrokenDefinition, :thumb, {Waffle.File.new(@img), nil})
+             Waffle.Processor.process(
+               BrokenDefinition,
+               :thumb,
+               {Waffle.File.new(@img, BrokenDefinition), nil}
+             )
   end
 
   test "raises an error if the given transformation executable cannot be found" do
@@ -126,7 +154,7 @@ defmodule WaffleTest.Processor do
       Waffle.Processor.process(
         MissingExecutableDefinition,
         :original,
-        {Waffle.File.new(@img), nil}
+        {Waffle.File.new(@img, MissingExecutableDefinition), nil}
       )
     end
   end

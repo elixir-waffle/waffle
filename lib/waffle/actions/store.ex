@@ -51,7 +51,7 @@ defmodule Waffle.Actions.Store do
   end
 
   def store(definition, {file, scope}) when is_binary(file) or is_map(file) do
-    put(definition, {Waffle.File.new(file), scope})
+    put(definition, {Waffle.File.new(file, definition), scope})
   end
 
   def store(definition, filepath) when is_binary(filepath) or is_map(filepath) do

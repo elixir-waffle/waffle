@@ -116,6 +116,7 @@ defmodule Waffle.Definition.Storage do
       def acl(_, _), do: @acl
       def s3_object_headers(_, _), do: []
       def async, do: @async
+      def remote_file_headers(_), do: []
     end
   end
 end
