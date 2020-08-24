@@ -81,6 +81,26 @@ defmodule Waffle.Definition.Storage do
   Any uploaded file failing validation will return `{:error, :invalid_file}` when
   passed through to `Avatar.store`.
 
+  ## Passing custom headers when downloading from remote path
+
+  By default, when downloading files from remote path request headers are empty,
+  but if you wish to provide your own, you can override the `remote_file_headers/1`
+  function in your definition module. For example:
+
+      defmodule Avatar do
+        use Waffle.Definition
+
+        def remote_file_headers(%URI{host: "elixir-lang.org"}) do
+          credentials = Application.get_env(:my_app, :avatar_credentials)
+          token = Base.encode64(credentials[:username] <> ":" <> credentials[:password])
+
+          [{"Authorization", "Basic #{token}")}]
+        end
+      end
+
+  This code would authenticate request only for specific domain. Otherwise, it would send
+  empty request headers.
+
   """
   defmacro __using__(_) do
     quote do
