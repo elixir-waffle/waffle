@@ -39,7 +39,7 @@ defmodule Waffle.Processor do
 
   As images are one of the most commonly uploaded filetypes, Waffle
   has a recommended integration with ImageMagick's `convert` tool for
-  manipulation of images.  Each upload definition may specify as many
+  manipulation of images.  Each definition module may specify as many
   versions as desired, along with the corresponding transformation for
   each version.
 
