@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.1.2 (2020-09-03)
+  * Improve docs of getting started and multiple minor changes (#55)
+  * refactor Waffle.File.do_generate_temporary_path/1 (#56)
+
 ## v1.1.1 (2020-08-02)
   * update dependencies
   * add correct S3 setup to documentation
