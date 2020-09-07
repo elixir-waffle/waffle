@@ -41,7 +41,7 @@ defmodule Waffle do
   An example for setting up `Waffle.Storage.Local`:
 
       config :waffle,
-        storage: Waffle.Storage.Local
+        storage: Waffle.Storage.Local,
         asset_host: "http://static.example.com" # or {:system, "ASSET_HOST"}
 
   An example for setting up `Waffle.Storage.S3`:
