@@ -24,7 +24,7 @@ defmodule WaffleTest.Actions.Store do
 
     def transform(_, _), do: :noaction
     def __versions, do: [:original, :thumb, :skipped]
-    def remote_file_headers(_), do: [{"User-Agent", "MyApp"}]
+    def remote_file_headers(%URI{host: "www.google.com"}), do: [{"User-Agent", "MyApp"}]
   end
 
   test "checks file existance" do
