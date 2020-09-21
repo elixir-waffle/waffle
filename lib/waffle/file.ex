@@ -3,15 +3,8 @@ defmodule Waffle.File do
 
   defstruct [:path, :file_name, :binary, :is_tempfile?]
 
-  def generate_temporary_path(file \\ nil) do
-    extension = Path.extname((file && file.path) || "")
-
-    file_name =
-      :crypto.strong_rand_bytes(20)
-      |> Base.encode32()
-      |> Kernel.<>(extension)
-
-    Path.join(System.tmp_dir(), file_name)
+  def generate_temporary_path(item \\ nil) do
+    do_generate_temporary_path(item)
   end
 
   #
@@ -20,11 +13,11 @@ defmodule Waffle.File do
 
   # Given a remote file
   # (respects content-disposition header)
-  def new(remote_path = "http" <> _) do
+  def new(remote_path = "http" <> _, definition) do
     uri = URI.parse(remote_path)
     filename = uri.path |> Path.basename() |> URI.decode()
 
-    case save_file(uri, filename) do
+    case save_file(uri, filename, definition) do
       {:ok, local_path, filename_from_content_disposition} ->
         %Waffle.File{
           path: local_path,
@@ -42,18 +35,22 @@ defmodule Waffle.File do
 
   # Given a remote file with a filename
   def new(
-        %{filename: filename, remote_path: remote_path} = %{filename: _, remote_path: "http" <> _}
+        %{filename: filename, remote_path: remote_path} = %{filename: _, remote_path: "http" <> _},
+        definition
       ) do
     uri = URI.parse(remote_path)
 
-    case save_file(uri, filename) do
+    case save_file(uri, filename, definition) do
       {:ok, local_path} -> %Waffle.File{path: local_path, file_name: filename, is_tempfile?: true}
       :error -> {:error, :invalid_file_path}
     end
   end
 
   # Rejects invalid remote file path
-  def new(%{filename: _filename, remote_path: _remote_path} = %{filename: _, remote_path: _}) do
+  def new(
+        %{filename: _filename, remote_path: _remote_path} = %{filename: _, remote_path: _},
+        _definition
+      ) do
     {:error, :invalid_file_path}
   end
 
@@ -61,7 +58,7 @@ defmodule Waffle.File do
   # Handle a binary blob
   #
 
-  def new(%{filename: filename, binary: binary}) do
+  def new(%{filename: filename, binary: binary}, _definition) do
     %Waffle.File{binary: binary, file_name: Path.basename(filename)}
     |> write_binary()
   end
@@ -71,7 +68,7 @@ defmodule Waffle.File do
   #
 
   # Accepts a path
-  def new(path) when is_binary(path) do
+  def new(path, _definition) when is_binary(path) do
     case File.exists?(path) do
       true -> %Waffle.File{path: path, file_name: Path.basename(path)}
       false -> {:error, :invalid_file_path}
@@ -79,7 +76,7 @@ defmodule Waffle.File do
   end
 
   # Accepts a map conforming to %Plug.Upload{} syntax
-  def new(%{filename: filename, path: path}) do
+  def new(%{filename: filename, path: path}, _definition) do
     case File.exists?(path) do
       true -> %Waffle.File{path: path, file_name: filename}
       false -> {:error, :invalid_file_path}
@@ -89,6 +86,42 @@ defmodule Waffle.File do
   #
   # Support functions
   #
+
+  #
+  #
+  # Temp file with exact extension.
+  # Used for converting formats when passing extension in transformations
+  #
+
+  defp do_generate_temporary_path(%Waffle.File{path: path}) do
+    Path.extname(path || "")
+    |> do_generate_temporary_path()
+  end
+
+  defp do_generate_temporary_path(extension) do
+    string_extension =
+      extension
+      |> to_string()
+      |> (fn ext ->
+            cond do
+              String.starts_with?(ext, ".") ->
+                ext
+
+              ext == "" ->
+                ""
+
+              true ->
+                ".#{ext}"
+            end
+          end).()
+
+    file_name =
+      :crypto.strong_rand_bytes(20)
+      |> Base.encode32()
+      |> Kernel.<>(string_extension)
+
+    Path.join(System.tmp_dir(), file_name)
+  end
 
   defp write_binary(file) do
     path = generate_temporary_path(file)
@@ -101,20 +134,20 @@ defmodule Waffle.File do
     }
   end
 
-  defp save_file(uri, filename) do
+  defp save_file(uri, filename, definition) do
     local_path =
       generate_temporary_path()
       |> Kernel.<>(Path.extname(filename))
 
-    case save_temp_file(local_path, uri) do
+    case save_temp_file(local_path, uri, definition) do
       {:ok, filename} -> {:ok, local_path, filename}
       :ok -> {:ok, local_path}
       _ -> :error
     end
   end
 
-  defp save_temp_file(local_path, remote_path) do
-    remote_file = get_remote_path(remote_path)
+  defp save_temp_file(local_path, remote_path, definition) do
+    remote_file = get_remote_path(remote_path, definition)
 
     case remote_file do
       {:ok, body, filename} ->
@@ -135,7 +168,9 @@ defmodule Waffle.File do
   # hackney :recv_timeout - timeout used when receiving from a connection, in milliseconds
   # :backoff_max - maximum backoff time, in milliseconds
   # :backoff_factor - a backoff factor to apply between attempts, in milliseconds
-  defp get_remote_path(remote_path) do
+  defp get_remote_path(remote_path, definition) do
+    headers = definition.remote_file_headers(remote_path)
+
     options = [
       follow_redirect: true,
       recv_timeout: Application.get_env(:waffle, :recv_timeout, 5_000),
@@ -145,15 +180,15 @@ defmodule Waffle.File do
       backoff_max: Application.get_env(:waffle, :backoff_max, 30_000)
     ]
 
-    request(remote_path, options)
+    request(remote_path, headers, options)
   end
 
-  defp request(remote_path, options, tries \\ 0) do
-    case :hackney.get(URI.to_string(remote_path), [], "", options) do
-      {:ok, 200, headers, client_ref} ->
+  defp request(remote_path, headers, options, tries \\ 0) do
+    case :hackney.get(URI.to_string(remote_path), headers, "", options) do
+      {:ok, 200, response_headers, client_ref} ->
         {:ok, body} = :hackney.body(client_ref)
-        headers = :hackney_headers.new(headers)
-        filename = content_disposition(headers)
+        response_headers = :hackney_headers.new(response_headers)
+        filename = content_disposition(response_headers)
 
         if is_nil(filename) do
           {:ok, body}
@@ -163,7 +198,7 @@ defmodule Waffle.File do
 
       {:error, %{reason: :timeout}} ->
         case retry(tries, options) do
-          {:ok, :retry} -> request(remote_path, options, tries + 1)
+          {:ok, :retry} -> request(remote_path, headers, options, tries + 1)
           {:error, :out_of_tries} -> {:error, :timeout}
         end
 

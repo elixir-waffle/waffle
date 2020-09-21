@@ -1,7 +1,7 @@
 defmodule Waffle.Mixfile do
   use Mix.Project
 
-  @version "1.1.0"
+  @version "1.1.3"
 
   def project do
     [app: :waffle,
@@ -31,7 +31,10 @@ defmodule Waffle.Mixfile do
   defp docs do
     [
       main: "Waffle",
-      extras: ["documentation/examples/full.md"]
+      extras: [
+        "documentation/examples/local.md",
+        "documentation/examples/s3.md"
+      ]
     ]
   end
 

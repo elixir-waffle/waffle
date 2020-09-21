@@ -10,9 +10,16 @@ defmodule WaffleTest.Processor do
     def validate({file, _}), do: String.ends_with?(file.file_name, ".png")
     def transform(:original, _), do: :noaction
     def transform(:thumb, _), do: {:convert, "-strip -thumbnail 10x10"}
-    def transform(:med, _), do: {:convert, fn(input, output) -> " #{input} -strip -thumbnail 10x10 #{output}" end, :jpg}
-    def transform(:small, _), do: {:convert, fn(input, output) -> [input, "-strip", "-thumbnail", "10x10", output] end, :jpg}
+
+    def transform(:med, _),
+      do: {:convert, fn input, output -> " #{input} -strip -thumbnail 10x10 #{output}" end, :jpg}
+
+    def transform(:small, _),
+      do:
+        {:convert, fn input, output -> [input, "-strip", "-thumbnail", "10x10", output] end, :jpg}
+
     def transform(:skipped, _), do: :skip
+
     def __versions, do: [:original, :thumb]
   end
 
@@ -33,62 +40,122 @@ defmodule WaffleTest.Processor do
   end
 
   test "returns the original path for :noaction transformations" do
-    {:ok, file} = Waffle.Processor.process(DummyDefinition, :original, {Waffle.File.new(@img), nil})
+    {:ok, file} =
+      Waffle.Processor.process(
+        DummyDefinition,
+        :original,
+        {Waffle.File.new(@img, DummyDefinition), nil}
+      )
+
     assert file.path == @img
   end
 
   test "returns nil for :skip transformations" do
-    assert {:ok, nil} = Waffle.Processor.process(DummyDefinition, :skipped, {Waffle.File.new(@img), nil})
+    assert {:ok, nil} =
+             Waffle.Processor.process(
+               DummyDefinition,
+               :skipped,
+               {Waffle.File.new(@img, DummyDefinition), nil}
+             )
   end
 
   test "transforms a copied version of file according to the specified transformation" do
-    {:ok, new_file} = Waffle.Processor.process(DummyDefinition, :thumb, {Waffle.File.new(@img), nil})
+    {:ok, new_file} =
+      Waffle.Processor.process(
+        DummyDefinition,
+        :thumb,
+        {Waffle.File.new(@img, DummyDefinition), nil}
+      )
+
     assert new_file.path != @img
-    assert "128x128" == geometry(@img) #original file untouched
+    # original file untouched
+    assert "128x128" == geometry(@img)
     assert "10x10" == geometry(new_file.path)
     cleanup(new_file.path)
   end
 
   test "transforms a copied version of file according to a function transformation that returns a string" do
-    {:ok, new_file} = Waffle.Processor.process(DummyDefinition, :med, {Waffle.File.new(@img), nil})
+    {:ok, new_file} =
+      Waffle.Processor.process(
+        DummyDefinition,
+        :med,
+        {Waffle.File.new(@img, DummyDefinition), nil}
+      )
+
     assert new_file.path != @img
-    assert "128x128" == geometry(@img) #original file untouched
+    # original file untouched
+    assert "128x128" == geometry(@img)
     assert "10x10" == geometry(new_file.path)
+    # new tmp file has correct extension
+    assert Path.extname(new_file.path) == ".jpg"
     cleanup(new_file.path)
   end
 
   test "transforms a copied version of file according to a function transformation that returns a list" do
-    {:ok, new_file} = Waffle.Processor.process(DummyDefinition, :small, {Waffle.File.new(@img), nil})
+    {:ok, new_file} =
+      Waffle.Processor.process(
+        DummyDefinition,
+        :small,
+        {Waffle.File.new(@img, DummyDefinition), nil}
+      )
+
     assert new_file.path != @img
-    assert "128x128" == geometry(@img) #original file untouched
+    # original file untouched
+    assert "128x128" == geometry(@img)
     assert "10x10" == geometry(new_file.path)
     cleanup(new_file.path)
   end
 
   test "transforms a file given as a binary" do
     img_binary = File.read!(@img)
-    {:ok, new_file} = Waffle.Processor.process(DummyDefinition, :small, {Waffle.File.new(%{binary: img_binary, filename: "image.png"}), nil})
+
+    {:ok, new_file} =
+      Waffle.Processor.process(
+        DummyDefinition,
+        :small,
+        {Waffle.File.new(%{binary: img_binary, filename: "image.png"}, DummyDefinition), nil}
+      )
+
     assert new_file.path != @img
-    assert "128x128" == geometry(@img) #original file untouched
+    # original file untouched
+    assert "128x128" == geometry(@img)
     assert "10x10" == geometry(new_file.path)
+    # new tmp file has correct extension
+    assert Path.extname(new_file.path) == ".jpg"
     cleanup(new_file.path)
   end
 
   test "file names with spaces" do
-    {:ok, new_file} = Waffle.Processor.process(DummyDefinition, :thumb, {Waffle.File.new(@img2), nil})
+    {:ok, new_file} =
+      Waffle.Processor.process(
+        DummyDefinition,
+        :thumb,
+        {Waffle.File.new(@img2, DummyDefinition), nil}
+      )
+
     assert new_file.path != @img2
-    assert "128x128" == geometry(@img2) #original file untouched
+    # original file untouched
+    assert "128x128" == geometry(@img2)
     assert "10x10" == geometry(new_file.path)
     cleanup(new_file.path)
   end
 
   test "returns tuple in an invalid transformation" do
-    assert {:error, _} = Waffle.Processor.process(BrokenDefinition, :thumb, {Waffle.File.new(@img), nil})
+    assert {:error, _} =
+             Waffle.Processor.process(
+               BrokenDefinition,
+               :thumb,
+               {Waffle.File.new(@img, BrokenDefinition), nil}
+             )
   end
 
   test "raises an error if the given transformation executable cannot be found" do
     assert_raise Waffle.MissingExecutableError, ~r"blah", fn ->
-      Waffle.Processor.process(MissingExecutableDefinition, :original, {Waffle.File.new(@img), nil})
+      Waffle.Processor.process(
+        MissingExecutableDefinition,
+        :original,
+        {Waffle.File.new(@img, MissingExecutableDefinition), nil}
+      )
     end
   end
 

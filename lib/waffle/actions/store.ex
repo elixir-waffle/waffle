@@ -2,7 +2,7 @@ defmodule Waffle.Actions.Store do
   @moduledoc ~S"""
   Store files to a defined adapter.
 
-  The upload definition file responds to `Avatar.store/1` which
+  The definition module responds to `Avatar.store/1` which
   accepts either:
 
     * A path to a local file
@@ -11,10 +11,9 @@ defmodule Waffle.Actions.Store do
 
     * A map with a filename and path keys (eg, a `%Plug.Upload{}`)
 
-    * A map with a filename and binary keys (eg, `%{filename:
-      "image.png", binary: <<255,255,255,...>>}`)
+    * A map with a filename and binary keys (eg, `%{filename: "image.png", binary: <<255,255,255,...>>}`)
 
-    * A two-tuple consisting of one of the above file formats as well as a scope object.
+    * A two-element tuple consisting of one of the above file formats as well as a scope map
 
   Example usage as general file store:
 
@@ -52,7 +51,7 @@ defmodule Waffle.Actions.Store do
   end
 
   def store(definition, {file, scope}) when is_binary(file) or is_map(file) do
-    put(definition, {Waffle.File.new(file), scope})
+    put(definition, {Waffle.File.new(file, definition), scope})
   end
 
   def store(definition, filepath) when is_binary(filepath) or is_map(filepath) do
@@ -132,8 +131,8 @@ defmodule Waffle.Actions.Store do
 
         case definition.transform(version, {file, scope}) do
           :noaction ->
-            # we don't have to cleanup after `:noaction` transofmations
-            # because final `cleanup!` will remove the original temporary file
+            # We don't have to cleanup after `:noaction` transformations
+            # because final `cleanup!` will remove the original temporary file.
             result
           _ ->
             cleanup!(result, file)

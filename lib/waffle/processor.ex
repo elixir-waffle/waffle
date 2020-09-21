@@ -39,7 +39,7 @@ defmodule Waffle.Processor do
 
   As images are one of the most commonly uploaded filetypes, Waffle
   has a recommended integration with ImageMagick's `convert` tool for
-  manipulation of images.  Each upload definition may specify as many
+  manipulation of images.  Each definition module may specify as many
   versions as desired, along with the corresponding transformation for
   each version.
 
@@ -147,12 +147,14 @@ defmodule Waffle.Processor do
 
   defp apply_transformation(_, :skip), do: {:ok, nil}
   defp apply_transformation(file, :noaction), do: {:ok, file}
-  defp apply_transformation(file, {:noaction}), do: {:ok, file} # Deprecated
-  defp apply_transformation(file, {cmd, conversion, _}) do
-    apply_transformation(file, {cmd, conversion})
-  end
+  # Deprecated
+  defp apply_transformation(file, {:noaction}), do: {:ok, file}
 
   defp apply_transformation(file, {cmd, conversion}) do
     Convert.apply(cmd, file, conversion)
+  end
+
+  defp apply_transformation(file, {cmd, conversion, extension}) do
+    Convert.apply(cmd, file, conversion, extension)
   end
 end

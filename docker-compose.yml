@@ -5,5 +5,7 @@ services:
       context: .
       dockerfile: Dockerfile.codeship
     command: tail -f /dev/null
+    env_file:
+      - .env
     volumes:
       - .:/srv/app:cached

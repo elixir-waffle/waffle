@@ -1,5 +1,25 @@
 # Changelog
 
+## v1.1.3 (2020-09-14)
+  * fix missing comma in configuration (#65)
+  * request headers for remote file (#61)
+
+      By default, when downloading files from remote path request headers are empty,
+      but if you wish to provide your own, you can override the `remote_file_headers/1`
+      function in your definition module.
+
+## v1.1.2 (2020-09-03)
+  * Improve docs of getting started and multiple minor changes (#55)
+  * refactor Waffle.File.do_generate_temporary_path/1 (#56)
+
+## v1.1.1 (2020-08-02)
+  * update dependencies
+  * add correct S3 setup to documentation
+  * Use correct extension for temp files (#53)
+  * Fix typo in comment (#52)
+  * Update path in getting started guide to the correct generated path (#48)
+  * add Aliyun OSS storage provider link (#45)
+
 ## v1.1.0 (2020-05-12)
   * update dependencies
   * respect `content-disposition` header (#41)
