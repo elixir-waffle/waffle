@@ -54,6 +54,9 @@ defmodule Waffle.Mixfile do
     [
       {:hackney, "~> 1.9"},
 
+      # file validation
+      {:mime, "~> 1.2"},
+
       # If using Amazon S3
       {:ex_aws, "~> 2.1.2", optional: true},
       {:ex_aws_s3, "~> 2.0", optional: true},
