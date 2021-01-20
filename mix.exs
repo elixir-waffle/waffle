@@ -49,8 +49,8 @@ defmodule Waffle.Mixfile do
       {:hackney, "~> 1.9"},
 
       # If using Amazon S3
-      {:ex_aws, "~> 2.1.2", optional: true},
-      {:ex_aws_s3, "~> 2.0", optional: true},
+      {:ex_aws, "~> 2.1", optional: true},
+      {:ex_aws_s3, "~> 2.1", optional: true},
       {:sweet_xml, "~> 0.6", optional: true},
 
       # Test
