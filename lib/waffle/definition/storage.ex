@@ -112,6 +112,7 @@ defmodule Waffle.Definition.Storage do
       def filename(_, {file, _}), do: Path.basename(file.file_name, Path.extname(file.file_name))
       def storage_dir_prefix, do: Application.get_env(:waffle, :storage_dir_prefix, "")
       def storage_dir(_, _), do: Application.get_env(:waffle, :storage_dir, "uploads")
+      def sanitize(file_and_scope), do: file_and_scope
       def validate(_), do: true
       def default_url(version, _), do: default_url(version)
       def default_url(_), do: nil
@@ -120,6 +121,7 @@ defmodule Waffle.Definition.Storage do
       defoverridable storage_dir_prefix: 0,
                      storage_dir: 2,
                      filename: 2,
+                     sanitize: 1,
                      validate: 1,
                      default_url: 1,
                      default_url: 2,
