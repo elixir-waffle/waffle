@@ -40,15 +40,9 @@ defmodule Waffle.Mixfile do
 
   def application do
     [
-      applications: [
-        :logger,
-        :hackney,
-      ] ++ applications(Mix.env)
+      extra_applications: [:logger]
     ]
   end
-
-  def applications(:test), do: [:ex_aws, :ex_aws_s3]
-  def applications(_), do: []
 
   defp deps do
     [
