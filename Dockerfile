@@ -1,4 +1,4 @@
-FROM elixir:1.9.1-alpine
+FROM elixir:1.11-alpine
 
 # add `convert` utility from imagemagick for image transformations
 RUN apk add --no-cache imagemagick
