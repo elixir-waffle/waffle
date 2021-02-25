@@ -18,7 +18,7 @@ jobs:
       run: docker build . --file Dockerfile --tag waffle
 
     - name: Run linters
-      run: docker run waffle_ecto mix credo --strict
+      run: docker run waffle mix credo --strict
 
     - name: Run tests
-      run: docker run waffle_ecto mix test
+      run: docker run waffle mix test
