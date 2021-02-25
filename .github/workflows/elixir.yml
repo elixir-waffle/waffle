@@ -1,0 +1,24 @@
+name: Elixir CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build_and_test:
+
+    name: Build and test
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag waffle
+
+    - name: Run linters
+      run: docker run waffle_ecto mix credo --strict
+
+    - name: Run tests
+      run: docker run waffle_ecto mix test

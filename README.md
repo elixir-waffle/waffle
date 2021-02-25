@@ -1,11 +1,8 @@
 # Waffle
 
-[![Codeship Status for elixir-waffle/waffle][codeship-img]][codeship-url]
 [![Hex.pm Version][hex-img]][hex-url]
 [![waffle documentation][hexdocs-img]][hexdocs-url]
 
-[codeship-img]: https://app.codeship.com/projects/182a04b0-aa53-0137-1d00-2259d5318dee/status?branch=master
-[codeship-url]: https://app.codeship.com/projects/361668
 [hex-img]: http://img.shields.io/hexpm/v/waffle.svg
 [hex-url]: https://hex.pm/packages/waffle
 [hexdocs-img]: http://img.shields.io/badge/hexdocs-documentation-brightgreen.svg

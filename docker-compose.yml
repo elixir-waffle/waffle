@@ -3,7 +3,7 @@ services:
   waffle:
     build:
       context: .
-      dockerfile: Dockerfile.codeship
+      dockerfile: Dockerfile
     command: tail -f /dev/null
     env_file:
       - .env
