@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.1.4 (2021-02-25)
+    * Upgrade deps for fixing compile warning in Elixir 1.11 (#74)
+    * Use elixir v1.11 as base image
+    * Make readme contain less marketing links
+    * Migrate to GitHub Actions from CodeShip CI
+
+
 ## v1.1.3 (2020-09-14)
   * fix missing comma in configuration (#65)
   * request headers for remote file (#61)
