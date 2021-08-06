@@ -17,7 +17,11 @@ defmodule Avatar do
 
   def validate({file, _}) do
     file_extension = file.file_name |> Path.extname |> String.downcase
-    Enum.member?(@extension_whitelist, file_extension)
+
+    case Enum.member?(@extension_whitelist, file_extension) do
+      true -> :ok
+      false -> {:error, "file type is invalid"}
+    end
   end
 
   def transform(:thumb, _) do

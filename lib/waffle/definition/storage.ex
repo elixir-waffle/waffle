@@ -74,12 +74,18 @@ defmodule Waffle.Definition.Storage do
 
         def validate({file, _}) do
           file_extension = file.file_name |> Path.extname() |> String.downcase()
-          Enum.member?(@extension_whitelist, file_extension)
+
+          case Enum.member?(@extension_whitelist, file_extension) do
+            true -> :ok
+            false -> {:error, "invalid file type"}
+          end
         end
       end
 
-  Any uploaded file failing validation will return `{:error, :invalid_file}` when
-  passed through to `Avatar.store`.
+  Validation will be considered successful if the function returns `true` or `:ok`.
+  A customized error message can be returned in the form of `{:error, message}`.
+  Any other return value will return `{:error, :invalid_file}` when passed through
+  to `Avatar.store`.
 
   ## Passing custom headers when downloading from remote path
 

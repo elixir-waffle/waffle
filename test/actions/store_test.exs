@@ -27,12 +27,25 @@ defmodule WaffleTest.Actions.Store do
     def remote_file_headers(%URI{host: "www.google.com"}), do: [{"User-Agent", "MyApp"}]
   end
 
+  defmodule DummyDefinitionWithValidationError do
+    use Waffle.Actions.Store
+    use Waffle.Definition.Storage
+
+    def validate(_), do: {:error, "invalid file type"}
+    def transform(_, _), do: :noaction
+    def __versions, do: [:original, :thumb, :skipped]
+  end
+
   test "checks file existance" do
     assert DummyDefinition.store("non-existant-file.png") == {:error, :invalid_file_path}
   end
 
   test "delegates to definition validation" do
     assert DummyDefinition.store(__ENV__.file) == {:error, :invalid_file}
+  end
+
+  test "supports custom validation error message" do
+    assert DummyDefinitionWithValidationError.store(__ENV__.file) == {:error, "invalid file type"}
   end
 
   test "single binary argument is interpreted as file path" do
