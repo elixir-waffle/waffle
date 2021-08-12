@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.1.5 (2021-08-12)
+    * Update dependencies
+    * Add support for custom validation error message (#84)
+
 ## v1.1.4 (2021-02-25)
     * Upgrade deps for fixing compile warning in Elixir 1.11 (#74)
     * Use elixir v1.11 as base image
