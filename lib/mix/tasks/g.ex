@@ -109,15 +109,6 @@ defmodule Mix.Tasks.Waffle do
       # def default_url(version, scope) do
       #   "/images/avatars/default_\#{version}.png"
       # end
-
-      # Specify custom headers for s3 objects
-      # Available options are [:cache_control, :content_disposition,
-      #    :content_encoding, :content_length, :content_type,
-      #    :expect, :expires, :storage_class, :website_redirect_location]
-      #
-      # def s3_object_headers(version, {file, scope}) do
-      #   [content_type: MIME.from_path(file.file_name)]
-      # end
     end
     """
 

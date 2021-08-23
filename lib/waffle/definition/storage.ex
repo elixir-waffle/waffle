@@ -29,8 +29,6 @@ defmodule Waffle.Definition.Storage do
 
   > **Note**: If you are "attaching" a file to a record on creation (eg, while inserting the record at the same time), then you cannot use the model's `id` as a path component.  You must either (1) use a different storage path format, such as UUIDs, or (2) attach and update the model after an id has been given. [Read more about how to integrate it with Ecto](https://hexdocs.pm/waffle_ecto/filepath-with-id.html#content)
 
-  > **Note**: The storage directory is used for both local filestorage (as the relative or absolute directory), and S3 storage, as the path name (not including the bucket).
-
   ## Asynchronous File Uploading
 
   If you specify multiple versions in your definition module, each
@@ -50,19 +48,14 @@ defmodule Waffle.Definition.Storage do
 
   ## Storage of files
 
-  Waffle currently supports:
+  Waffle supports multiple, usually community-maintained, storage
+  backends such as AWS S3 and GCP Cloud Storage.
 
-    * `Waffle.Storage.Local`
-    * `Waffle.Storage.S3`
-
-  Override the `__storage` function in your definition module if you
-  want to use a different type of storage for a particular uploader.
+  If you want to use a custom storage backend, or customize which
+  storage backends are used for individual definitions, override the
+  `__storage` function in your definition module.
 
   ## File Validation
-
-  While storing files on S3 eliminates some malicious attack vectors,
-  it is strongly encouraged to validate the extensions of uploaded
-  files as well.
 
   Waffle delegates validation to a `validate/1` function with a tuple
   of the file and scope.  As an example, in order to validate that an
@@ -121,7 +114,7 @@ defmodule Waffle.Definition.Storage do
       def validate(_), do: true
       def default_url(version, _), do: default_url(version)
       def default_url(_), do: nil
-      def __storage, do: Application.get_env(:waffle, :storage, Waffle.Storage.S3)
+      def __storage, do: Application.get_env(:waffle, :storage, Waffle.Storage.Local)
 
       defoverridable storage_dir_prefix: 0,
                      storage_dir: 2,
@@ -140,7 +133,6 @@ defmodule Waffle.Definition.Storage do
   defmacro __before_compile__(_env) do
     quote do
       def acl(_, _), do: @acl
-      def s3_object_headers(_, _), do: []
       def async, do: @async
       def remote_file_headers(_), do: []
     end

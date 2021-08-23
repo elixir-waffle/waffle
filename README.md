@@ -16,9 +16,17 @@
      alt="Waffle is a flexible file upload library for Elixir"
      src="https://elixir-waffle.github.io/waffle/assets/logo.svg">
 
-Waffle is a flexible file upload library for Elixir with straightforward integrations for Amazon S3 and ImageMagick.
+Waffle is a flexible file upload library for Elixir with straightforward integrations for ImageMagick.
 
 [Documentation](https://hexdocs.pm/waffle)
+
+## AWS S3 Integration
+
+Integration with AWS S3 has been split into a separate project. See the [waffle_s3](https://github.com/waffle-elixir/waffle_s3) repo for more details. For a "quick upgrade", simply:
+
+- Add `{:waffle_s3, "~> 1.1"}` to your `mix.exs` deps.
+- Remove any previous references to AWS-specific modules that are not needed outside your application code (e.g. `:ex_aws_s3`).
+- Run `mix deps.get` and `mix deps.update`. This should (a) get the Waffle S3 module and (b) remove any previous application dependencies for AWS S3 that aren't required outside of Waffle.
 
 ## Attribution
 
