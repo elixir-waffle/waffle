@@ -37,7 +37,6 @@ defmodule Waffle.Mixfile do
       main: "Waffle",
       extras: [
         "documentation/examples/local.md",
-        "documentation/examples/s3.md"
       ]
     ]
   end
@@ -55,11 +54,6 @@ defmodule Waffle.Mixfile do
   defp deps do
     [
       {:hackney, "~> 1.9"},
-
-      # If using Amazon S3
-      {:ex_aws, "~> 2.1", optional: true},
-      {:ex_aws_s3, "~> 2.1", optional: true},
-      {:sweet_xml, "~> 0.6", optional: true},
 
       # Test
       {:mock, "~> 0.3", only: :test},

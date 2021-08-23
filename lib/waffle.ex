@@ -1,21 +1,14 @@
 defmodule Waffle do
   @moduledoc ~S"""
-  Waffle is a flexible file upload library for Elixir with straightforward integrations for Amazon S3 and ImageMagick.
+  Waffle is a flexible file upload library for Elixir with straightforward integrations for ImageMagick.
 
   ## Installation
 
-  Add the latest stable release to your `mix.exs` file, along with the
-  required dependencies for `ExAws` if appropriate:
+  Add the latest stable release to your `mix.exs` file.
 
       defp deps do
         [
           {:waffle, "~> 1.1"},
-
-          # If using S3:
-          {:ex_aws, "~> 2.1.2"},
-          {:ex_aws_s3, "~> 2.0"},
-          {:hackney, "~> 1.9"},
-          {:sweet_xml, "~> 0.6"}
         ]
       end
 
@@ -30,10 +23,9 @@ defmodule Waffle do
 
   ### Setup a storage provider
 
-  Waffle has two built-in storage providers:
+  Waffle has one built-in storage provider:
 
   * `Waffle.Storage.Local`
-  * `Waffle.Storage.S3`
 
   [Other available storage providers](#other-available-storage-providers)
   are supported by the community.
@@ -43,17 +35,6 @@ defmodule Waffle do
       config :waffle,
         storage: Waffle.Storage.Local,
         asset_host: "http://static.example.com" # or {:system, "ASSET_HOST"}
-
-  An example for setting up `Waffle.Storage.S3`:
-
-      config :waffle,
-        storage: Waffle.Storage.S3,
-        bucket: "custom_bucket",                # or {:system, "AWS_S3_BUCKET"}
-        asset_host: "http://static.example.com" # or {:system, "ASSET_HOST"}
-
-      config :ex_aws,
-        json_codec: Jason
-        # any configurations provided by https://github.com/ex-aws/ex_aws
 
   ### Define a definition module
 
@@ -80,7 +61,6 @@ defmodule Waffle do
   ## Examples
 
   * [An example for Local storage driver](./local.html)
-  * [An example for S3 storage driver](./s3.html)
 
   ## Usage with Ecto
 
@@ -94,6 +74,8 @@ defmodule Waffle do
     * Versioned urls for cache busting (`.../thumb.png?v=63601457477`)
 
   ## Other Storage Providers
+
+    * **AWS S3** - [waffle_s3](https://github.com/waffle-elixir/waffle_s3)
 
     * **Rackspace** - [arc_rackspace](https://github.com/lokalebasen/arc_rackspace)
 
