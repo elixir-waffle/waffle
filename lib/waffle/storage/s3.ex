@@ -207,7 +207,9 @@ defmodule Waffle.Storage.S3 do
       s3_key(definition, version, file_and_scope)
       |> Url.sanitize(:s3)
 
-    Path.join(host(definition), asset_path)
+    host = host(definition, file_and_scope)
+
+    Path.join(host, asset_path)
   end
 
   defp build_signed_url(definition, version, file_and_scope, options) do
@@ -231,33 +233,36 @@ defmodule Waffle.Storage.S3 do
     ])
   end
 
-  defp host(definition) do
-    case asset_host(definition) do
+  defp host(definition, file_and_scope) do
+    case asset_host(definition, file_and_scope) do
       {:system, env_var} when is_binary(env_var) -> System.get_env(env_var)
       url -> url
     end
   end
 
-  defp asset_host(definition) do
-    case definition.asset_host() do
-      false -> default_host(definition)
-      nil -> default_host(definition)
+  defp asset_host(definition, file_and_scope) do
+    case definition.asset_host(file_and_scope) do
+      false -> default_host(definition, file_and_scope)
+      nil -> default_host(definition, file_and_scope)
       host -> host
     end
   end
 
-  defp default_host(definition) do
+  defp default_host(definition, file_and_scope) do
+    bucket_name = s3_bucket(definition, file_and_scope)
+
     case virtual_host() do
-      true -> "https://#{s3_bucket(definition)}.s3.amazonaws.com"
-      _ -> "https://s3.amazonaws.com/#{s3_bucket(definition)}"
+      true -> "https://#{bucket_name}.s3.amazonaws.com"
+      _ -> "https://s3.amazonaws.com/#{bucket_name}"
     end
+    |> IO.inspect()
   end
 
   defp virtual_host do
     Application.get_env(:waffle, :virtual_host) || false
   end
 
-  defp s3_bucket(definition), do: definition.bucket() |> parse_bucket()
+  # defp s3_bucket(definition), do: definition.bucket() |> parse_bucket()
 
   defp s3_bucket(definition, file_and_scope) do
     definition.bucket(file_and_scope) |> parse_bucket()
