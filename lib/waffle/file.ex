@@ -99,21 +99,19 @@ defmodule Waffle.File do
   end
 
   defp do_generate_temporary_path(extension) do
+    ext = extension |> to_string()
+
     string_extension =
-      extension
-      |> to_string()
-      |> (fn ext ->
-            cond do
-              String.starts_with?(ext, ".") ->
-                ext
+      cond do
+        String.starts_with?(ext, ".") ->
+          ext
 
-              ext == "" ->
-                ""
+        ext == "" ->
+          ""
 
-              true ->
-                ".#{ext}"
-            end
-          end).()
+        true ->
+          ".#{ext}"
+      end
 
     file_name =
       :crypto.strong_rand_bytes(20)
