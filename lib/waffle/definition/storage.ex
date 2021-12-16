@@ -114,6 +114,7 @@ defmodule Waffle.Definition.Storage do
       @async true
 
       def bucket, do: Application.fetch_env!(:waffle, :bucket)
+      def bucket({_file, _scope}), do: bucket()
       def asset_host, do: Application.get_env(:waffle, :asset_host)
       def filename(_, {file, _}), do: Path.basename(file.file_name, Path.extname(file.file_name))
       def storage_dir_prefix, do: Application.get_env(:waffle, :storage_dir_prefix, "")
@@ -131,6 +132,7 @@ defmodule Waffle.Definition.Storage do
                      default_url: 2,
                      __storage: 0,
                      bucket: 0,
+                     bucket: 1,
                      asset_host: 0
 
       @before_compile Waffle.Definition.Storage

@@ -45,6 +45,12 @@ defmodule WaffleTest.Storage.S3 do
     def bucket, do: System.get_env("WAFFLE_TEST_BUCKET")
   end
 
+  defmodule DefinitionWithBucketInScope do
+    use Waffle.Definition
+    def bucket({_, scope}), do: scope[:bucket] || bucket()
+    def bucket, do: System.get_env("WAFFLE_TEST_BUCKET")
+  end
+
   defmodule DefinitionWithAssetHost do
     use Waffle.Definition
     def asset_host, do: "https://example.com"
@@ -232,6 +238,17 @@ defmodule WaffleTest.Storage.S3 do
     assert "https://s3.amazonaws.com/#{env_bucket()}/uploads/with_scopes/1/image.png" == DefinitionWithScope.url({path, scope})
     assert_public(DefinitionWithScope, {path, scope})
     delete_and_assert_not_found(DefinitionWithScope, {path, scope})
+  end
+
+  @tag :s3
+  @tag timeout: 150_000
+  test "delete with bucket in scope" do
+    bucket = "bucket_scope"
+    scope = %{id: 1, bucket: bucket}
+    {:ok, path} = DefinitionWithBucketInScope.store({"test/support/image.png", scope})
+    assert "https://s3.amazonaws.com/#{bucket}/uploads/with_scopes/1/image.png" == DefinitionWithBucketInScope.url({path, scope})
+    assert_public(DefinitionWithBucketInScope, {path, scope})
+    delete_and_assert_not_found(DefinitionWithBucketInScope, {path, scope})
   end
 
   @tag :s3
