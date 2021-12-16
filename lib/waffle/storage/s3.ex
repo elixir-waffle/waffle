@@ -47,7 +47,7 @@ defmodule Waffle.Storage.S3 do
 
       def bucket, do: :some_custom_bucket_name
 
-  You also can get bucket information from file or scope when to already storaded files (url and delete)
+  You can also use the current scope to define a target bucket
 
       def bucket({_file, scope}), do: scope.bucket || bucket()
 
