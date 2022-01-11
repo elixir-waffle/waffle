@@ -35,7 +35,7 @@ defmodule Waffle do
   * `Waffle.Storage.Local`
   * `Waffle.Storage.S3`
 
-  [Other available storage providers](#other-available-storage-providers)
+  [Other available storage providers](#module-other-storage-providers)
   are supported by the community.
 
   An example for setting up `Waffle.Storage.Local`:
@@ -103,7 +103,7 @@ defmodule Waffle do
 
     * **Google Cloud Storage** - [waffle_gcs](https://github.com/kolorahl/waffle_gcs)
 
-    * **Microsoft Azure Storage** - [arc_azure](https://github.com/phil-a/arc_azure])
+    * **Microsoft Azure Storage** - [arc_azure](https://github.com/phil-a/arc_azure)
 
     * **Aliyun OSS Storage** - [waffle_aliyun_oss](https://github.com/ug0/waffle_aliyun_oss)
 
