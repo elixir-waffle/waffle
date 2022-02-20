@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.1.6 (2022-02-20)
+    * Improve Waffle.Storage.S3 moduledoc (#90)
+    * Fix links to other storage providers (#92)
+    * Allow setting a custom bucket from scope (#31)
+    * Update dependencies
+
 ## v1.1.5 (2021-08-12)
     * Update dependencies
     * Add support for custom validation error message (#84)
