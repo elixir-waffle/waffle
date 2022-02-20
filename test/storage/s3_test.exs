@@ -49,6 +49,7 @@ defmodule WaffleTest.Storage.S3 do
 
   defmodule DefinitionWithBucketInScope do
     use Waffle.Definition
+    @acl :public_read
     def bucket({_, scope}), do: scope[:bucket] || bucket()
     def bucket, do: System.get_env("WAFFLE_TEST_BUCKET")
   end
@@ -131,13 +132,13 @@ defmodule WaffleTest.Storage.S3 do
   setup_all do
     Application.ensure_all_started(:hackney)
     Application.ensure_all_started(:ex_aws)
-    Application.put_env(:waffle, :virtual_host, false)
+    Application.put_env(:waffle, :virtual_host, true)
     Application.put_env(:waffle, :bucket, {:system, "WAFFLE_TEST_BUCKET"})
 
     # Application.put_env :ex_aws, :s3, [scheme: "https://", host: "s3.amazonaws.com", region: "us-west-2"]
     Application.put_env(:ex_aws, :access_key_id, System.get_env("WAFFLE_TEST_S3_KEY"))
     Application.put_env(:ex_aws, :secret_access_key, System.get_env("WAFFLE_TEST_S3_SECRET"))
-    # Application.put_env :ex_aws, :region, "us-east-1"
+    Application.put_env(:ex_aws, :region, "eu-north-1")
     # Application.put_env :ex_aws, :scheme, "https://"
   end
 
@@ -182,7 +183,7 @@ defmodule WaffleTest.Storage.S3 do
     end)
 
     with_env(:waffle, :asset_host, false, fn ->
-      assert "https://s3.amazonaws.com/#{env_bucket()}/waffletest/uploads/image.png" ==
+      assert "https://#{env_bucket()}.s3.amazonaws.com/waffletest/uploads/image.png" ==
                DummyDefinition.url(@img)
     end)
   end
@@ -199,14 +200,14 @@ defmodule WaffleTest.Storage.S3 do
   @tag timeout: 15_000
   test "encoded url" do
     url = DummyDefinition.url(@img_with_space)
-    assert "https://s3.amazonaws.com/#{env_bucket()}/waffletest/uploads/image%20two.png" == url
+    assert "https://#{env_bucket()}.s3.amazonaws.com/waffletest/uploads/image%20two.png" == url
   end
 
   @tag :s3
   @tag timeout: 15_000
   test "encoded url with S3-specific escaping" do
     url = DummyDefinition.url(@img_with_plus)
-    assert "https://s3.amazonaws.com/#{env_bucket()}/waffletest/uploads/image%2Bthree.png" == url
+    assert "https://#{env_bucket()}.s3.amazonaws.com/waffletest/uploads/image%2Bthree.png" == url
   end
 
   @tag :s3
@@ -255,7 +256,7 @@ defmodule WaffleTest.Storage.S3 do
     scope = %{id: 1}
     {:ok, path} = DefinitionWithScope.store({"test/support/image.png", scope})
 
-    assert "https://s3.amazonaws.com/#{env_bucket()}/uploads/with_scopes/1/image.png" ==
+    assert "https://#{env_bucket()}.s3.amazonaws.com/uploads/with_scopes/1/image.png" ==
              DefinitionWithScope.url({path, scope})
 
     assert_public(DefinitionWithScope, {path, scope})
@@ -265,11 +266,11 @@ defmodule WaffleTest.Storage.S3 do
   @tag :s3
   @tag timeout: 150_000
   test "delete with bucket in scope" do
-    bucket = "bucket_scope"
+    bucket = System.get_env("WAFFLE_TEST_BUCKET2")
     scope = %{id: 1, bucket: bucket}
     {:ok, path} = DefinitionWithBucketInScope.store({"test/support/image.png", scope})
 
-    assert "https://s3.amazonaws.com/#{bucket}/uploads/with_scopes/1/image.png" ==
+    assert "https://#{bucket}.s3.amazonaws.com/uploads/image.png" ==
              DefinitionWithBucketInScope.url({path, scope})
 
     assert_public(DefinitionWithBucketInScope, {path, scope})
@@ -279,7 +280,7 @@ defmodule WaffleTest.Storage.S3 do
   @tag :s3
   @tag timeout: 150_000
   test "with bucket" do
-    url = "https://s3.amazonaws.com/#{env_bucket()}/uploads/image.png"
+    url = "https://#{env_bucket()}.s3.amazonaws.com/uploads/image.png"
     assert url == DefinitionWithBucket.url("test/support/image.png")
     assert {:ok, "image.png"} == DefinitionWithBucket.store("test/support/image.png")
     delete_and_assert_not_found(DefinitionWithBucket, "test/support/image.png")
