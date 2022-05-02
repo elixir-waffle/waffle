@@ -42,18 +42,22 @@ defmodule Waffle.Storage.Local do
   end
 
   def url(definition, version, file_and_scope, _options \\ []) do
-    local_path = Path.join([
-      definition.storage_dir(version, file_and_scope),
-      Versioning.resolve_file_name(definition, version, file_and_scope)
-    ])
+    path = path(definition, version, file_and_scope)
     host = host(definition)
 
     if host == nil do
-      Path.join("/", local_path)
+      Path.join("/", path)
     else
-      Path.join([host, local_path])
+      Path.join(host, path)
     end
     |> URI.encode()
+  end
+
+  def path(definition, version, file_and_scope) do
+    Path.join(
+      definition.storage_dir(version, file_and_scope),
+      Versioning.resolve_file_name(definition, version, file_and_scope)
+    )
   end
 
   def delete(definition, version, file_and_scope) do

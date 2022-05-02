@@ -159,6 +159,11 @@ defmodule Waffle.Storage.S3 do
     end
   end
 
+  def path(definition, version, file_and_scope, _options \\ []) do
+    s3_key(definition, version, file_and_scope)
+    |> Url.sanitize(:s3)
+  end
+
   def delete(definition, version, {file, scope}) do
     s3_bucket(definition, {file, scope})
     |> S3.delete_object(s3_key(definition, version, {file, scope}))
@@ -204,11 +209,10 @@ defmodule Waffle.Storage.S3 do
   end
 
   defp build_url(definition, version, file_and_scope, _options) do
-    asset_path =
-      s3_key(definition, version, file_and_scope)
-      |> Url.sanitize(:s3)
-
-    Path.join(host(definition, file_and_scope), asset_path)
+    Path.join(
+      host(definition, file_and_scope),
+      path(definition, version, file_and_scope)
+    )
   end
 
   defp build_signed_url(definition, version, file_and_scope, options) do
