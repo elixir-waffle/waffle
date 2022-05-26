@@ -91,6 +91,11 @@ defmodule Waffle.Actions.Url do
       def url(file, version), do: url(file, version, [])
       def url(file, version, options), do: Url.url(__MODULE__, file, version, options)
 
+      def path(file), do: path(file, nil)
+      def path(file, options) when is_list(options), do: path(file, nil, options)
+      def path(file, version), do: path(file, version, [])
+      def path(file, version, options), do: Url.path(__MODULE__, file, version, options)
+
       defoverridable [{:url, 3}]
     end
   end
@@ -112,6 +117,20 @@ defmodule Waffle.Actions.Url do
     build(definition, version, {file, scope}, options)
   end
 
+  def path(definition, file, nil, options),
+    do: path(definition, file, Enum.at(definition.__versions, 0), options)
+
+  def path(definition, file, version, options) when is_binary(file) or is_map(file) or is_nil(file),
+    do: path(definition, {file, nil}, version, options)
+
+  def path(definition, {file, scope}, version, options) when is_binary(file) do
+    path(definition, {%{file_name: file}, scope}, version, options)
+  end
+
+  def path(definition, {file, scope}, version, options) do
+    build_path(definition, version, {file, scope}, options)
+  end
+
   #
   # Private
   #
@@ -127,4 +146,17 @@ defmodule Waffle.Actions.Url do
         definition.__storage.url(definition, version, file_and_scope, options)
     end
   end
+
+  defp build_path(definition, version, {nil, scope}, _options) do
+    definition.default_path(version, scope)
+  end
+
+  defp build_path(definition, version, file_and_scope, options) do
+    case Versioning.resolve_file_name(definition, version, file_and_scope) do
+      nil -> nil
+      _ ->
+        definition.__storage.path(definition, version, file_and_scope, options)
+    end
+  end
+
 end

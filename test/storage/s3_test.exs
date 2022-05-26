@@ -138,7 +138,7 @@ defmodule WaffleTest.Storage.S3 do
     # Application.put_env :ex_aws, :s3, [scheme: "https://", host: "s3.amazonaws.com", region: "us-west-2"]
     Application.put_env(:ex_aws, :access_key_id, System.get_env("WAFFLE_TEST_S3_KEY"))
     Application.put_env(:ex_aws, :secret_access_key, System.get_env("WAFFLE_TEST_S3_SECRET"))
-    Application.put_env(:ex_aws, :region, "eu-north-1")
+    Application.put_env(:ex_aws, :region, System.get_env("WAFFLE_TEST_REGION", "eu-north-1"))
     # Application.put_env :ex_aws, :scheme, "https://"
   end
 
@@ -160,11 +160,13 @@ defmodule WaffleTest.Storage.S3 do
     with_env(:waffle, :virtual_host, true, fn ->
       assert "https://#{env_bucket()}.s3.amazonaws.com/waffletest/uploads/image.png" ==
                DummyDefinition.url(@img)
+      assert "/waffletest/uploads/image.png" == DummyDefinition.path(@img)
     end)
 
     with_env(:waffle, :virtual_host, false, fn ->
       assert "https://s3.amazonaws.com/#{env_bucket()}/waffletest/uploads/image.png" ==
                DummyDefinition.url(@img)
+      assert "/waffletest/uploads/image.png" == DummyDefinition.path(@img)
     end)
   end
 
