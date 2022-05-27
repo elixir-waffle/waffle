@@ -83,6 +83,8 @@ defmodule WaffleTest.Storage.Local do
     assert File.exists?("waffletest/uploads/1/thumb-image.png")
     assert "/waffletest/uploads/original-image.png" == DummyDefinition.url("image.png", :original)
     assert "/waffletest/uploads/1/thumb-image.png" == DummyDefinition.url("1/image.png", :thumb)
+    assert "/waffletest/uploads/original-image.png" == DummyDefinition.path("image.png", :original)
+    assert "/waffletest/uploads/1/thumb-image.png" == DummyDefinition.path("1/image.png", :thumb)
 
     :ok = Local.delete(DummyDefinition, :original, {%{file_name: "image.png"}, nil})
     :ok = Local.delete(DummyDefinition, :thumb, {%{file_name: "image.png"}, nil})
