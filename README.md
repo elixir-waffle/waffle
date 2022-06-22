@@ -130,6 +130,28 @@ dependency.  Benefits include:
   * **Microsoft Azure Storage** - [arc_azure](https://github.com/phil-a/arc_azure)
 
   * **Aliyun OSS Storage** - [waffle_aliyun_oss](https://github.com/ug0/waffle_aliyun_oss)
+  
+## Testing
+
+The basic test suite can be run with without supplying any S3 information:
+
+```
+mix test
+```
+
+In order to test S3 capability, you must have access to an S3/equivalent bucket. For
+S3 buckets, the bucket must be configured to allow ACLs and it must allow public
+access.
+
+The following environment variables will be used by the test suite:
+
+* WAFFLE_TEST_BUCKET
+* WAFFLE_TEST_BUCKET2
+* WAFFLE_TEST_S3_KEY
+* WAFFLE_TEST_S3_SECRET
+* WAFFLE_TEST_REGION
+
+After setting these variables, you can run the full test suite with `mix test --include s3:true`.
 
 ## Attribution
 

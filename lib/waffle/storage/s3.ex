@@ -167,6 +167,13 @@ defmodule Waffle.Storage.S3 do
     :ok
   end
 
+  def s3_key(definition, version, file_and_scope) do
+    Path.join([
+      definition.storage_dir(version, file_and_scope),
+      Versioning.resolve_file_name(definition, version, file_and_scope)
+    ])
+  end
+
   #
   # Private
   #
@@ -223,13 +230,6 @@ defmodule Waffle.Storage.S3 do
     s3_bucket = s3_bucket(definition, file_and_scope)
     {:ok, url} = S3.presigned_url(config, :get, s3_bucket, s3_key, options)
     url
-  end
-
-  defp s3_key(definition, version, file_and_scope) do
-    Path.join([
-      definition.storage_dir(version, file_and_scope),
-      Versioning.resolve_file_name(definition, version, file_and_scope)
-    ])
   end
 
   defp host(definition, file_and_scope) do
