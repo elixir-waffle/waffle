@@ -111,6 +111,37 @@ defmodule WaffleTest.Actions.Store do
     Application.put_env(:waffle, :version_timeout, 15_000)
   end
 
+  test "recv_timeout" do
+    Application.put_env(:waffle, :recv_timeout, 1)
+
+    with_mock Waffle.Storage.S3,
+      put: fn DummyDefinition, _, {%{file_name: "favicon.ico", path: _}, nil} ->
+        {:ok, "favicon.ico"}
+      end do
+      assert DummyDefinition.store("https://www.google.com/favicon.ico") ==
+               {:error, :recv_timeout}
+    end
+
+    Application.put_env(:waffle, :recv_timeout, 5_000)
+  end
+
+  test "recv_timeout with a filename" do
+    Application.put_env(:waffle, :recv_timeout, 1)
+
+    with_mock Waffle.Storage.S3,
+      put: fn DummyDefinition, _, {%{file_name: "newfavicon.ico", path: _}, nil} ->
+        {:ok, "newfavicon.ico"}
+      end do
+      assert DummyDefinition.store(%{
+               remote_path: "https://www.google.com/favicon.ico",
+               filename: "newfavicon.ico"
+             }) ==
+               {:error, :recv_timeout}
+    end
+
+    Application.put_env(:waffle, :recv_timeout, 5_000)
+  end
+
   test "accepts remote files" do
     with_mock Waffle.Storage.S3,
       put: fn DummyDefinition, _, {%{file_name: "favicon.ico", path: _}, nil} ->

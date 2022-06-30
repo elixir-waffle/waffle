@@ -28,6 +28,9 @@ defmodule Waffle.File do
       {:ok, local_path} ->
         %Waffle.File{path: local_path, file_name: filename, is_tempfile?: true}
 
+      {:error, _reason} = err ->
+        err
+
       :error ->
         {:error, :invalid_file_path}
     end
@@ -41,8 +44,14 @@ defmodule Waffle.File do
     uri = URI.parse(remote_path)
 
     case save_file(uri, filename, definition) do
-      {:ok, local_path} -> %Waffle.File{path: local_path, file_name: filename, is_tempfile?: true}
-      :error -> {:error, :invalid_file_path}
+      {:ok, local_path} ->
+        %Waffle.File{path: local_path, file_name: filename, is_tempfile?: true}
+
+      {:error, _reason} = err ->
+        err
+
+      :error ->
+        {:error, :invalid_file_path}
     end
   end
 
@@ -140,7 +149,7 @@ defmodule Waffle.File do
     case save_temp_file(local_path, uri, definition) do
       {:ok, filename} -> {:ok, local_path, filename}
       :ok -> {:ok, local_path}
-      _ -> :error
+      err -> err
     end
   end
 
@@ -157,8 +166,8 @@ defmodule Waffle.File do
       {:ok, body} ->
         File.write(local_path, body)
 
-      {:error, error} ->
-        {:error, error}
+      {:error, _reason} = err ->
+        err
     end
   end
 
@@ -182,9 +191,31 @@ defmodule Waffle.File do
   end
 
   defp request(remote_path, headers, options, tries \\ 0) do
-    case :hackney.get(URI.to_string(remote_path), headers, "", options) do
-      {:ok, 200, response_headers, client_ref} ->
-        {:ok, body} = :hackney.body(client_ref)
+    with {:ok, 200, response_headers, client_ref} <-
+           :hackney.get(URI.to_string(remote_path), headers, "", options),
+         res when elem(res, 0) == :ok <- body(client_ref, response_headers) do
+      res
+    else
+      {:error, %{reason: :timeout}} ->
+        case retry(tries, options) do
+          {:ok, :retry} -> request(remote_path, headers, options, tries + 1)
+          {:error, :out_of_tries} -> {:error, :timeout}
+        end
+
+      {:error, :timeout} ->
+        case retry(tries, options) do
+          {:ok, :retry} -> request(remote_path, headers, options, tries + 1)
+          {:error, :out_of_tries} -> {:error, :recv_timeout}
+        end
+
+      _err ->
+        {:error, :waffle_hackney_error}
+    end
+  end
+
+  defp body(client_ref, response_headers) do
+    case :hackney.body(client_ref) do
+      {:ok, body} ->
         response_headers = :hackney_headers.new(response_headers)
         filename = content_disposition(response_headers)
 
@@ -194,14 +225,8 @@ defmodule Waffle.File do
           {:ok, body, filename}
         end
 
-      {:error, %{reason: :timeout}} ->
-        case retry(tries, options) do
-          {:ok, :retry} -> request(remote_path, headers, options, tries + 1)
-          {:error, :out_of_tries} -> {:error, :timeout}
-        end
-
-      _ ->
-        {:error, :waffle_hackney_error}
+      err ->
+        err
     end
   end
 
