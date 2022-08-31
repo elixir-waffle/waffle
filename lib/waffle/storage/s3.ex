@@ -1,6 +1,6 @@
 defmodule Waffle.Storage.S3 do
   @moduledoc ~S"""
-  The module to facilitate integratin with S3 through ExAws.S3
+  The module to facilitate integration with S3 through ExAws.S3
 
       config :waffle,
         storage: Waffle.Storage.S3,
@@ -46,6 +46,10 @@ defmodule Waffle.Storage.S3 do
   definition module like this:
 
       def bucket, do: :some_custom_bucket_name
+
+  You can also use the current scope to define a target bucket
+
+      def bucket({_file, scope}), do: scope.bucket || bucket()
 
   ## Access Control Permissions
 
@@ -136,7 +140,7 @@ defmodule Waffle.Storage.S3 do
 
   def put(definition, version, {file, scope}) do
     destination_dir = definition.storage_dir(version, {file, scope})
-    s3_bucket = s3_bucket(definition)
+    s3_bucket = s3_bucket(definition, {file, scope})
     s3_key = Path.join(destination_dir, file.file_name)
     acl = definition.acl(version, {file, scope})
 
@@ -151,16 +155,23 @@ defmodule Waffle.Storage.S3 do
   def url(definition, version, file_and_scope, options \\ []) do
     case Keyword.get(options, :signed, false) do
       false -> build_url(definition, version, file_and_scope, options)
-      true  -> build_signed_url(definition, version, file_and_scope, options)
+      true -> build_signed_url(definition, version, file_and_scope, options)
     end
   end
 
   def delete(definition, version, {file, scope}) do
-    s3_bucket(definition)
+    s3_bucket(definition, {file, scope})
     |> S3.delete_object(s3_key(definition, version, {file, scope}))
     |> ExAws.request()
 
     :ok
+  end
+
+  def s3_key(definition, version, file_and_scope) do
+    Path.join([
+      definition.storage_dir(version, file_and_scope),
+      Versioning.resolve_file_name(definition, version, file_and_scope)
+    ])
   end
 
   #
@@ -171,11 +182,12 @@ defmodule Waffle.Storage.S3 do
   defp ensure_keyword_list(map) when is_map(map), do: Map.to_list(map)
 
   # If the file is stored as a binary in-memory, send to AWS in a single request
-  defp do_put(file = %Waffle.File{binary: file_binary}, {s3_bucket, s3_key, s3_options}) when is_binary(file_binary) do
+  defp do_put(file = %Waffle.File{binary: file_binary}, {s3_bucket, s3_key, s3_options})
+       when is_binary(file_binary) do
     S3.put_object(s3_bucket, s3_key, file_binary, s3_options)
     |> ExAws.request()
     |> case do
-      {:ok, _res}     -> {:ok, file.file_name}
+      {:ok, _res} -> {:ok, file.file_name}
       {:error, error} -> {:error, error}
     end
   end
@@ -193,7 +205,7 @@ defmodule Waffle.Storage.S3 do
     end
   rescue
     e in ExAws.Error ->
-      Logger.error(inspect e)
+      Logger.error(inspect(e))
       Logger.error(e.message)
       {:error, :invalid_bucket}
   end
@@ -203,49 +215,42 @@ defmodule Waffle.Storage.S3 do
       s3_key(definition, version, file_and_scope)
       |> Url.sanitize(:s3)
 
-    Path.join(host(definition), asset_path)
+    Path.join(host(definition, file_and_scope), asset_path)
   end
 
   defp build_signed_url(definition, version, file_and_scope, options) do
     # Previous waffle argument was expire_in instead of expires_in
     # check for expires_in, if not present, use expire_at.
-    options = put_in options[:expires_in], Keyword.get(options, :expires_in, options[:expire_in])
+    options = put_in(options[:expires_in], Keyword.get(options, :expires_in, options[:expire_in]))
     # fallback to default, if neither is present.
-    options = put_in options[:expires_in], options[:expires_in] || @default_expiry_time
-    options = put_in options[:virtual_host], virtual_host()
+    options = put_in(options[:expires_in], options[:expires_in] || @default_expiry_time)
+    options = put_in(options[:virtual_host], virtual_host())
     config = Config.new(:s3, Application.get_all_env(:ex_aws))
     s3_key = s3_key(definition, version, file_and_scope)
-    s3_bucket = s3_bucket(definition)
+    s3_bucket = s3_bucket(definition, file_and_scope)
     {:ok, url} = S3.presigned_url(config, :get, s3_bucket, s3_key, options)
     url
   end
 
-  defp s3_key(definition, version, file_and_scope) do
-    Path.join([
-      definition.storage_dir(version, file_and_scope),
-      Versioning.resolve_file_name(definition, version, file_and_scope)
-    ])
-  end
-
-  defp host(definition) do
-    case asset_host(definition) do
+  defp host(definition, file_and_scope) do
+    case asset_host(definition, file_and_scope) do
       {:system, env_var} when is_binary(env_var) -> System.get_env(env_var)
       url -> url
     end
   end
 
-  defp asset_host(definition) do
+  defp asset_host(definition, file_and_scope) do
     case definition.asset_host() do
-      false -> default_host(definition)
-      nil -> default_host(definition)
+      false -> default_host(definition, file_and_scope)
+      nil -> default_host(definition, file_and_scope)
       host -> host
     end
   end
 
-  defp default_host(definition) do
+  defp default_host(definition, file_and_scope) do
     case virtual_host() do
-      true -> "https://#{s3_bucket(definition)}.s3.amazonaws.com"
-      _    -> "https://s3.amazonaws.com/#{s3_bucket(definition)}"
+      true -> "https://#{s3_bucket(definition, file_and_scope)}.s3.amazonaws.com"
+      _ -> "https://s3.amazonaws.com/#{s3_bucket(definition, file_and_scope)}"
     end
   end
 
@@ -253,10 +258,10 @@ defmodule Waffle.Storage.S3 do
     Application.get_env(:waffle, :virtual_host) || false
   end
 
-  defp s3_bucket(definition) do
-    case definition.bucket() do
-      {:system, env_var} when is_binary(env_var) -> System.get_env(env_var)
-      name -> name
-    end
+  defp s3_bucket(definition, file_and_scope) do
+    definition.bucket(file_and_scope) |> parse_bucket()
   end
+
+  defp parse_bucket({:system, env_var}) when is_binary(env_var), do: System.get_env(env_var)
+  defp parse_bucket(name), do: name
 end
