@@ -48,15 +48,30 @@ defmodule Waffle.Actions.Delete do
   end
 
   defp do_delete(definition, {file, scope}) do
-    if definition.async do
-      definition.__versions
-      |> Enum.map(fn(r)     -> async_delete_version(definition, r, {file, scope}) end)
-      |> Enum.each(fn(task) -> Task.await(task, version_timeout()) end)
+    results =
+      if definition.async do
+        definition.__versions
+        |> Enum.map(fn version -> async_delete_version(definition, version, {file, scope}) end)
+        |> Enum.reduce([], fn task, results ->
+          results ++ [Task.await(task, version_timeout())]
+        end)
+      else
+        definition.__versions
+        |> Enum.reduce([], fn version, results ->
+          results ++ [delete_version(definition, version, {file, scope})]
+        end)
+      end
+
+    if Enum.all?(results, &match?(:ok, &1)) do
+      :ok
     else
-      definition.__versions
-      |> Enum.each(fn(version) -> delete_version(definition, version, {file, scope}) end)
+      errors =
+        results
+        |> Enum.reject(&match?(:ok, &1))
+        |> Enum.reduce([], &(&2 ++ [&1]))
+
+      {:error, errors}
     end
-    :ok
   end
 
   defp async_delete_version(definition, version, {file, scope}) do
@@ -65,10 +80,21 @@ defmodule Waffle.Actions.Delete do
 
   defp delete_version(definition, version, {file, scope}) do
     conversion = definition.transform(version, {file, scope})
+
     if conversion == :skip do
       :ok
     else
-      definition.__storage.delete(definition, version, {file, scope})
+      definition
+      |> definition.__storage.delete(version, {file, scope})
+      |> format_result(version)
+    end
+  end
+
+  defp format_result(response, version) do
+    case response do
+      {:error, reason} -> {version, reason}
+      :error -> {version, :unknown}
+      _ -> :ok
     end
   end
 end
