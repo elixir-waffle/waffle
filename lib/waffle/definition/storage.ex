@@ -16,7 +16,7 @@ defmodule Waffle.Definition.Storage do
       config :waffle,
         storage_dir: "my/dir"
 
-  ### By overriding the relevent functions in definition modules
+  ### By overriding the relevant functions in definition modules
 
   Every definition module has a default `storage_dir/2` which is overridable.
 

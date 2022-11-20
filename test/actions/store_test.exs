@@ -36,8 +36,8 @@ defmodule WaffleTest.Actions.Store do
     def __versions, do: [:original, :thumb, :skipped]
   end
 
-  test "checks file existance" do
-    assert DummyDefinition.store("non-existant-file.png") == {:error, :invalid_file_path}
+  test "checks file existence" do
+    assert DummyDefinition.store("non-existent-file.png") == {:error, :invalid_file_path}
   end
 
   test "delegates to definition validation" do

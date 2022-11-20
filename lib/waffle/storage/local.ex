@@ -11,7 +11,7 @@ defmodule Waffle.Storage.Local do
         # add custom host to url
         asset_host: "https://example.com"
 
-  If you want to handle your attachements by phoenix application,
+  If you want to handle your attachments by phoenix application,
   configure the endpoint to serve it.
 
       defmodule AppWeb.Endpoint do
