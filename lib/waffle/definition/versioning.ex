@@ -28,6 +28,9 @@ defmodule Waffle.Definition.Versioning do
     quote do
       @versions [:original]
       @before_compile Waffle.Definition.Versioning
+
+      def extension(_, {file, _}), do: Path.extname(file.file_name)
+      defoverridable extension: 2
     end
   end
 
@@ -38,7 +41,7 @@ defmodule Waffle.Definition.Versioning do
     case conversion do
       :skip       -> nil
       {_, _, ext} -> "#{name}.#{ext}"
-       _          -> "#{name}#{Path.extname(file.file_name)}"
+       _          -> "#{name}#{definition.extension(version, {file, scope})}"
     end
   end
 
