@@ -23,6 +23,29 @@ defmodule WaffleTest.Processor do
     def __versions, do: [:original, :thumb]
   end
 
+  defmodule CustomDefinition do
+    use Waffle.Actions.Store
+    use Waffle.Definition.Storage
+
+    def validate({file, _}), do: String.ends_with?(file.file_name, ".png")
+
+    def transform(:original, _),
+      do: {:custom, {__MODULE__, :process_image, %{width: nil, height: nil}}}
+
+    def transform(:thumb, _),
+      do: {:custom, {__MODULE__, :process_image, %{width: 10, height: 10}}}
+
+    def transform(:skipped, _), do: :skip
+    def __versions, do: [:original, :thumb]
+
+    def process_image(file, _conversion) do
+      file_blob = File.read!(file.path)
+      # Call external image process -service with conversion's
+      # file_blob = call_transformation_lambda(file_blob, _conversion)
+      {:ok, %Waffle.File{binary: file_blob, file_name: file.file_name}}
+    end
+  end
+
   defmodule BrokenDefinition do
     use Waffle.Actions.Store
     use Waffle.Definition.Storage
@@ -104,6 +127,21 @@ defmodule WaffleTest.Processor do
     assert "128x128" == geometry(@img)
     assert "10x10" == geometry(new_file.path)
     cleanup(new_file.path)
+  end
+
+  test "transforms a file with custom function" do
+    {:ok, new_file} =
+      Waffle.Processor.process(
+        CustomDefinition,
+        :thumb,
+        {Waffle.File.new(@img, CustomDefinition), nil}
+      )
+
+    assert new_file.path != @img
+    # original file untouched
+    assert "128x128" == geometry(@img)
+    # new file has binary
+    assert new_file.binary
   end
 
   test "transforms a file given as a binary" do
