@@ -1,0 +1,142 @@
+# Processing with custom functions
+
+```elixir
+lib =
+  Regex.named_captures(~r/(?<lib>.+)documentation\/livebooks/, __DIR__)
+  |> Map.get("lib")
+
+Mix.install([
+  # for local development
+  # {:waffle, path: lib}
+  :waffle
+])
+```
+
+## Definition
+
+All stars from creating the difinition and custom processing funciton
+
+```elixir
+defmodule Avatar do
+  use Waffle.Definition
+  @versions [:original, :thumb]
+
+  def __storage, do: Waffle.Storage.Local
+
+  def filename(version, _), do: version
+
+  def transform(:thumb, _) do
+    &process/2
+  end
+
+  @spec process(
+          atom(),
+          Waffle.File.t()
+        ) :: {:ok, Waffle.File.t()} | {:error, String.t()}
+  def process(_version, original_file) do
+    {:ok, file}
+  end
+end
+```
+
+Then, you can store the file by calling `Avatar.store/1`
+
+```elixir
+image = lib <> "test/support/image.png"
+
+Avatar.store(image)
+```
+
+## Understanding custom transformations
+
+<!-- livebook:{"force_markdown":true} -->
+
+```elixir
+def process(_version, original_file) do
+  {:ok, file}
+end
+```
+
+To generate a temporary path for the new file version
+
+<!-- livebook:{"force_markdown":true} -->
+
+```elixir
+tmp_path = Waffle.File.generate_temporary_path(file)
+```
+
+or if the new version is going to have a new extension
+
+<!-- livebook:{"force_markdown":true} -->
+
+```elixir
+tmp_path = Waffle.File.generate_temporary_path("png")
+```
+
+then, you can process your file and put the result into tmp_path.
+
+To return the processed tmp file into the pipeline and clean it afterwards, create a new file struct
+
+<!-- livebook:{"force_markdown":true} -->
+
+```elixir
+{:ok, %Waffle.File{file | path: tmp_path, is_tempfile?: true}}
+```
+
+You can combine it all together to use `ExOptimizer` library
+
+<!-- livebook:{"force_markdown":true} -->
+
+```elixir
+def process(_version, original_file) do
+  tmp_path = Waffle.File.generate_temporary_path(file)
+
+  File.cp!(original_file.path, tmp_path)
+
+  with {:ok, _} <- ExOptimizer.optimize(file.path) do
+    {
+      :ok,
+      %Waffle.File{file | path: tmp_path, is_tempfile?: true}
+    }
+  end
+end
+```
+
+## All together
+
+We can create a bit more complex example, where we combine transformation done by external binary with transformation done by existing elixir library.
+
+```elixir
+defmodule Avatar do
+  use Waffle.Definition
+  @versions [:original, :thumb]
+
+  def __storage, do: Waffle.Storage.Local
+
+  def filename(version, _), do: version
+
+  def transform(:thumb, _) do
+    &process/2
+  end
+
+  @spec process(
+          atom(),
+          Waffle.File.t()
+        ) :: {:ok, Waffle.File.t()} | {:error, String.t()}
+  def process(_version, original_file) do
+    # convert .jpg to .png
+    args = "-strip -thumbnail 100x100^ -gravity center -extent 100x100 -format png"
+
+    with {:ok, file} <-
+           Waffle.Transformations.Convert.apply(
+             :convert,
+             original_file,
+             args,
+             :png
+           ),
+         {:ok, _} <- ExOptimizer.optimize(file.path) do
+      file
+    end
+  end
+end
+```

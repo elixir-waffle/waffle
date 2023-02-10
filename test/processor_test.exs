@@ -7,6 +7,8 @@ defmodule WaffleTest.Processor do
     use Waffle.Actions.Store
     use Waffle.Definition.Storage
 
+    alias Waffle.Transformations.Convert
+
     def validate({file, _}), do: String.ends_with?(file.file_name, ".png")
     def transform(:original, _), do: :noaction
     def transform(:thumb, _), do: {:convert, "-strip -thumbnail 10x10"}
@@ -17,6 +19,17 @@ defmodule WaffleTest.Processor do
     def transform(:small, _),
       do:
         {:convert, fn input, output -> [input, "-strip", "-thumbnail", "10x10", output] end, :jpg}
+
+    def transform(:custom, _) do
+      fn _version, file ->
+        Convert.apply(
+          :convert,
+          file,
+          fn input, output -> [input, "-strip", "-thumbnail", "1x1", output] end,
+          :jpg
+        )
+      end
+    end
 
     def transform(:skipped, _), do: :skip
 
@@ -103,6 +116,21 @@ defmodule WaffleTest.Processor do
     # original file untouched
     assert "128x128" == geometry(@img)
     assert "10x10" == geometry(new_file.path)
+    cleanup(new_file.path)
+  end
+
+  test "transforms with custom function" do
+    {:ok, new_file} =
+      Waffle.Processor.process(
+        DummyDefinition,
+        :custom,
+        {Waffle.File.new(@img, DummyDefinition), nil}
+      )
+
+    assert new_file.path != @img
+    # original file untouched
+    assert "128x128" == geometry(@img)
+    assert "1x1" == geometry(new_file.path)
     cleanup(new_file.path)
   end
 
