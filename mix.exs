@@ -37,7 +37,8 @@ defmodule Waffle.Mixfile do
       main: "Waffle",
       extras: [
         "documentation/examples/local.md",
-        "documentation/examples/s3.md"
+        "documentation/examples/s3.md",
+        "documentation/livebooks/custom_transformation.livemd"
       ]
     ]
   end
