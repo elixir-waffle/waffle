@@ -135,7 +135,7 @@ defmodule Avatar do
              :png
            ),
          {:ok, _} <- ExOptimizer.optimize(file.path) do
-      file
+      {:ok, file}
     end
   end
 end
