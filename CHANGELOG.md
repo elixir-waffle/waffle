@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.1.7 (2023-02-11)
+
+- Make Waffle.Storage.S3.s3_key/3 public, so that other modules can
+have access to the object path (#100)
+- Handle recv_timeout in Waffle.File (#102)
+- Fix typos (#107)
+- Support custom functions for transformations (#110)
+
+
 ## v1.1.6 (2022-02-20)
     * Improve Waffle.Storage.S3 moduledoc (#90)
     * Fix links to other storage providers (#92)
