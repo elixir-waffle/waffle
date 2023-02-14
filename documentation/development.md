@@ -21,7 +21,7 @@ $ > mix deps.get
 AWS S3 setup
 - create a new user with FullS3Access
 - copy `key_id` and `secret`
-- create a new backet with *public access*
+- create a new bucket with *public access*
 - comment the `s3` exclusion inside `test/test_helper.exs`
 - update `.env` file
 

@@ -14,7 +14,7 @@ Mix.install([
 
 ## Definition
 
-All stars from creating the difinition and custom processing funciton
+All starts from creating the definition and custom processing function
 
 ```elixir
 defmodule Avatar do
