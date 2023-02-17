@@ -13,12 +13,12 @@ defmodule Avatar do
   use Waffle.Definition
 
   @versions [:original, :thumb]
-  @extension_acceptlist ~w(.jpg .jpeg .gif .png)
+  @extensions ~w(.jpg .jpeg .gif .png)
 
   def validate({file, _}) do
     file_extension = file.file_name |> Path.extname |> String.downcase
 
-    case Enum.member?(@extension_acceptlist, file_extension) do
+    case Enum.member?(@extensions, file_extension) do
       true -> :ok
       false -> {:error, "file type is invalid"}
     end
