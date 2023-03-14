@@ -89,14 +89,14 @@ You can combine it all together to use `ExOptimizer` library
 
 ```elixir
 def process(_version, original_file) do
-  tmp_path = Waffle.File.generate_temporary_path(file)
+  tmp_path = Waffle.File.generate_temporary_path(original_file)
 
   File.cp!(original_file.path, tmp_path)
 
-  with {:ok, _} <- ExOptimizer.optimize(file.path) do
+  with {:ok, _} <- ExOptimizer.optimize(tmp_path) do
     {
       :ok,
-      %Waffle.File{file | path: tmp_path, is_tempfile?: true}
+      %Waffle.File{original_file | path: tmp_path, is_tempfile?: true}
     }
   end
 end
