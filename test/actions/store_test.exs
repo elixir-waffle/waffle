@@ -16,6 +16,7 @@ defmodule WaffleTest.Actions.Store do
     def transform(:skipped, _), do: :skip
     def transform(_, _), do: :noaction
     def __versions, do: [:original, :thumb, :skipped]
+    def extension(_, {file, _}), do: Path.extname(file.file_name)
   end
 
   defmodule DummyDefinitionWithHeaders do
@@ -24,6 +25,7 @@ defmodule WaffleTest.Actions.Store do
 
     def transform(_, _), do: :noaction
     def __versions, do: [:original, :thumb, :skipped]
+    def extension(_, {file, _}), do: Path.extname(file.file_name)
     def remote_file_headers(%URI{host: "www.google.com"}), do: [{"User-Agent", "MyApp"}]
   end
 
@@ -34,6 +36,16 @@ defmodule WaffleTest.Actions.Store do
     def validate(_), do: {:error, "invalid file type"}
     def transform(_, _), do: :noaction
     def __versions, do: [:original, :thumb, :skipped]
+  end
+
+  defmodule DummyDefinitionWithExtension do
+    use Waffle.Actions.Store
+    use Waffle.Definition.Storage
+
+    def validate({file, _}), do: true
+    def transform(_, _), do: :noaction
+    def __versions, do: [:original]
+    def extension(_, {file, _}), do: ".jpeg"
   end
 
   test "checks file existence" do
@@ -148,6 +160,15 @@ defmodule WaffleTest.Actions.Store do
         {:ok, "favicon.ico"}
       end do
       assert DummyDefinition.store("https://www.google.com/favicon.ico") == {:ok, "favicon.ico"}
+    end
+  end
+
+  test "sets extension from extension/2" do
+    with_mock Waffle.Storage.S3,
+      put: fn DummyDefinitionWithExtension, _, {%{file_name: "image.jpeg", path: @img}, nil} ->
+        {:ok, "resp"}
+      end do
+      assert DummyDefinitionWithExtension.store(@img) == {:ok, "image.png"}
     end
   end
 

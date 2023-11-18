@@ -9,6 +9,7 @@ defmodule WaffleTest.Actions.Url do
     def __versions, do: [:original, :thumb, :skipped]
     def transform(:skipped, _), do: :skip
     def transform(_, _), do: :noaction
+    def extension(_, {file, _}), do: Path.extname(file.file_name)
     def default_url(version, scope) when is_nil(scope), do: "dummy-#{version}"
     def default_url(version, scope), do: "dummy-#{version}-#{scope}"
     def __storage, do: Waffle.Storage.S3
