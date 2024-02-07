@@ -39,6 +39,9 @@ defmodule Waffle.Processor do
       transformation as elixir function,
       [read more about custom transformations](custom_transformation.livemd)
 
+    * `{transform/2, fn version, file -> :png end}` - A custom
+      transformation converting a file into a different extension
+
   ## ImageMagick transformations
 
   As images are one of the most commonly uploaded filetypes, Waffle
@@ -149,10 +152,21 @@ defmodule Waffle.Processor do
     apply_transformation(file, transform, version)
   end
 
+  @spec apply_transformation(
+          Waffle.File.t(),
+          (Waffle.File.t() -> {:ok, Waffle.File.t()} | {:error, String.t()}),
+          atom()
+        ) :: {:ok, Waffle.File.t()} | {:error, String.t()}
+
   defp apply_transformation(_, :skip, _), do: {:ok, nil}
   defp apply_transformation(file, :noaction, _), do: {:ok, file}
   # Deprecated
   defp apply_transformation(file, {:noaction}, _), do: {:ok, file}
+
+  defp apply_transformation(file, func, version) when is_function(func), do: func.(version, file)
+
+  defp apply_transformation(file, {func, _}, version) when is_function(func),
+    do: func.(version, file)
 
   defp apply_transformation(file, {cmd, conversion}, _) do
     Convert.apply(cmd, file, conversion)
@@ -160,14 +174,5 @@ defmodule Waffle.Processor do
 
   defp apply_transformation(file, {cmd, conversion, extension}, _) do
     Convert.apply(cmd, file, conversion, extension)
-  end
-
-  @spec apply_transformation(
-          Waffle.File.t(),
-          (Waffle.File.t() -> {:ok, Waffle.File.t()} | {:error, String.t()}),
-          atom()
-        ) :: {:ok, Waffle.File.t()} | {:error, String.t()}
-  defp apply_transformation(file, func, version) when is_function(func) do
-    func.(version, file)
   end
 end
