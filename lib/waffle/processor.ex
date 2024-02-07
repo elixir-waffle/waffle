@@ -39,7 +39,7 @@ defmodule Waffle.Processor do
       transformation as elixir function,
       [read more about custom transformations](custom_transformation.livemd)
 
-    * `{transform/2, fn version, file -> :png end}` - A custom
+    * `{&transform/2, fn version, file -> :png end}` - A custom
       transformation converting a file into a different extension
 
   ## ImageMagick transformations
