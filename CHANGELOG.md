@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.1.8 (2024-02-07)
+
+- Fix documentation typos (#111)
+- Refactor local storage example: whitelist » acceptlist (#112)
+- Fix warnings emitted by elixir 1.16 (#115)
+- Add support for extensions to custom transformations (#117)
+
 ## v1.1.7 (2023-02-11)
 
 - Make Waffle.Storage.S3.s3_key/3 public, so that other modules can
