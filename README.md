@@ -125,7 +125,7 @@ dependency.  Benefits include:
 
   * **OVH** - [arc_ovh](https://github.com/stephenmoloney/arc_ovh)
 
-  * **Google Cloud Storage** - [waffle_gcs](https://github.com/kolorahl/waffle_gcs)
+  * **Google Cloud Storage** - [waffle_gcs](https://github.com/elixir-waffle/waffle_gcs)
 
   * **Microsoft Azure Storage** - [arc_azure](https://github.com/phil-a/arc_azure)
 
