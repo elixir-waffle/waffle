@@ -29,6 +29,15 @@ defmodule Waffle.Definition do
       use Waffle.Actions.Store
       use Waffle.Actions.Delete
       use Waffle.Actions.Url
+
+      @doc """
+      Define a custom configuration struct to connect to AWS S3
+      """
+      def s3_config({file, scope}) do
+        ExAws.Config.Defaults.defaults(:s3)
+      end
+
+      defoverridable [{:s3_config, 1}]
     end
   end
 end
