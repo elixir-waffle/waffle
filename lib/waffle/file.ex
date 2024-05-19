@@ -173,6 +173,7 @@ defmodule Waffle.File do
 
   # hackney :connect_timeout - timeout used when establishing a connection, in milliseconds
   # hackney :recv_timeout - timeout used when receiving from a connection, in milliseconds
+  # hackney :max_body_length - maximum size of the file to download, in bytes. Defaults to :infinity
   # :backoff_max - maximum backoff time, in milliseconds
   # :backoff_factor - a backoff factor to apply between attempts, in milliseconds
   defp get_remote_path(remote_path, definition) do
@@ -214,7 +215,9 @@ defmodule Waffle.File do
   end
 
   defp body(client_ref, response_headers) do
-    case :hackney.body(client_ref) do
+    max_body_length = Application.get_env(:waffle, :max_body_length, :infinity)
+
+    case :hackney.body(client_ref, max_body_length) do
       {:ok, body} ->
         response_headers = :hackney_headers.new(response_headers)
         filename = content_disposition(response_headers)
