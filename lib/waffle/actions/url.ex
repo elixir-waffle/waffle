@@ -81,7 +81,7 @@ defmodule Waffle.Actions.Url do
   defmacro __using__(_) do
     quote do
       def urls(file, options \\ []) do
-        Enum.into __MODULE__.__versions, %{}, fn(r) ->
+        Enum.into __MODULE__.__versions(), %{}, fn(r) ->
           {r, __MODULE__.url(file, r, options)}
         end
       end
@@ -97,7 +97,7 @@ defmodule Waffle.Actions.Url do
 
   # Apply default version if not specified
   def url(definition, file, nil, options),
-    do: url(definition, file, Enum.at(definition.__versions, 0), options)
+    do: url(definition, file, Enum.at(definition.__versions(), 0), options)
 
   # Transform standalone file into a tuple of {file, scope}
   def url(definition, file, version, options) when is_binary(file) or is_map(file) or is_nil(file),
@@ -124,7 +124,7 @@ defmodule Waffle.Actions.Url do
     case Versioning.resolve_file_name(definition, version, file_and_scope) do
       nil -> nil
       _ ->
-        definition.__storage.url(definition, version, file_and_scope, options)
+        definition.__storage().url(definition, version, file_and_scope, options)
     end
   end
 end

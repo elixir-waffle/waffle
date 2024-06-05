@@ -79,8 +79,8 @@ defmodule Waffle.Actions.Store do
   end
 
   defp put_versions(definition, {file, scope}) do
-    if definition.async do
-      definition.__versions
+    if definition.async() do
+      definition.__versions()
       |> Enum.map(fn(r)    -> async_process_version(definition, r, {file, scope}) end)
       |> Enum.map(fn(task) -> Task.await(task, version_timeout()) end)
       |> ensure_all_success
@@ -88,7 +88,7 @@ defmodule Waffle.Actions.Store do
       |> Enum.map(fn(task) -> Task.await(task, version_timeout()) end)
       |> handle_responses(file.file_name)
     else
-      definition.__versions
+      definition.__versions()
       |> Enum.map(fn(version) -> process_version(definition, version, {file, scope}) end)
       |> ensure_all_success
       |> Enum.map(fn({version, result}) -> put_version(definition, version, {result, scope}) end)
@@ -133,7 +133,7 @@ defmodule Waffle.Actions.Store do
       {:ok, file} ->
         file_name = Versioning.resolve_file_name(definition, version, {file, scope})
         file      = %Waffle.File{file | file_name: file_name}
-        result    = definition.__storage.put(definition, version, {file, scope})
+        result    = definition.__storage().put(definition, version, {file, scope})
 
         case definition.transform(version, {file, scope}) do
           :noaction ->

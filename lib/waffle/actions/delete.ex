@@ -48,12 +48,12 @@ defmodule Waffle.Actions.Delete do
   end
 
   defp do_delete(definition, {file, scope}) do
-    if definition.async do
-      definition.__versions
+    if definition.async() do
+      definition.__versions()
       |> Enum.map(fn(r)     -> async_delete_version(definition, r, {file, scope}) end)
       |> Enum.each(fn(task) -> Task.await(task, version_timeout()) end)
     else
-      definition.__versions
+      definition.__versions()
       |> Enum.each(fn(version) -> delete_version(definition, version, {file, scope}) end)
     end
     :ok
@@ -68,7 +68,7 @@ defmodule Waffle.Actions.Delete do
     if conversion == :skip do
       :ok
     else
-      definition.__storage.delete(definition, version, {file, scope})
+      definition.__storage().delete(definition, version, {file, scope})
     end
   end
 end
