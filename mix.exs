@@ -35,6 +35,8 @@ defmodule Waffle.Mixfile do
   defp docs do
     [
       main: "Waffle",
+      source_ref: "v#{@version}",
+      source_url: "https://github.com/elixir-waffle/waffle",
       extras: [
         "documentation/examples/local.md",
         "documentation/examples/s3.md",
