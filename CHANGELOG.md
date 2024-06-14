@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.1.9 (2024-06-14)
+
+- Fix module.function notation warnings in Elixir 1.17 #123
+- Added max_body_length to hackney options #122
+- Fix images and source links in hexdocs #125
+- Add links to view source in docs #124
+- Update link for waffle_gcs #118
+
 ## v1.1.8 (2024-02-07)
 
 - Fix documentation typos (#111)
