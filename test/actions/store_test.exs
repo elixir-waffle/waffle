@@ -18,6 +18,25 @@ defmodule WaffleTest.Actions.Store do
     def __versions, do: [:original, :thumb, :skipped]
   end
 
+  defmodule DummyDefinitionWithExtension do
+    use Waffle.Actions.Store
+    use Waffle.Definition.Storage
+
+    def validate({file, _}), do: String.ends_with?(file.file_name, ".png")
+
+    def transform(:convert_to_jpg, _),
+      do: {:convert, "-format jpg", :jpg}
+
+    def transform(:custom_to_jpg, {file, _}) do
+      {
+        fn _, _ -> {:ok, file} end,
+        fn _, _ -> :jpg end
+      }
+    end
+
+    def __versions, do: [:convert_to_jpg, :custom_to_jpg]
+  end
+
   defmodule DummyDefinitionWithHeaders do
     use Waffle.Actions.Store
     use Waffle.Definition.Storage
@@ -36,8 +55,17 @@ defmodule WaffleTest.Actions.Store do
     def __versions, do: [:original, :thumb, :skipped]
   end
 
-  test "checks file existance" do
-    assert DummyDefinition.store("non-existant-file.png") == {:error, :invalid_file_path}
+  test "custom transformations change a file extension" do
+    with_mock Waffle.Storage.S3,
+      put: fn DummyDefinitionWithExtension, _, {%{file_name: "image.jpg", path: _}, nil} ->
+        {:ok, "resp"}
+      end do
+      assert DummyDefinitionWithExtension.store(@img) == {:ok, "image.png"}
+    end
+  end
+
+  test "checks file existence" do
+    assert DummyDefinition.store("non-existent-file.png") == {:error, :invalid_file_path}
   end
 
   test "delegates to definition validation" do

@@ -35,6 +35,13 @@ defmodule Waffle.Processor do
       changes the file extension (eg, converting to `png`), then the
       new file extension must be explicit.
 
+    * `fn version, file -> {:ok, file} end` - Implement custom
+      transformation as elixir function,
+      [read more about custom transformations](custom_transformation.livemd)
+
+    * `{&transform/2, fn version, file -> :png end}` - A custom
+      transformation converting a file into a different extension
+
   ## ImageMagick transformations
 
   As images are one of the most commonly uploaded filetypes, Waffle
@@ -142,19 +149,30 @@ defmodule Waffle.Processor do
 
   def process(definition, version, {file, scope}) do
     transform = definition.transform(version, {file, scope})
-    apply_transformation(file, transform)
+    apply_transformation(file, transform, version)
   end
 
-  defp apply_transformation(_, :skip), do: {:ok, nil}
-  defp apply_transformation(file, :noaction), do: {:ok, file}
-  # Deprecated
-  defp apply_transformation(file, {:noaction}), do: {:ok, file}
+  @spec apply_transformation(
+          Waffle.File.t(),
+          (Waffle.File.t() -> {:ok, Waffle.File.t()} | {:error, String.t()}),
+          atom()
+        ) :: {:ok, Waffle.File.t()} | {:error, String.t()}
 
-  defp apply_transformation(file, {cmd, conversion}) do
+  defp apply_transformation(_, :skip, _), do: {:ok, nil}
+  defp apply_transformation(file, :noaction, _), do: {:ok, file}
+  # Deprecated
+  defp apply_transformation(file, {:noaction}, _), do: {:ok, file}
+
+  defp apply_transformation(file, func, version) when is_function(func), do: func.(version, file)
+
+  defp apply_transformation(file, {func, _}, version) when is_function(func),
+    do: func.(version, file)
+
+  defp apply_transformation(file, {cmd, conversion}, _) do
     Convert.apply(cmd, file, conversion)
   end
 
-  defp apply_transformation(file, {cmd, conversion, extension}) do
+  defp apply_transformation(file, {cmd, conversion, extension}, _) do
     Convert.apply(cmd, file, conversion, extension)
   end
 end

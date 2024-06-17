@@ -1,5 +1,29 @@
 # Changelog
 
+## v1.1.9 (2024-06-14)
+
+- Fix module.function notation warnings in Elixir 1.17 #123
+- Added max_body_length to hackney options #122
+- Fix images and source links in hexdocs #125
+- Add links to view source in docs #124
+- Update link for waffle_gcs #118
+
+## v1.1.8 (2024-02-07)
+
+- Fix documentation typos (#111)
+- Refactor local storage example: whitelist » acceptlist (#112)
+- Fix warnings emitted by elixir 1.16 (#115)
+- Add support for extensions to custom transformations (#117)
+
+## v1.1.7 (2023-02-11)
+
+- Make Waffle.Storage.S3.s3_key/3 public, so that other modules can
+have access to the object path (#100)
+- Handle recv_timeout in Waffle.File (#102)
+- Fix typos (#107)
+- Support custom functions for transformations (#110)
+
+
 ## v1.1.6 (2022-02-20)
     * Improve Waffle.Storage.S3 moduledoc (#90)
     * Fix links to other storage providers (#92)

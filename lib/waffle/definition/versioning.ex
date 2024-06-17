@@ -36,9 +36,18 @@ defmodule Waffle.Definition.Versioning do
     conversion = definition.transform(version, {file, scope})
 
     case conversion do
-      :skip       -> nil
-      {_, _, ext} -> "#{name}.#{ext}"
-       _          -> "#{name}#{Path.extname(file.file_name)}"
+      :skip ->
+        nil
+
+      {_, _, ext} ->
+        [name, ext] |> Enum.join(".")
+
+      {fn_transform, fn_extension}
+      when is_function(fn_transform) and is_function(fn_extension) ->
+        [name, fn_extension.(version, file)] |> Enum.join(".")
+
+      _ ->
+        [name, Path.extname(file.file_name)] |> Enum.join()
     end
   end
 

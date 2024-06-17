@@ -26,7 +26,7 @@ defmodule Mix.Tasks.Waffle do
     """
 
     def run([model_name]) do
-      app_name = Mix.Project.config[:app]
+      app_name = Mix.Project.config()[:app]
       if File.exists?("lib/#{app_name}_web/") do
         project_module_name = camelize(to_string(app_name))
         generate_phx_uploader_file(model_name, project_module_name)
@@ -36,7 +36,7 @@ defmodule Mix.Tasks.Waffle do
     end
 
     def run([model_name, path]) do
-      app_name = Mix.Project.config[:app]
+      app_name = Mix.Project.config()[:app]
       project_module_name = camelize(to_string(app_name))
       generate_uploader_file(model_name, project_module_name, path)
     end
@@ -46,13 +46,13 @@ defmodule Mix.Tasks.Waffle do
     end
 
     defp generate_uploader_file(model_name, project_module_name, path) do
-      model_destination = Path.join(File.cwd!, "#{path}/#{underscore(model_name)}.ex")
+      model_destination = Path.join(File.cwd!(), "#{path}/#{underscore(model_name)}.ex")
       create_uploader(model_name, project_module_name, model_destination)
     end
 
     defp generate_phx_uploader_file(model_name, project_module_name) do
-      app_name = Mix.Project.config[:app]
-      model_destination = Path.join(File.cwd!, "/lib/#{app_name}_web/uploaders/#{underscore(model_name)}.ex")
+      app_name = Mix.Project.config()[:app]
+      model_destination = Path.join(File.cwd!(), "/lib/#{app_name}_web/uploaders/#{underscore(model_name)}.ex")
       create_uploader(model_name, project_module_name, model_destination)
     end
 

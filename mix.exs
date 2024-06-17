@@ -1,13 +1,14 @@
 defmodule Waffle.Mixfile do
   use Mix.Project
 
-  @version "1.1.6"
+  @version "1.1.9"
 
   def project do
     [
       app: :waffle,
       version: @version,
       elixir: "~> 1.4",
+      source_url: "https://github.com/elixir-waffle/waffle",
       deps: deps(),
       docs: docs(),
 
@@ -34,10 +35,13 @@ defmodule Waffle.Mixfile do
 
   defp docs do
     [
-      main: "Waffle",
+      main: "readme",
+      source_ref: "v#{@version}",
       extras: [
+        "README.md",
         "documentation/examples/local.md",
-        "documentation/examples/s3.md"
+        "documentation/examples/s3.md",
+        "documentation/livebooks/custom_transformation.livemd"
       ]
     ]
   end

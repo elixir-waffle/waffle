@@ -1,3 +1,3 @@
 defmodule Waffle do
-  @moduledoc File.read!("README.md")
+  @moduledoc false
 end

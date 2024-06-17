@@ -1,20 +1,15 @@
 [hex-img]: http://img.shields.io/hexpm/v/waffle.svg
-[hex-url]: https://hex.pm/packages/waffle
 
 [hexdocs-img]: http://img.shields.io/badge/hexdocs-documentation-brightgreen.svg
-[hexdocs-url]: https://hexdocs.pm/waffle
 
 [evrone-img]: https://img.shields.io/badge/Sponsored_by-Evrone-brightgreen.svg
-[evrome-url]: https://evrone.com?utm_source=waffle
 
-# Waffle [![Sponsored by Evrone][evrone-img]][evrome-url]
+# Waffle [![Sponsored by Evrone][evrone-img]](https://evrone.com?utm_source=waffle)
 
-[![Hex.pm Version][hex-img]][hex-url]
-[![waffle documentation][hexdocs-img]][hexdocs-url]
+[![Hex.pm Version][hex-img]](https://hex.pm/packages/waffle)
+[![waffle documentation][hexdocs-img]](https://hexdocs.pm/waffle)
 
-<img align="right" width="176" height="120"
-     alt="Waffle is a flexible file upload library for Elixir"
-     src="https://elixir-waffle.github.io/waffle/assets/logo.svg">
+![Waffle is a flexible file upload library for Elixir](https://elixir-waffle.github.io/waffle/assets/logo.svg)
 
 Waffle is a flexible file upload library for Elixir with straightforward integrations for Amazon S3 and ImageMagick.
 
@@ -125,7 +120,7 @@ dependency.  Benefits include:
 
   * **OVH** - [arc_ovh](https://github.com/stephenmoloney/arc_ovh)
 
-  * **Google Cloud Storage** - [waffle_gcs](https://github.com/kolorahl/waffle_gcs)
+  * **Google Cloud Storage** - [waffle_gcs](https://github.com/elixir-waffle/waffle_gcs)
 
   * **Microsoft Azure Storage** - [arc_azure](https://github.com/phil-a/arc_azure)
 
