@@ -130,7 +130,6 @@ defmodule Waffle.Storage.S3 do
   """
   require Logger
 
-  alias ExAws.Config
   alias ExAws.Request.Url
   alias ExAws.S3
   alias ExAws.S3.Upload
@@ -139,6 +138,7 @@ defmodule Waffle.Storage.S3 do
   @default_expiry_time 60 * 5
 
   def put(definition, version, {file, scope}) do
+    config = definition.s3_config({file, scope})
     destination_dir = definition.storage_dir(version, {file, scope})
     s3_bucket = s3_bucket(definition, {file, scope})
     s3_key = Path.join(destination_dir, file.file_name)
@@ -149,7 +149,7 @@ defmodule Waffle.Storage.S3 do
       |> ensure_keyword_list()
       |> Keyword.put(:acl, acl)
 
-    do_put(file, {s3_bucket, s3_key, s3_options})
+    do_put(file, {s3_bucket, s3_key, s3_options}, config)
   end
 
   def url(definition, version, file_and_scope, options \\ []) do
@@ -160,9 +160,11 @@ defmodule Waffle.Storage.S3 do
   end
 
   def delete(definition, version, {file, scope}) do
+    config = definition.s3_config({file, scope})
+
     s3_bucket(definition, {file, scope})
     |> S3.delete_object(s3_key(definition, version, {file, scope}))
-    |> ExAws.request()
+    |> ExAws.request(config)
 
     :ok
   end
@@ -182,10 +184,10 @@ defmodule Waffle.Storage.S3 do
   defp ensure_keyword_list(map) when is_map(map), do: Map.to_list(map)
 
   # If the file is stored as a binary in-memory, send to AWS in a single request
-  defp do_put(file = %Waffle.File{binary: file_binary}, {s3_bucket, s3_key, s3_options})
+  defp do_put(file = %Waffle.File{binary: file_binary}, {s3_bucket, s3_key, s3_options}, config)
        when is_binary(file_binary) do
     S3.put_object(s3_bucket, s3_key, file_binary, s3_options)
-    |> ExAws.request()
+    |> ExAws.request(config)
     |> case do
       {:ok, _res} -> {:ok, file.file_name}
       {:error, error} -> {:error, error}
@@ -193,11 +195,11 @@ defmodule Waffle.Storage.S3 do
   end
 
   # Stream the file and upload to AWS as a multi-part upload
-  defp do_put(file, {s3_bucket, s3_key, s3_options}) do
+  defp do_put(file, {s3_bucket, s3_key, s3_options}, config) do
     file.path
     |> Upload.stream_file()
     |> S3.upload(s3_bucket, s3_key, s3_options)
-    |> ExAws.request()
+    |> ExAws.request(config)
     |> case do
       {:ok, %{status_code: 200}} -> {:ok, file.file_name}
       {:ok, :done} -> {:ok, file.file_name}
@@ -225,7 +227,7 @@ defmodule Waffle.Storage.S3 do
     # fallback to default, if neither is present.
     options = put_in(options[:expires_in], options[:expires_in] || @default_expiry_time)
     options = put_in(options[:virtual_host], virtual_host())
-    config = Config.new(:s3, Application.get_all_env(:ex_aws))
+    config = definition.s3_config(file_and_scope)
     s3_key = s3_key(definition, version, file_and_scope)
     s3_bucket = s3_bucket(definition, file_and_scope)
     {:ok, url} = S3.presigned_url(config, :get, s3_bucket, s3_key, options)
@@ -248,9 +250,16 @@ defmodule Waffle.Storage.S3 do
   end
 
   defp default_host(definition, file_and_scope) do
+    config = definition.s3_config(file_and_scope)
+    host = Map.get(config, :host, "s3.amazonaws.com") || "s3.amazonaws.com"
+    port = Map.get(config, :port)
+    port = port in [80, 443] && "" || ":#{port}"
+
     case virtual_host() do
-      true -> "https://#{s3_bucket(definition, file_and_scope)}.s3.amazonaws.com"
-      _ -> "https://s3.amazonaws.com/#{s3_bucket(definition, file_and_scope)}"
+      true ->
+        "#{config.scheme}#{s3_bucket(definition, file_and_scope)}.#{host}#{port}"
+      _ ->
+        "#{config.scheme}#{host}#{port}/#{s3_bucket(definition, file_and_scope)}"
     end
   end
 
