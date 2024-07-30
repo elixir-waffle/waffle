@@ -123,8 +123,16 @@ defmodule Waffle.Definition.Storage do
       def default_url(version, _), do: default_url(version)
       def default_url(_), do: nil
       def __storage, do: Application.get_env(:waffle, :storage, Waffle.Storage.S3)
+      def acl(_, _), do: @acl
+      def s3_object_headers(_, _), do: []
+      def async, do: @async
+      def remote_file_headers(_), do: []
 
-      defoverridable storage_dir_prefix: 0,
+      defoverridable acl: 2,
+                     async: 0,
+                     remote_file_headers: 1,
+                     s3_object_headers: 2,
+                     storage_dir_prefix: 0,
                      storage_dir: 2,
                      filename: 2,
                      validate: 1,
@@ -134,17 +142,6 @@ defmodule Waffle.Definition.Storage do
                      bucket: 0,
                      bucket: 1,
                      asset_host: 0
-
-      @before_compile Waffle.Definition.Storage
-    end
-  end
-
-  defmacro __before_compile__(_env) do
-    quote do
-      def acl(_, _), do: @acl
-      def s3_object_headers(_, _), do: []
-      def async, do: @async
-      def remote_file_headers(_), do: []
     end
   end
 end
