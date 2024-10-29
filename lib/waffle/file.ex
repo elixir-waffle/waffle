@@ -1,5 +1,6 @@
 defmodule Waffle.File do
   @moduledoc false
+require Logger
 
   defstruct [:path, :file_name, :binary, :is_tempfile?]
 
@@ -166,7 +167,8 @@ defmodule Waffle.File do
       {:ok, body} ->
         File.write(local_path, body)
 
-      {:error, _reason} = err ->
+      {:error, reason} = err ->
+        Logger.error("Waffle failed to download file=#{remote_path}, error=#{inspect(reason)}")
         err
     end
   end
@@ -181,6 +183,7 @@ defmodule Waffle.File do
 
     options = [
       follow_redirect: true,
+      pool: Application.get_env(:waffle, :pool, :waffle_pool),
       recv_timeout: Application.get_env(:waffle, :recv_timeout, 5_000),
       connect_timeout: Application.get_env(:waffle, :connect_timeout, 10_000),
       max_retries: Application.get_env(:waffle, :max_retries, 3),
