@@ -212,8 +212,8 @@ require Logger
           {:error, :out_of_tries} -> {:error, :recv_timeout}
         end
 
-      _err ->
-        {:error, :waffle_hackney_error}
+      err ->
+        {:error, {:waffle_hackney_error, err}}
     end
   end
 
