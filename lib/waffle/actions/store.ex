@@ -12,6 +12,7 @@ defmodule Waffle.Actions.Store do
     * A map with a filename and path keys (eg, a `%Plug.Upload{}`)
 
     * A map with a filename and binary keys (eg, `%{filename: "image.png", binary: <<255,255,255,...>>}`)
+    * A map with a filename and stream keys (eg, `%{filename: "image.png", stream: %Stream{...}}`)
 
     * A two-element tuple consisting of one of the above file formats as well as a scope map
 
@@ -50,11 +51,13 @@ defmodule Waffle.Actions.Store do
     end
   end
 
-  def store(definition, {file, scope}) when is_binary(file) or is_map(file) do
+  def store(definition, {file, scope})
+      when is_binary(file) or is_map(file) do
     put(definition, {Waffle.File.new(file, definition), scope})
   end
 
-  def store(definition, filepath) when is_binary(filepath) or is_map(filepath) do
+  def store(definition, filepath)
+      when is_binary(filepath) or is_map(filepath) do
     store(definition, {filepath, nil})
   end
 

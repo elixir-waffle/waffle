@@ -220,6 +220,15 @@ defmodule WaffleTest.Storage.S3 do
 
   @tag :s3
   @tag timeout: 15_000
+  test "public put stream" do
+    img_map = %{filename: "image.png", stream: File.stream!(@img)}
+    assert {:ok, "image.png"} == DummyDefinition.store(img_map)
+    assert_public(DummyDefinition, "image.png")
+    delete_and_assert_not_found(DummyDefinition, "image.png")
+  end
+
+  @tag :s3
+  @tag timeout: 15_000
   test "private put and signed get" do
     # put the image as private
     assert {:ok, "image.png"} == DummyDefinition.store({@img, :private})

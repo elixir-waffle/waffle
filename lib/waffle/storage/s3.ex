@@ -192,6 +192,25 @@ defmodule Waffle.Storage.S3 do
     end
   end
 
+  # If the file is a stream, send it to AWS as a multi-part upload
+  defp do_put(file = %Waffle.File{stream: file_stream}, {s3_bucket, s3_key, s3_options})
+       when is_struct(file_stream) do
+    file_stream
+    |> chunk_stream()
+    |> S3.upload(s3_bucket, s3_key, s3_options)
+    |> ExAws.request()
+    |> case do
+         {:ok, %{status_code: 200}} -> {:ok, file.file_name}
+         {:ok, :done} -> {:ok, file.file_name}
+         {:error, error} -> {:error, error}
+    end
+  rescue
+    e in ExAws.Error ->
+      Logger.error(inspect(e))
+    Logger.error(e.message)
+    {:error, :invalid_bucket}
+  end
+
   # Stream the file and upload to AWS as a multi-part upload
   defp do_put(file, {s3_bucket, s3_key, s3_options}) do
     file.path
@@ -199,15 +218,15 @@ defmodule Waffle.Storage.S3 do
     |> S3.upload(s3_bucket, s3_key, s3_options)
     |> ExAws.request()
     |> case do
-      {:ok, %{status_code: 200}} -> {:ok, file.file_name}
-      {:ok, :done} -> {:ok, file.file_name}
-      {:error, error} -> {:error, error}
-    end
+         {:ok, %{status_code: 200}} -> {:ok, file.file_name}
+         {:ok, :done} -> {:ok, file.file_name}
+         {:error, error} -> {:error, error}
+       end
   rescue
     e in ExAws.Error ->
       Logger.error(inspect(e))
-      Logger.error(e.message)
-      {:error, :invalid_bucket}
+    Logger.error(e.message)
+    {:error, :invalid_bucket}
   end
 
   defp build_url(definition, version, file_and_scope, _options) do
@@ -264,4 +283,22 @@ defmodule Waffle.Storage.S3 do
 
   defp parse_bucket({:system, env_var}) when is_binary(env_var), do: System.get_env(env_var)
   defp parse_bucket(name), do: name
+
+  defp chunk_stream(stream, chunk_size \\ 5 * 1024 * 1024) do
+    Stream.chunk_while(
+      stream,
+      "",
+      fn element, acc ->
+        if String.length(acc) >= chunk_size do
+          {:cont, acc, element}
+        else
+          {:cont, acc <> element}
+        end
+      end,
+      fn
+        [] -> {:cont, []}
+        acc -> {:cont, acc, []}
+      end
+    )
+  end
 end
