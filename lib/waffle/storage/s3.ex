@@ -197,24 +197,18 @@ defmodule Waffle.Storage.S3 do
        when is_struct(file_stream) do
     file_stream
     |> chunk_stream()
-    |> S3.upload(s3_bucket, s3_key, s3_options)
-    |> ExAws.request()
-    |> case do
-         {:ok, %{status_code: 200}} -> {:ok, file.file_name}
-         {:ok, :done} -> {:ok, file.file_name}
-         {:error, error} -> {:error, error}
-    end
-  rescue
-    e in ExAws.Error ->
-      Logger.error(inspect(e))
-    Logger.error(e.message)
-    {:error, :invalid_bucket}
+    |> do_put_stream(file, {s3_bucket, s3_key, s3_options})
   end
 
   # Stream the file and upload to AWS as a multi-part upload
   defp do_put(file, {s3_bucket, s3_key, s3_options}) do
     file.path
     |> Upload.stream_file()
+    |> do_put_stream(file, {s3_bucket, s3_key, s3_options})
+  end
+
+  defp do_put_stream(stream, file, {s3_bucket, s3_key, s3_options}) do
+    stream
     |> S3.upload(s3_bucket, s3_key, s3_options)
     |> ExAws.request()
     |> case do
