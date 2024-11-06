@@ -1,7 +1,7 @@
 defmodule Waffle.File do
   @moduledoc false
 
-  defstruct [:path, :file_name, :binary, :is_tempfile?]
+  defstruct [:path, :file_name, :binary, :is_tempfile?, :stream]
 
   def generate_temporary_path(item \\ nil) do
     do_generate_temporary_path(item)
@@ -90,6 +90,13 @@ defmodule Waffle.File do
       true -> %Waffle.File{path: path, file_name: filename}
       false -> {:error, :invalid_file_path}
     end
+  end
+
+  #
+  # Handle a stream
+  #
+  def new(%{filename: filename, stream: stream}, _definition) when is_struct(stream) do
+    %Waffle.File{stream: stream, file_name: Path.basename(filename)}
   end
 
   #
