@@ -1,7 +1,7 @@
 defmodule Waffle.File do
   @moduledoc false
 
-  defstruct [:path, :file_name, :binary, :is_tempfile?, :stream]
+  defstruct [:path, :file_name, :binary, :is_tempfile?]
 
   def generate_temporary_path(item \\ nil) do
     do_generate_temporary_path(item)
@@ -13,7 +13,7 @@ defmodule Waffle.File do
 
   # Given a remote file
   # (respects content-disposition header)
-  def new(remote_path = "http" <> _, definition) do
+  def new("http" <> _ = remote_path, definition) do
     uri = URI.parse(remote_path)
     filename = uri.path |> Path.basename() |> URI.decode()
 
@@ -90,13 +90,6 @@ defmodule Waffle.File do
       true -> %Waffle.File{path: path, file_name: filename}
       false -> {:error, :invalid_file_path}
     end
-  end
-
-  #
-  # Handle a stream
-  #
-  def new(%{filename: filename, stream: stream}, _definition) when is_struct(stream) do
-    %Waffle.File{stream: stream, file_name: Path.basename(filename)}
   end
 
   #
@@ -199,8 +192,7 @@ defmodule Waffle.File do
   end
 
   defp request(remote_path, headers, options, tries \\ 0) do
-    with {:ok, 200, response_headers, client_ref} <-
-           :hackney.get(URI.to_string(remote_path), headers, "", options),
+    with {:ok, 200, response_headers, client_ref} <- :hackney.get(URI.to_string(remote_path), headers, "", options),
          res when elem(res, 0) == :ok <- body(client_ref, response_headers) do
       res
     else
@@ -215,6 +207,11 @@ defmodule Waffle.File do
           {:ok, :retry} -> request(remote_path, headers, options, tries + 1)
           {:error, :out_of_tries} -> {:error, :recv_timeout}
         end
+
+      {_, _, _, client_ref} ->
+        :hackney.close(client_ref)
+
+        {:error, :waffle_hackney_error}
 
       _err ->
         {:error, :waffle_hackney_error}
