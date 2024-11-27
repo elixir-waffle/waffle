@@ -130,6 +130,8 @@ defmodule Waffle.Storage.S3 do
   """
   require Logger
 
+  @behaviour Waffle.StorageBehavior
+
   alias ExAws.Config
   alias ExAws.Request.Url
   alias ExAws.S3
@@ -138,6 +140,7 @@ defmodule Waffle.Storage.S3 do
 
   @default_expiry_time 60 * 5
 
+  @impl true
   def put(definition, version, {file, scope}) do
     destination_dir = definition.storage_dir(version, {file, scope})
     s3_bucket = s3_bucket(definition, {file, scope})
@@ -152,6 +155,7 @@ defmodule Waffle.Storage.S3 do
     do_put(file, {s3_bucket, s3_key, s3_options})
   end
 
+  @impl true
   def url(definition, version, file_and_scope, options \\ []) do
     case Keyword.get(options, :signed, false) do
       false -> build_url(definition, version, file_and_scope, options)
@@ -159,6 +163,7 @@ defmodule Waffle.Storage.S3 do
     end
   end
 
+  @impl true
   def delete(definition, version, {file, scope}) do
     s3_bucket(definition, {file, scope})
     |> S3.delete_object(s3_key(definition, version, {file, scope}))

@@ -22,8 +22,11 @@ defmodule Waffle.Storage.Local do
       end
   """
 
+  @behaviour Waffle.StorageBehavior
+
   alias Waffle.Definition.Versioning
 
+  @impl true
   def put(definition, version, {file, scope}) do
     destination_path = Path.join([
       definition.storage_dir_prefix(),
@@ -41,6 +44,7 @@ defmodule Waffle.Storage.Local do
     {:ok, file.file_name}
   end
 
+  @impl true
   def url(definition, version, file_and_scope, _options \\ []) do
     local_path = Path.join([
       definition.storage_dir(version, file_and_scope),
@@ -56,6 +60,7 @@ defmodule Waffle.Storage.Local do
     |> URI.encode()
   end
 
+  @impl true
   def delete(definition, version, file_and_scope) do
     Path.join([
       definition.storage_dir_prefix(),
