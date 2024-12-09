@@ -215,6 +215,21 @@ defmodule Waffle.File do
           {:ok, :retry} -> request(remote_path, headers, options, tries + 1)
           {:error, :out_of_tries} -> {:error, :recv_timeout}
         end
+        
+      {:ok, 503, _headers, client_ref} = response ->
+        case retry(tries, options) do
+          {:ok, :retry} ->
+            request(remote_path, headers, options, tries + 1)
+
+          {:error, :out_of_tries} ->
+            :hackney.close(client_ref)
+            {:error, {:waffle_hackney_error, response}}
+        end
+
+      {:ok, _, _, client_ref} = response ->
+        :hackney.close(client_ref)
+        {:error, {:waffle_hackney_error, response}}
+
 
       _err ->
         {:error, :waffle_hackney_error}
