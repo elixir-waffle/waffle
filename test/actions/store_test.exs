@@ -245,6 +245,31 @@ defmodule WaffleTest.Actions.Store do
     end
   end
 
+  test "overrides remote filename from content-disposition header with provided filename" do
+    with_mocks([
+      {
+        :hackney_headers,
+        [:passthrough],
+        get_value: fn "content-disposition", _headers ->
+          "attachment; filename=\"image three.png\""
+        end
+      },
+      {
+        Waffle.Storage.S3,
+        [],
+        put: fn DummyDefinition, _, {%{file_name: "image four.png", path: _}, nil} ->
+          {:ok, "image four.png"}
+        end
+      }
+    ]) do
+      assert DummyDefinition.store(%{
+               filename: "image four.png",
+               remote_path: @remote_img_with_space_image_two
+             }) ==
+               {:ok, "image four.png"}
+    end
+  end
+
   test "rejects remote files with filenames and invalid remote path" do
     with_mock Waffle.Storage.S3,
       put: fn DummyDefinition, _, {%{file_name: "newfavicon.ico", path: _}, nil} ->
