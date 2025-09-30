@@ -3,49 +3,44 @@ defmodule Waffle.Storage.AzureTest do
 
   alias Waffle.Storage.Azure
 
-  describe "build_blob_name/3" do
-    test "builds correct blob name with storage directory" do
-      definition = %{
-        storage_dir: fn :thumb, _ -> "uploads/avatars" end
-      }
+  describe "SAS token generation" do
+    test "generates valid SAS token" do
+      storage_account = "testaccount"
+      container = "testcontainer"
+      blob_name = "test/blob.jpg"
+      access_key = "dGVzdGtleQ=="  # "testkey" in base64
+      expiry_in_seconds = 3600
 
-      file = %Waffle.File{file_name: "test.jpg"}
-      scope = %{id: 123}
+      sas_token = Azure.SAS.generate_sas_token(storage_account, container, blob_name, access_key, expiry_in_seconds)
 
-      blob_name = Azure.build_blob_name(definition, :thumb, {file, scope})
-
-      assert blob_name == "uploads/avatars/test.jpg"
-    end
-
-    test "builds correct blob name without storage directory" do
-      definition = %{
-        storage_dir: fn :thumb, _ -> "" end
-      }
-
-      file = %Waffle.File{file_name: "test.jpg"}
-      scope = %{id: 123}
-
-      blob_name = Azure.build_blob_name(definition, :thumb, {file, scope})
-
-      assert blob_name == "test.jpg"
+      # Check that the SAS token contains required parameters
+      assert String.contains?(sas_token, "sv=2020-12-06")
+      assert String.contains?(sas_token, "sp=r")
+      assert String.contains?(sas_token, "sr=b")
+      assert String.contains?(sas_token, "spr=https")
+      assert String.contains?(sas_token, "sig=")
     end
   end
 
-  describe "parse_config_value/1" do
-    test "parses system environment variable" do
-      System.put_env("TEST_VAR", "test_value")
+  describe "SAS URL generation" do
+    test "generates complete SAS URL" do
+      storage_account = "testaccount"
+      container = "testcontainer"
+      blob_name = "test/blob.jpg"
+      access_key = "dGVzdGtleQ=="  # "testkey" in base64
+      expiry_in_seconds = 3600
 
-      result = Azure.parse_config_value({:system, "TEST_VAR"})
+      {:ok, url} = Azure.SAS.generate_sas_url(storage_account, container, blob_name, access_key, expiry_in_seconds)
 
-      assert result == "test_value"
-
-      System.delete_env("TEST_VAR")
+      assert String.starts_with?(url, "https://testaccount.blob.core.windows.net/testcontainer/test/blob.jpg")
+      assert String.contains?(url, "?")
     end
 
-    test "returns value directly when not system tuple" do
-      result = Azure.parse_config_value("direct_value")
+    test "handles errors gracefully" do
+      # Test with invalid access key
+      result = Azure.SAS.generate_sas_url("account", "container", "blob", "invalid_key", 3600)
 
-      assert result == "direct_value"
+      assert {:error, _} = result
     end
   end
 end

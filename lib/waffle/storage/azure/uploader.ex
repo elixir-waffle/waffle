@@ -39,8 +39,8 @@ defmodule Waffle.Storage.Azure.Uploader do
     ]
 
     case Req.put(url, headers: all_headers, body: file_binary) do
-      %Req.Response{status: 201} -> {:ok, blob_name}
-      %Req.Response{status: status, body: body} ->
+      {:ok, %Req.Response{status: 201}} -> {:ok, blob_name}
+      {:ok, %Req.Response{status: status, body: body}} ->
         Logger.error("[AzureUploader] Upload failed with status #{status}: #{inspect(body)}")
         {:error, "Upload failed with status #{status}"}
       {:error, reason} ->
@@ -69,9 +69,9 @@ defmodule Waffle.Storage.Azure.Uploader do
     ]
 
     case Req.delete(url, headers: headers) do
-      %Req.Response{status: 202} -> {:ok, :deleted}
-      %Req.Response{status: 404} -> {:ok, :not_found}
-      %Req.Response{status: status, body: body} ->
+      {:ok, %Req.Response{status: 202}} -> {:ok, :deleted}
+      {:ok, %Req.Response{status: 404}} -> {:ok, :not_found}
+      {:ok, %Req.Response{status: status, body: body}} ->
         Logger.error("[AzureUploader] Delete failed with status #{status}: #{inspect(body)}")
         {:error, "Delete failed with status #{status}"}
       {:error, reason} ->
