@@ -11,8 +11,8 @@ defmodule Waffle.Storage.Azure.Uploader do
   def upload_file(file_binary, container, blob_name, headers \\ []) do
     config = azure_config()
 
-    storage_account = Keyword.fetch!(config, :storage_account)
-    access_key = Keyword.fetch!(config, :access_key)
+    storage_account = config.storage_account
+    access_key = config.access_key
 
     url = "https://#{storage_account}.blob.core.windows.net/#{container}/#{blob_name}"
 
@@ -55,8 +55,8 @@ defmodule Waffle.Storage.Azure.Uploader do
   def delete_blob(container, blob_name) do
     config = azure_config()
 
-    storage_account = Keyword.fetch!(config, :storage_account)
-    access_key = Keyword.fetch!(config, :access_key)
+    storage_account = config.storage_account
+    access_key = config.access_key
 
     url = "https://#{storage_account}.blob.core.windows.net/#{container}/#{blob_name}"
 
@@ -81,7 +81,10 @@ defmodule Waffle.Storage.Azure.Uploader do
   end
 
   defp azure_config do
-    Application.get_env(:waffle, Waffle.Storage.Azure, [])
+    %{
+      storage_account: Application.fetch_env!(:waffle, :storage_account),
+      access_key: Application.fetch_env!(:waffle, :access_key)
+    }
   end
 
   defp generate_utc_datetime do
