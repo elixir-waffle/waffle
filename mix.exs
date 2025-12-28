@@ -41,6 +41,7 @@ defmodule Waffle.Mixfile do
         "README.md",
         "documentation/examples/local.md",
         "documentation/examples/s3.md",
+        "documentation/examples/azure.md",
         "documentation/livebooks/custom_transformation.livemd"
       ]
     ]
@@ -64,6 +65,10 @@ defmodule Waffle.Mixfile do
       {:ex_aws, "~> 2.1", optional: true},
       {:ex_aws_s3, "~> 2.1", optional: true},
       {:sweet_xml, "~> 0.6", optional: true},
+
+      # If using Azure Blob Storage
+      {:req, "~> 0.4", optional: true},
+      {:timex, "~> 3.7", optional: true},
 
       # Test
       {:mock, "~> 0.3", only: :test},
