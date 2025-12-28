@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.1.10 (2025-12-28)
+
+- Handle http errors from fetching remote files (#134)
+- Added StorageBehavior (#133)
+- Accept Streams as attachments (#131)
+
 ## v1.1.9 (2024-06-14)
 
 - Fix module.function notation warnings in Elixir 1.17 #123
