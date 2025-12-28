@@ -87,6 +87,27 @@ defmodule Waffle.Definition.Storage do
   Any other return value will return `{:error, :invalid_file}` when passed through
   to `Avatar.store`.
 
+  ## File Normalization
+
+  The `normalize/1` function is used to normalize the file before processing.
+  The function must return either `{:ok, %Waffle.File{}}` or `{:error, message}`.
+
+  Here is an example of generating a unique file name using the `normalize` function:
+
+      defmodule Avatar do
+        use Waffle.Definition
+
+        def normalize({file, _}) do
+          ext = file.file_name |> Path.extname() |> String.downcase()
+          new_file_name = :crypto.strong_rand_bytes(20) |> Base.encode32(case: :lower) |> Kernel.<>(ext)
+          new_path = file.path |> Path.dirname() |> Path.join(new_file_name)
+
+          with :ok <- File.rename(file.path, new_path) do
+            {:ok, %{file | path: new_path, file_name: new_file_name}}
+          end
+        end
+      end
+
   ## Passing custom headers when downloading from remote path
 
   By default, when downloading files from remote path request headers are empty,
@@ -120,6 +141,7 @@ defmodule Waffle.Definition.Storage do
       def storage_dir_prefix, do: Application.get_env(:waffle, :storage_dir_prefix, "")
       def storage_dir(_, _), do: Application.get_env(:waffle, :storage_dir, "uploads")
       def validate(_), do: true
+      def normalize({file, _scope}), do: {:ok, file}
       def default_url(version, _), do: default_url(version)
       def default_url(_), do: nil
       def __storage, do: Application.get_env(:waffle, :storage, Waffle.Storage.S3)
@@ -128,6 +150,7 @@ defmodule Waffle.Definition.Storage do
                      storage_dir: 2,
                      filename: 2,
                      validate: 1,
+                     normalize: 1,
                      default_url: 1,
                      default_url: 2,
                      __storage: 0,
