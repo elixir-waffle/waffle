@@ -10,11 +10,12 @@ defmodule WaffleTest.Storage.Local do
   setup do
     File.mkdir_p("waffletest/uploads")
     File.mkdir_p("waffletest/tmp")
-    System.put_env("TMPDIR", "waffletest/tmp")
+    Application.put_env(:waffle, :temp_dir, "waffletest/tmp")
 
     on_exit fn ->
       File.rm_rf("waffletest/uploads")
       File.rm_rf("waffletest/tmp")
+      Application.delete_env(:waffle, :temp_dir)
     end
   end
 
