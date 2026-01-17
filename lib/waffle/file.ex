@@ -134,7 +134,14 @@ defmodule Waffle.File do
       |> Base.encode32()
       |> Kernel.<>(string_extension)
 
-    Path.join(System.tmp_dir(), file_name)
+    Path.join(tmp_dir(), file_name)
+  end
+
+  defp tmp_dir do
+    case Application.get_env(:waffle, :tmp_dir) do
+      nil -> System.tmp_dir()
+      value -> value
+    end
   end
 
   defp write_binary(file) do
