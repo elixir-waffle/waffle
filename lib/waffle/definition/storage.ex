@@ -107,6 +107,19 @@ defmodule Waffle.Definition.Storage do
   This code would authenticate request only for specific domain. Otherwise, it would send
   empty request headers.
 
+  ## Temporary Directory
+
+  When processing files, Waffle creates temporary files for operations like downloading
+  remote files or applying transformations. By default, these files are stored in the
+  system's temporary directory (as returned by `System.tmp_dir/0`).
+
+  You can customize this location by setting the `:tmp_dir` configuration option:
+
+      config :waffle,
+        tmp_dir: "/path/to/custom/tmp"
+
+  Waffle may fail to remove temporary files if the process using them crashes.
+
   """
   defmacro __using__(_) do
     quote do
