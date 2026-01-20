@@ -15,6 +15,12 @@ Waffle is a flexible file upload library for Elixir with straightforward integra
 
 [Documentation](https://hexdocs.pm/waffle)
 
+---
+
+Need help with Waffle integration or your Elixir project? [Hire me](https://cal.com/achempion/hire)
+
+---
+
 ## Installation
 
 Add the latest stable release to your `mix.exs` file, along with the
