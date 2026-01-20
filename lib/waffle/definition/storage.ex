@@ -54,6 +54,7 @@ defmodule Waffle.Definition.Storage do
 
     * `Waffle.Storage.Local`
     * `Waffle.Storage.S3`
+    * `Waffle.Storage.Azure`
 
   Override the `__storage` function in your definition module if you
   want to use a different type of storage for a particular uploader.
@@ -129,6 +130,16 @@ defmodule Waffle.Definition.Storage do
       def bucket, do: Application.fetch_env!(:waffle, :bucket)
       def bucket({_file, _scope}), do: bucket()
       def asset_host, do: Application.get_env(:waffle, :asset_host)
+
+      # Azure Blob Storage configuration
+      def storage_account, do: Application.fetch_env!(:waffle, :storage_account)
+      def storage_account({_file, _scope}), do: storage_account()
+      def container, do: Application.fetch_env!(:waffle, :container)
+      def container({_file, _scope}), do: container()
+      def access_key, do: Application.fetch_env!(:waffle, :access_key)
+      def access_key({_file, _scope}), do: access_key()
+      def public_access, do: Application.get_env(:waffle, :public_access, false)
+      def public_access(_, _), do: public_access()
       def filename(_, {file, _}), do: Path.basename(file.file_name, Path.extname(file.file_name))
       def storage_dir_prefix, do: Application.get_env(:waffle, :storage_dir_prefix, "")
       def storage_dir(_, _), do: Application.get_env(:waffle, :storage_dir, "uploads")
@@ -146,7 +157,15 @@ defmodule Waffle.Definition.Storage do
                      __storage: 0,
                      bucket: 0,
                      bucket: 1,
-                     asset_host: 0
+                     asset_host: 0,
+                     storage_account: 0,
+                     storage_account: 1,
+                     container: 0,
+                     container: 1,
+                     access_key: 0,
+                     access_key: 1,
+                     public_access: 0,
+                     public_access: 2
 
       @before_compile Waffle.Definition.Storage
     end
@@ -156,6 +175,7 @@ defmodule Waffle.Definition.Storage do
     quote do
       def acl(_, _), do: @acl
       def s3_object_headers(_, _), do: []
+      def azure_blob_headers(_, _), do: []
       def async, do: @async
       def remote_file_headers(_), do: []
     end
