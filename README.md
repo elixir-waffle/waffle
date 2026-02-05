@@ -17,7 +17,7 @@ Waffle is a flexible file upload library for Elixir with straightforward integra
 
 ---
 
-Need help with Waffle integration or your Elixir project? [Hire me](https://cal.com/achempion/hire)
+Using Waffle in your org? I'd love to learn more, let's [have a chat](https://cal.com/achempion/meet) or just [send me an email](mailto:me@achempion.com?subject=Feedback%20on%20Waffle)
 
 ---
 
