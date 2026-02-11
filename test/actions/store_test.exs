@@ -55,6 +55,27 @@ defmodule WaffleTest.Actions.Store do
     def __versions, do: [:original, :thumb, :skipped]
   end
 
+  defmodule DummyDefinitionWithNormalization do
+    use Waffle.Actions.Store
+    use Waffle.Definition.Storage
+
+    def normalize({file, _scope}) do
+      ext = file.file_name |> Path.extname() |> String.downcase()
+      new_file_name = file.file_name |> Path.basename(ext) |> Kernel.<>("_normalized#{ext}")
+      new_path = storage_dir_prefix() |> Path.join(new_file_name)
+
+      with :ok <- File.cp(file.path, new_path) do
+        {:ok, %{file | path: new_path, file_name: new_file_name}}
+      end
+    end
+
+    def storage_dir_prefix, do: "waffletest"
+
+    def transform(_, _), do: :noaction
+    def __versions, do: [:original]
+    def __storage, do: Waffle.Storage.Local
+  end
+
   test "custom transformations change a file extension" do
     with_mock Waffle.Storage.S3,
       put: fn DummyDefinitionWithExtension, _, {%{file_name: "image.jpg", path: _}, nil} ->
@@ -74,6 +95,10 @@ defmodule WaffleTest.Actions.Store do
 
   test "supports custom validation error message" do
     assert DummyDefinitionWithValidationError.store(__ENV__.file) == {:error, "invalid file type"}
+  end
+
+  test "normalizes file" do
+    assert DummyDefinitionWithNormalization.store(@img) == {:ok, "image_normalized.png"}
   end
 
   test "single binary argument is interpreted as file path" do

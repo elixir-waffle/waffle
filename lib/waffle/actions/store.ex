@@ -68,16 +68,37 @@ defmodule Waffle.Actions.Store do
   defp put(_definition, {error = {:error, _msg}, _scope}), do: error
 
   defp put(definition, {%Waffle.File{} = file, scope}) do
+    with {:ok, file} <- validate(definition, {file, scope}),
+         {:ok, file} <- normalize(definition, {file, scope}) do
+      definition
+      |> put_versions({file, scope})
+      |> cleanup!(file)
+    end
+  end
+
+  defp validate(definition, {file, scope}) do
     case definition.validate({file, scope}) do
       result when result == true or result == :ok ->
-        put_versions(definition, {file, scope})
-        |> cleanup!(file)
+        {:ok, file}
 
       {:error, message} ->
         {:error, message}
 
       _ ->
         {:error, :invalid_file}
+    end
+  end
+
+  defp normalize(definition, {file, scope}) do
+    case definition.normalize({file, scope}) do
+      {:ok, %Waffle.File{} = file} ->
+        {:ok, file}
+
+      {:error, message} ->
+        {:error, message}
+
+      _ ->
+        {:error, :normalization_error}
     end
   end
 
@@ -158,5 +179,4 @@ defmodule Waffle.Actions.Store do
 
     result
   end
-
 end
