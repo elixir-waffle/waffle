@@ -65,8 +65,51 @@ defmodule Waffle.Definition.Storage do
   files as well.
 
   Waffle delegates validation to a `validate/1` function with a tuple
-  of the file and scope.  As an example, in order to validate that an
-  uploaded file conforms to popular image formats, you can use:
+  of the file and scope.  Validation will be considered successful if
+  the function returns `true` or `:ok`. A customized error message can
+  be returned in the form of `{:error, message}`. Any other return value
+  will return `{:error, :invalid_file}`.
+
+  ### Validating with external library (e.g. magic_bytes):
+
+  Extension-based validation can be trivially bypassed by renaming a file.
+  Because ImageMagick (and tools built on it) historically delegate format
+  detection to GhostScript via file extension. Validating by magic bytes,
+  reading the actual file header - eliminates that vector.
+
+  The [`magic_bytes`](https://hex.pm/packages/magic_bytes) package provides
+  exactly this. `%Waffle.File{}` exposes `path` (local, remote, and binary
+  uploads) and `stream` (set for streaming uploads), which map directly to
+  `MagicBytes.from_path/1` and `MagicBytes.from_stream/1`:
+
+      defmodule Avatar do
+        use Waffle.Definition
+
+        @allowed_types ~w(image/jpeg image/png image/gif image/webp)
+
+        def validate({%{path: path}, _}) when not is_nil(path) do
+          case MagicBytes.from_path(path) do
+            {:ok, mime} when mime in @allowed_types -> :ok
+            {:ok, _mime} -> {:error, "invalid file type"}
+            {:error, :unknown} -> {:error, "invalid file type"}
+            {:error, _} -> {:error, "could not read file"}
+          end
+        end
+
+        def validate({%{stream: stream}, _}) when not is_nil(stream) do
+          case MagicBytes.from_stream(stream) do
+            {:ok, mime} when mime in @allowed_types -> :ok
+            {:ok, _mime} -> {:error, "invalid file type"}
+            {:error, :unknown} -> {:error, "invalid file type"}
+            {:error, _} -> {:error, "could not read file"}
+          end
+        end
+      end
+
+  ### Validating by file extension
+
+  Extension-based validation is simpler but less secure (see above). It may
+  be appropriate when you control the upload source or as an additional layer:
 
       defmodule Avatar do
         use Waffle.Definition
@@ -81,11 +124,6 @@ defmodule Waffle.Definition.Storage do
           end
         end
       end
-
-  Validation will be considered successful if the function returns `true` or `:ok`.
-  A customized error message can be returned in the form of `{:error, message}`.
-  Any other return value will return `{:error, :invalid_file}` when passed through
-  to `Avatar.store`.
 
   ## Passing custom headers when downloading from remote path
 
