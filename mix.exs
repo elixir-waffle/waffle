@@ -67,7 +67,6 @@ defmodule Waffle.Mixfile do
 
       # Test
       {:mock, "~> 0.3", only: :test},
-      {:magic_bytes, "~> 0.1", only: :test},
 
       # Dev
       {:ex_doc, "~> 0.21", only: :dev},
