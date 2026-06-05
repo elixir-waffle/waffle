@@ -206,11 +206,40 @@ defmodule Waffle.File do
   end
 
   defp request(remote_path, headers, options, tries \\ 0) do
-    with {:ok, 200, response_headers, client_ref} <-
-           :hackney.get(URI.to_string(remote_path), headers, "", options),
-         res when elem(res, 0) == :ok <- body(client_ref, response_headers) do
-      res
-    else
+    recv_timeout = Keyword.get(options, :recv_timeout, 5_000)
+
+    # hackney 4.x recv_timeout is only enforced for HTTP/1.1 socket reads; it has
+    # no effect on HTTP/2 connections (which receive data via async Erlang messages).
+    # Wrapping with Task.yield gives a protocol-agnostic timeout.
+    task = Task.async(fn ->
+      :hackney.get(URI.to_string(remote_path), headers, "", options)
+    end)
+
+    hackney_result =
+      case Task.yield(task, recv_timeout) do
+        {:ok, result} -> result
+        nil ->
+          Task.shutdown(task, :brutal_kill)
+          {:error, :timeout}
+      end
+
+    case hackney_result do
+      {:ok, 200, response_headers, body} ->
+        max_body_length = Application.get_env(:waffle, :max_body_length, :infinity)
+
+        if max_body_length != :infinity and byte_size(body) > max_body_length do
+          {:error, :body_too_large}
+        else
+          headers_obj = :hackney_headers.new(response_headers)
+          filename = content_disposition(headers_obj)
+
+          if is_nil(filename) do
+            {:ok, body}
+          else
+            {:ok, body, filename}
+          end
+        end
+
       {:error, %{reason: :timeout}} ->
         case retry(tries, options) do
           {:ok, :retry} -> request(remote_path, headers, options, tries + 1)
@@ -223,41 +252,20 @@ defmodule Waffle.File do
           {:error, :out_of_tries} -> {:error, :recv_timeout}
         end
 
-      {:ok, 503, _headers, client_ref} = response ->
+      {:ok, 503, _headers, _body} = response ->
         case retry(tries, options) do
           {:ok, :retry} ->
             request(remote_path, headers, options, tries + 1)
 
           {:error, :out_of_tries} ->
-            :hackney.close(client_ref)
             {:error, {:waffle_hackney_error, response}}
         end
 
-      {:ok, _, _, client_ref} = response ->
-        :hackney.close(client_ref)
+      {:ok, _, _, _} = response ->
         {:error, {:waffle_hackney_error, response}}
 
       _err ->
         {:error, :waffle_hackney_error}
-    end
-  end
-
-  defp body(client_ref, response_headers) do
-    max_body_length = Application.get_env(:waffle, :max_body_length, :infinity)
-
-    case :hackney.body(client_ref, max_body_length) do
-      {:ok, body} ->
-        response_headers = :hackney_headers.new(response_headers)
-        filename = content_disposition(response_headers)
-
-        if is_nil(filename) do
-          {:ok, body}
-        else
-          {:ok, body, filename}
-        end
-
-      err ->
-        err
     end
   end
 
@@ -267,12 +275,20 @@ defmodule Waffle.File do
         nil
 
       value ->
-        case :hackney_headers.content_disposition(value) do
-          {_, [{"filename", filename} | _]} ->
-            filename
+        parse_content_disposition_filename(value)
+    end
+  end
 
-          _ ->
-            nil
+  @doc false
+  def parse_content_disposition_filename(value) do
+    case Regex.run(~r/filename="([^"]+)"/i, value) do
+      [_, filename] when filename != "" ->
+        filename
+
+      _ ->
+        case Regex.run(~r/filename=([^";\s][^;\s]*)/i, value) do
+          [_, filename] when filename != "" -> filename
+          _ -> nil
         end
     end
   end

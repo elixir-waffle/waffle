@@ -34,7 +34,7 @@ defp deps do
     # If using S3:
     {:ex_aws, "~> 2.1.2"},
     {:ex_aws_s3, "~> 2.0"},
-    {:hackney, "~> 1.9"},
+    {:hackney, ">= 4.0.1"},
     {:sweet_xml, "~> 0.6"}
   ]
 end
