@@ -23,18 +23,20 @@ Already using Waffle in your org? I'd love to learn more, let's [have a chat](ht
 
 ## Installation
 
-Add the latest stable release to your `mix.exs` file, along with the
-required dependencies for `ExAws` if appropriate:
+Add the latest stable release to your `mix.exs` file:
 
 ```elixir
 defp deps do
   [
     {:waffle, "~> 1.1"},
 
+    # HTTP client — required for downloading remote files (choose one):
+    {:hackney, "~> 1.9"},   # default
+    # {:finch, "~> 0.18"},  # alternative
+
     # If using S3:
-    {:ex_aws, "~> 2.1.2"},
-    {:ex_aws_s3, "~> 2.0"},
-    {:hackney, "~> 1.9"},
+    {:ex_aws, "~> 2.1"},
+    {:ex_aws_s3, "~> 2.1"},
     {:sweet_xml, "~> 0.6"}
   ]
 end
@@ -79,6 +81,42 @@ config :ex_aws,
   json_codec: Jason
   # any configurations provided by https://github.com/ex-aws/ex_aws
 ```
+
+### Setup an HTTP client
+
+Waffle uses an HTTP client to download remote files. Two built-in implementations are provided:
+
+**Hackney** (default):
+
+```elixir
+# mix.exs
+{:hackney, "~> 1.9"}
+```
+
+```elixir
+# config.exs
+config :waffle, :http_client, Waffle.HTTPClient.Hackney
+```
+
+**Finch**:
+
+```elixir
+# mix.exs
+{:finch, "~> 0.18"}
+```
+
+```elixir
+# application.ex
+children = [
+  {Finch, name: MyApp.Finch}
+]
+
+# config.exs
+config :waffle, :http_client, Waffle.HTTPClient.Finch
+config :waffle, Waffle.HTTPClient.Finch, pool_name: MyApp.Finch
+```
+
+You can also implement your own client by adopting the `Waffle.HTTPClient` behaviour.
 
 ### Define a definition module
 

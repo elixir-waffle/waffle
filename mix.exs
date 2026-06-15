@@ -58,7 +58,9 @@ defmodule Waffle.Mixfile do
 
   defp deps do
     [
-      {:hackney, "~> 1.9"},
+      # Optional HTTP clients (at least one is required for downloading remote files)
+      {:hackney, "~> 1.9", optional: true},
+      {:finch, "~> 0.18", optional: true},
 
       # If using Amazon S3
       {:ex_aws, "~> 2.1", optional: true},
@@ -72,7 +74,7 @@ defmodule Waffle.Mixfile do
       {:ex_doc, "~> 0.21", only: :dev},
 
       # Dev, Test
-      {:credo, "~> 1.4", only: [:dev, :test], runtime: false}
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]
   end
 end
