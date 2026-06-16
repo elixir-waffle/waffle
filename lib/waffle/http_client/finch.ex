@@ -26,12 +26,13 @@ if Code.ensure_loaded?(Finch) do
     |--------------------|--------------|--------------------------------------------------------|
     | `:recv_timeout`    | `5_000`      | Timeout for receiving a response, in milliseconds      |
     | `:max_body_length` | `:infinity`  | Maximum response body size, in bytes                   |
+    | `:max_redirects`   | `5`          | Maximum number of redirects to follow (`0` disables)   |
 
     > #### Unsupported options {: .info}
     >
-    > `:connect_timeout` and `:follow_redirect` are not supported — Finch does not
-    > expose per-request connection settings or automatic redirect handling. Configure
-    > connection options (e.g. timeouts, TLS) at pool startup via `Finch.start_link/1`.
+    > `:connect_timeout` is not supported at the request level — Finch does not expose
+    > per-request connection settings. Configure connection options (e.g. timeouts, TLS)
+    > at pool startup via `Finch.start_link/1`.
     """
 
     @behaviour Waffle.HTTPClient
@@ -51,7 +52,7 @@ if Code.ensure_loaded?(Finch) do
       try do
         request
         |> Finch.stream_while(finch_name, acc, stream_fun(max_body_length), finch_options)
-        |> handle_result()
+        |> handle_result(url, headers, options)
       rescue
         exception -> {:error, {:http_error, exception}}
       end
@@ -74,22 +75,50 @@ if Code.ensure_loaded?(Finch) do
         else: {:cont, %{acc | body: [chunk | acc.body], bytes: new_bytes}}
     end
 
-    defp handle_result({:ok, %{status: 200, body: :over_limit}}) do
+    defp handle_result({:ok, %{status: 200, body: :over_limit}}, _url, _headers, _options) do
       {:error, {:http_error, :body_too_large}}
     end
 
-    defp handle_result({:ok, %{status: 200, headers: resp_headers, body: parts}}) do
+    defp handle_result(
+           {:ok, %{status: 200, headers: resp_headers, body: parts}},
+           _url,
+           _headers,
+           _options
+         ) do
       body = parts |> Enum.reverse() |> IO.iodata_to_binary()
       filename = find_content_disposition_filename(resp_headers)
       if filename, do: {:ok, body, filename}, else: {:ok, body}
     end
 
-    defp handle_result({:ok, %{status: 503}}), do: {:error, :service_unavailable}
+    defp handle_result({:ok, %{status: 503}}, _url, _headers, _options) do
+      {:error, :service_unavailable}
+    end
 
-    defp handle_result({:ok, %{status: status}}),
-      do: {:error, {:http_error, {:unexpected_status, status}}}
+    defp handle_result({:ok, %{status: status, headers: resp_headers}}, url, headers, options)
+         when status in 300..399 do
+      max_redirects = Keyword.get(options, :max_redirects, 5)
 
-    defp handle_result({:error, reason, _acc}), do: classify_error(reason)
+      if max_redirects == 0 do
+        {:error, {:http_error, :too_many_redirects}}
+      else
+        case List.keyfind(resp_headers, "location", 0) do
+          {_, location} ->
+            new_url = url |> URI.merge(location) |> URI.to_string()
+            get(new_url, headers, Keyword.put(options, :max_redirects, max_redirects - 1))
+
+          nil ->
+            {:error, {:http_error, {:unexpected_status, status}}}
+        end
+      end
+    end
+
+    defp handle_result({:ok, %{status: status}}, _url, _headers, _options) do
+      {:error, {:http_error, {:unexpected_status, status}}}
+    end
+
+    defp handle_result({:error, reason, _acc}, _url, _headers, _options) do
+      classify_error(reason)
+    end
 
     defp classify_error(%{reason: :timeout}), do: {:error, :timeout}
 

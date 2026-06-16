@@ -113,6 +113,58 @@ if Code.ensure_loaded?(Finch) do
           Waffle.HTTPClient.Finch.get("http://example.com/file.jpg", [], [])
         end
       end
+
+      test "follows a redirect and returns the final response" do
+        redirect_headers = [{"location", "http://example.com/final.jpg"}]
+
+        with_mock Finch, [:passthrough],
+          stream_while: fn req, _pool, acc, fun, _opts ->
+            if req.path == "/file.jpg",
+              do: simulate_stream(acc, fun, 301, redirect_headers, []),
+              else: simulate_stream(acc, fun, 200, [], ["body"])
+          end do
+          assert Waffle.HTTPClient.Finch.get("http://example.com/file.jpg", [], []) ==
+                   {:ok, "body"}
+        end
+      end
+
+      test "follows a relative redirect" do
+        redirect_headers = [{"location", "/final.jpg"}]
+
+        with_mock Finch, [:passthrough],
+          stream_while: fn req, _pool, acc, fun, _opts ->
+            if req.path == "/file.jpg",
+              do: simulate_stream(acc, fun, 302, redirect_headers, []),
+              else: simulate_stream(acc, fun, 200, [], ["body"])
+          end do
+          assert Waffle.HTTPClient.Finch.get("http://example.com/file.jpg", [], []) ==
+                   {:ok, "body"}
+        end
+      end
+
+      test "returns {:error, {:http_error, :too_many_redirects}} when redirect limit exceeded" do
+        redirect_headers = [{"location", "http://example.com/file.jpg"}]
+
+        with_mock Finch, [:passthrough],
+          stream_while: fn _req, _pool, acc, fun, _opts ->
+            simulate_stream(acc, fun, 301, redirect_headers, [])
+          end do
+          assert Waffle.HTTPClient.Finch.get("http://example.com/file.jpg", [], max_redirects: 2) ==
+                   {:error, {:http_error, :too_many_redirects}}
+        end
+      end
+
+      test "does not follow redirects when max_redirects is 0" do
+        redirect_headers = [{"location", "http://example.com/final.jpg"}]
+
+        with_mock Finch, [:passthrough],
+          stream_while: fn _req, _pool, acc, fun, _opts ->
+            simulate_stream(acc, fun, 301, redirect_headers, [])
+          end do
+          assert Waffle.HTTPClient.Finch.get("http://example.com/file.jpg", [], max_redirects: 0) ==
+                   {:error, {:http_error, :too_many_redirects}}
+        end
+      end
     end
   end
 end
