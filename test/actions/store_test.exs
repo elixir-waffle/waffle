@@ -154,7 +154,7 @@ defmodule WaffleTest.Actions.Store do
         {:ok, "favicon.ico"}
       end do
       assert DummyDefinition.store("https://www.google.com/favicon.ico") ==
-               {:error, :timeout}
+               {:error, :recv_timeout}
     end
   end
 
@@ -176,7 +176,7 @@ defmodule WaffleTest.Actions.Store do
                remote_path: "https://www.google.com/favicon.ico",
                filename: "newfavicon.ico"
              }) ==
-               {:error, :timeout}
+               {:error, :recv_timeout}
     end
   end
 

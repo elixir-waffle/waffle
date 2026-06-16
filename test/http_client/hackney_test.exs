@@ -51,11 +51,11 @@ defmodule WaffleTest.HTTPClient.Hackney do
       end
     end
 
-    test "returns {:error, :timeout} on :timeout atom" do
+    test "returns {:error, :recv_timeout} on :timeout atom" do
       with_mock :hackney,
         get: fn _url, _headers, "", _opts -> {:error, :timeout} end do
         result = Hackney.get("http://example.com/file.jpg", [], [])
-        assert result == {:error, :timeout}
+        assert result == {:error, :recv_timeout}
       end
     end
 

@@ -5,7 +5,7 @@ defmodule Waffle.HTTPClient do
   ## Built-in implementations
 
   - `Waffle.HTTPClient.Hackney` — default, uses `:hackney`. Add `{:hackney, "~> 1.9"}` to
-    your deps (or `{:hackney, ">= 4.0.1"}` for the CVE-free version).
+    your deps.
   - `Waffle.HTTPClient.Finch` — uses `Finch`. Add `{:finch, "~> 0.18"}` to your deps,
     start a `Finch` pool in your application supervision tree, and configure
     `config :waffle, Waffle.HTTPClient.Finch, pool_name: MyApp.Finch`.

@@ -59,7 +59,7 @@ defmodule Waffle.Mixfile do
   defp deps do
     [
       # Optional HTTP clients (at least one is required for downloading remote files)
-      {:hackney, "~> 1.9", optional: true},
+      {:hackney, "~> 1.9"},
       {:finch, "~> 0.18", optional: true},
 
       # If using Amazon S3

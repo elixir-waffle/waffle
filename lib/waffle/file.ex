@@ -212,7 +212,7 @@ defmodule Waffle.File do
       {:ok, body, filename} ->
         {:ok, body, filename}
 
-      {:error, reason} when reason in [:timeout, :service_unavailable] ->
+      {:error, reason} when reason in [:timeout, :recv_timeout, :service_unavailable] ->
         retry_or_error(remote_path, headers, options, tries, reason)
 
       {:error, _} = err ->

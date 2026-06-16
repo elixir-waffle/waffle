@@ -6,10 +6,6 @@ defmodule Waffle.HTTPClient.Hackney do
 
       {:hackney, "~> 1.9"}
 
-  Or, to use the CVE-free version (requires OTP 26+):
-
-      {:hackney, ">= 4.0.1"}
-
   ## Configuration
 
       config :waffle, :http_client, Waffle.HTTPClient.Hackney
@@ -56,7 +52,7 @@ defmodule Waffle.HTTPClient.Hackney do
         {:error, :timeout}
 
       {:error, :timeout} ->
-        {:error, :timeout}
+        {:error, :recv_timeout}
 
       {:error, reason} ->
         {:error, {:http_error, reason}}
