@@ -48,6 +48,7 @@ defmodule Waffle.HTTPClient.Hackney do
         :hackney.close(client_ref)
         {:error, {:http_error, :unexpected_status}}
 
+      # hackney returns a map for connect timeout and a bare atom for recv timeout
       {:error, %{reason: :timeout}} ->
         {:error, :timeout}
 

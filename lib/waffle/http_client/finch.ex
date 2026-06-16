@@ -25,8 +25,13 @@ if Code.ensure_loaded?(Finch) do
     | Option             | Default      | Description                                            |
     |--------------------|--------------|--------------------------------------------------------|
     | `:recv_timeout`    | `5_000`      | Timeout for receiving a response, in milliseconds      |
-    | `:connect_timeout` | `10_000`     | Timeout for establishing a connection, in milliseconds |
     | `:max_body_length` | `:infinity`  | Maximum response body size, in bytes                   |
+
+    > #### Unsupported options {: .info}
+    >
+    > `:connect_timeout` and `:follow_redirect` are not supported — Finch does not
+    > expose per-request connection settings or automatic redirect handling. Configure
+    > connection options (e.g. timeouts, TLS) at pool startup via `Finch.start_link/1`.
     """
 
     @behaviour Waffle.HTTPClient
@@ -36,13 +41,9 @@ if Code.ensure_loaded?(Finch) do
       finch_config = Application.get_env(:waffle, Waffle.HTTPClient.Finch, [])
       finch_name = Keyword.get(finch_config, :pool_name, Waffle.Finch)
       recv_timeout = Keyword.get(options, :recv_timeout, 5_000)
-      connect_timeout = Keyword.get(options, :connect_timeout, 10_000)
       max_body_length = Keyword.get(options, :max_body_length, :infinity)
 
-      finch_options = [
-        receive_timeout: recv_timeout,
-        connect_options: [timeout: connect_timeout]
-      ]
+      finch_options = [receive_timeout: recv_timeout]
 
       request = Finch.build(:get, url, headers)
       acc = %{status: nil, headers: [], body: [], bytes: 0}
