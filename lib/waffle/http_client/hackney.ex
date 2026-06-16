@@ -17,6 +17,7 @@ defmodule Waffle.HTTPClient.Hackney do
   | `:recv_timeout`    | `5_000`      | Timeout for receiving a response, in milliseconds      |
   | `:connect_timeout` | `10_000`     | Timeout for establishing a connection, in milliseconds |
   | `:max_body_length` | `:infinity`  | Maximum response body size, in bytes                   |
+  | `:follow_redirect` | `true`       | Whether to follow HTTP redirects automatically         |
   """
 
   @behaviour Waffle.HTTPClient

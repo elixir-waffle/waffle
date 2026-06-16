@@ -30,9 +30,8 @@ if Code.ensure_loaded?(Finch) do
 
     > #### Unsupported options {: .info}
     >
-    > `:connect_timeout` is not supported at the request level — Finch does not expose
-    > per-request connection settings. Configure connection options (e.g. timeouts, TLS)
-    > at pool startup via `Finch.start_link/1`.
+    > - `:connect_timeout` — not supported; configure connection settings (e.g. timeouts, TLS) at pool startup via `Finch.start_link/1`
+    > - `:follow_redirect` — not supported as a boolean; use `:max_redirects` to control redirect behaviour (set to `0` to disable)
     """
 
     @behaviour Waffle.HTTPClient
