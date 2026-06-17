@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Add pluggable HTTP client behaviour (`Waffle.HTTPClient`) with `Waffle.HTTPClient.Hackney`
+  as the default implementation (#150)
+  - `:timeout` and `:recv_timeout` error atoms are **unchanged** from previous behaviour
+  - `{:error, :service_unavailable}` replaces `{:error, {:waffle_hackney_error, {:ok, 503, ...}}}` on 503 out of retries
+  - Non-2xx errors now return `{:error, {:http_error, status_code}}` (e.g. `{:error, {:http_error, 404}}`), replacing `{:error, {:waffle_hackney_error, {:ok, status, headers, ref}}}`
+
 ## v1.1.10 (2025-12-28)
 
 - Handle http errors from fetching remote files (#134)

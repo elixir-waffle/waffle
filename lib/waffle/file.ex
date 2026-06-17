@@ -185,11 +185,6 @@ defmodule Waffle.File do
     end
   end
 
-  # hackney :connect_timeout - timeout used when establishing a connection, in milliseconds
-  # hackney :recv_timeout - timeout used when receiving from a connection, in milliseconds
-  # hackney :max_body_length - maximum size of the file to download, in bytes. Defaults to :infinity
-  # :backoff_max - maximum backoff time, in milliseconds
-  # :backoff_factor - a backoff factor to apply between attempts, in milliseconds
   defp get_remote_path(remote_path, definition) do
     headers = definition.remote_file_headers(remote_path)
 
@@ -197,6 +192,7 @@ defmodule Waffle.File do
       follow_redirect: true,
       recv_timeout: Application.get_env(:waffle, :recv_timeout, 5_000),
       connect_timeout: Application.get_env(:waffle, :connect_timeout, 10_000),
+      max_body_length: Application.get_env(:waffle, :max_body_length, :infinity),
       max_retries: Application.get_env(:waffle, :max_retries, 3),
       backoff_factor: Application.get_env(:waffle, :backoff_factor, 1000),
       backoff_max: Application.get_env(:waffle, :backoff_max, 30_000)
@@ -206,80 +202,34 @@ defmodule Waffle.File do
   end
 
   defp request(remote_path, headers, options, tries \\ 0) do
-    with {:ok, 200, response_headers, client_ref} <-
-           :hackney.get(URI.to_string(remote_path), headers, "", options),
-         res when elem(res, 0) == :ok <- body(client_ref, response_headers) do
-      res
-    else
-      {:error, %{reason: :timeout}} ->
-        case retry(tries, options) do
-          {:ok, :retry} -> request(remote_path, headers, options, tries + 1)
-          {:error, :out_of_tries} -> {:error, :timeout}
-        end
+    http_client = Application.get_env(:waffle, :http_client, Waffle.HTTPClient.Hackney)
+    url = URI.to_string(remote_path)
 
-      {:error, :timeout} ->
-        case retry(tries, options) do
-          {:ok, :retry} -> request(remote_path, headers, options, tries + 1)
-          {:error, :out_of_tries} -> {:error, :recv_timeout}
-        end
-
-      {:ok, 503, _headers, client_ref} = response ->
-        case retry(tries, options) do
-          {:ok, :retry} ->
-            request(remote_path, headers, options, tries + 1)
-
-          {:error, :out_of_tries} ->
-            :hackney.close(client_ref)
-            {:error, {:waffle_hackney_error, response}}
-        end
-
-      {:ok, _, _, client_ref} = response ->
-        :hackney.close(client_ref)
-        {:error, {:waffle_hackney_error, response}}
-
-      _err ->
-        {:error, :waffle_hackney_error}
-    end
-  end
-
-  defp body(client_ref, response_headers) do
-    max_body_length = Application.get_env(:waffle, :max_body_length, :infinity)
-
-    case :hackney.body(client_ref, max_body_length) do
+    case http_client.get(url, headers, options) do
       {:ok, body} ->
-        response_headers = :hackney_headers.new(response_headers)
-        filename = content_disposition(response_headers)
+        {:ok, body}
 
-        if is_nil(filename) do
-          {:ok, body}
-        else
-          {:ok, body, filename}
-        end
+      {:ok, body, filename} ->
+        {:ok, body, filename}
 
-      err ->
+      {:error, reason} when reason in [:timeout, :recv_timeout, :service_unavailable] ->
+        retry_or_error(remote_path, headers, options, tries, reason)
+
+      {:error, _} = err ->
         err
     end
   end
 
-  defp content_disposition(headers) do
-    case :hackney_headers.get_value("content-disposition", headers) do
-      :undefined ->
-        nil
-
-      value ->
-        case :hackney_headers.content_disposition(value) do
-          {_, [{"filename", filename} | _]} ->
-            filename
-
-          _ ->
-            nil
-        end
+  defp retry_or_error(remote_path, headers, options, tries, reason) do
+    case retry(tries, options) do
+      {:ok, :retry} -> request(remote_path, headers, options, tries + 1)
+      {:error, :out_of_tries} -> {:error, reason}
     end
   end
 
   defp retry(tries, options) do
     if tries < options[:max_retries] do
-      backoff = round(options[:backoff_factor] * :math.pow(2, tries - 1))
+      backoff = round(options[:backoff_factor] * :math.pow(2, tries))
       backoff = :erlang.min(backoff, options[:backoff_max])
       :timer.sleep(backoff)
       {:ok, :retry}
