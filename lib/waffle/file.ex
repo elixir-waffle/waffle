@@ -146,7 +146,7 @@ defmodule Waffle.File do
 
   defp write_binary(file) do
     path = generate_temporary_path(file)
-    File.write!(path, file.binary)
+    write_to_file(path, file.binary)
 
     %__MODULE__{
       file_name: file.file_name,
@@ -172,17 +172,29 @@ defmodule Waffle.File do
 
     case remote_file do
       {:ok, body, filename} ->
-        case File.write(local_path, body) do
+        case write_to_file(local_path, body) do
           :ok -> {:ok, filename}
           _ -> :error
         end
 
       {:ok, body} ->
-        File.write(local_path, body)
+        :ok = write_to_file(local_path, body)
+
+
 
       {:error, _reason} = err ->
         err
     end
+  end
+
+  #stream binary in chuck into the file. Fixes the write for >2GB files.
+  defp write_to_file(local_path, body) do
+    body
+    |> StringIO.open()
+    |> elem(1)
+    |> IO.binstream(1024*1024*10)
+    |> Stream.into(File.stream!(local_path))
+    |> Stream.run
   end
 
   # hackney :connect_timeout - timeout used when establishing a connection, in milliseconds
