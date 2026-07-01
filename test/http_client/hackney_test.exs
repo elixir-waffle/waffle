@@ -67,6 +67,26 @@ defmodule WaffleTest.HTTPClient.Hackney do
       end
     end
 
+    test "returns {:error, :timeout} when body read times out on connect-timeout shape" do
+      with_mock :hackney,
+        get: fn _url, _headers, "", _opts -> {:ok, 200, [], :client_ref} end,
+        body: fn :client_ref, :infinity -> {:error, %{reason: :timeout}} end,
+        close: fn :client_ref -> :ok end do
+        result = Hackney.get("http://example.com/file.jpg", [], [])
+        assert result == {:error, :timeout}
+      end
+    end
+
+    test "returns {:error, :recv_timeout} when body read times out on :timeout atom shape" do
+      with_mock :hackney,
+        get: fn _url, _headers, "", _opts -> {:ok, 200, [], :client_ref} end,
+        body: fn :client_ref, :infinity -> {:error, :timeout} end,
+        close: fn :client_ref -> :ok end do
+        result = Hackney.get("http://example.com/file.jpg", [], [])
+        assert result == {:error, :recv_timeout}
+      end
+    end
+
     test "passes recv_timeout and connect_timeout to hackney" do
       with_mock :hackney,
         get: fn _url, _headers, "", opts ->

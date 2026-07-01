@@ -53,7 +53,7 @@ defmodule WaffleTest.File do
         result = Waffle.File.new("http://example.com/image.jpg", DummyDefinition)
         assert result == {:error, :timeout}
         # initial attempt + 2 retries
-        assert called(Hackney.get(:_, :_, :_))
+        assert_called_exactly(Hackney.get(:_, :_, :_), 3)
       end
     end
 
@@ -64,7 +64,7 @@ defmodule WaffleTest.File do
         end do
         result = Waffle.File.new("http://example.com/image.jpg", DummyDefinition)
         assert result == {:error, :service_unavailable}
-        assert called(Hackney.get(:_, :_, :_))
+        assert_called_exactly(Hackney.get(:_, :_, :_), 3)
       end
     end
 

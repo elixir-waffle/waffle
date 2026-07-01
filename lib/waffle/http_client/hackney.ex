@@ -44,16 +44,8 @@ defmodule Waffle.HTTPClient.Hackney do
         :hackney.close(client_ref)
         {:error, {:http_error, status}}
 
-      # connect timeout: hackney returns %{reason: :timeout}, not a bare atom
-      {:error, %{reason: :timeout}} ->
-        {:error, :timeout}
-
-      # recv timeout: hackney returns a bare :timeout atom
-      {:error, :timeout} ->
-        {:error, :recv_timeout}
-
       {:error, reason} ->
-        {:error, {:http_error, reason}}
+        normalize_error(reason)
     end
   end
 
@@ -68,9 +60,15 @@ defmodule Waffle.HTTPClient.Hackney do
 
       {:error, reason} ->
         :hackney.close(client_ref)
-        {:error, {:http_error, reason}}
+        normalize_error(reason)
     end
   end
+
+  # connect timeout: hackney returns %{reason: :timeout}, not a bare atom
+  defp normalize_error(%{reason: :timeout}), do: {:error, :timeout}
+  # recv timeout: hackney returns a bare :timeout atom
+  defp normalize_error(:timeout), do: {:error, :recv_timeout}
+  defp normalize_error(reason), do: {:error, {:http_error, reason}}
 
   defp get_content_disposition_filename(headers) do
     case :hackney_headers.get_value("content-disposition", headers) do

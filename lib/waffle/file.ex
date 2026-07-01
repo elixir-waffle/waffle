@@ -213,17 +213,13 @@ defmodule Waffle.File do
         {:ok, body, filename}
 
       {:error, reason} when reason in [:timeout, :recv_timeout, :service_unavailable] ->
-        retry_or_error(remote_path, headers, options, tries, reason)
+        case retry(tries, options) do
+          {:ok, :retry} -> request(remote_path, headers, options, tries + 1)
+          {:error, :out_of_tries} -> {:error, reason}
+        end
 
       {:error, _} = err ->
         err
-    end
-  end
-
-  defp retry_or_error(remote_path, headers, options, tries, reason) do
-    case retry(tries, options) do
-      {:ok, :retry} -> request(remote_path, headers, options, tries + 1)
-      {:error, :out_of_tries} -> {:error, reason}
     end
   end
 
