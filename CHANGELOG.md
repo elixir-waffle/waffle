@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Add `Waffle.HTTPClient.Finch` as an alternative HTTP client and make `:hackney` an
+  optional dependency — at least one of `:hackney` or `:finch` is now required for
+  downloading remote files, with `:hackney` used by default
 - Add pluggable HTTP client behaviour (`Waffle.HTTPClient`) with `Waffle.HTTPClient.Hackney`
   as the default implementation (#150)
   - `:timeout` and `:recv_timeout` error atoms are **unchanged** from previous behaviour

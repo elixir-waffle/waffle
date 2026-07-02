@@ -58,7 +58,11 @@ defmodule Waffle.Mixfile do
 
   defp deps do
     [
-      {:hackney, "~> 1.9"},
+      # HTTP clients for downloading remote files (see Waffle.HTTPClient).
+      # At least one is required unless a custom :http_client is configured;
+      # :hackney is used by default.
+      {:hackney, "~> 1.9", optional: true},
+      {:finch, "~> 0.18", optional: true},
 
       # If using Amazon S3
       {:ex_aws, "~> 2.1", optional: true},
@@ -72,7 +76,9 @@ defmodule Waffle.Mixfile do
       {:ex_doc, "~> 0.21", only: :dev},
 
       # Dev, Test
-      {:credo, "~> 1.4", only: [:dev, :test], runtime: false}
+      # credo ~> 1.4's tokenizer crashes on Elixir 1.17+ (CI now runs 1.17
+      # for finch's own Elixir requirement)
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]
   end
 end

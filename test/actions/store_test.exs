@@ -192,11 +192,13 @@ defmodule WaffleTest.Actions.Store do
   test "sets remote filename from content-disposition header when available" do
     with_mocks([
       {
-        :hackney_headers,
+        :hackney,
         [:passthrough],
-        get_value: fn "content-disposition", _headers ->
-          "attachment; filename=\"image three.png\""
-        end
+        get: fn _url, _headers, _body, _opts ->
+          {:ok, 200, [{"content-disposition", "attachment; filename=\"image three.png\""}],
+           :fake_client_ref}
+        end,
+        body: fn :fake_client_ref, _max_length -> {:ok, "fake body"} end
       },
       {
         Waffle.Storage.S3,

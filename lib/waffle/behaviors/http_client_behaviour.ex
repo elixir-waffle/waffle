@@ -6,6 +6,11 @@ defmodule Waffle.HTTPClient do
 
   - `Waffle.HTTPClient.Hackney` — default, uses `:hackney`. Add `{:hackney, "~> 1.9"}` to
     your deps.
+  - `Waffle.HTTPClient.Finch` — uses `Finch`. Add `{:finch, "~> 0.18"}` to your deps,
+    start a `Finch` pool in your application supervision tree, and configure
+    `config :waffle, Waffle.HTTPClient.Finch, pool_name: MyApp.Finch`.
+
+  At least one HTTP client dependency is required when downloading remote files.
 
   ## Configuration
 
@@ -52,4 +57,29 @@ defmodule Waffle.HTTPClient do
               {:ok, body()}
               | {:ok, body(), filename()}
               | {:error, :timeout | :recv_timeout | :service_unavailable | {:http_error, any()}}
+
+  @doc """
+  Parses the `filename` parameter from a `content-disposition` header value.
+
+  Handles quoted filenames (`filename="foo.png"`), unquoted filenames
+  (`filename=foo.png`), and multi-parameter values.
+
+  Returns `nil` when no filename is present.
+  """
+  @spec parse_content_disposition(String.t()) :: String.t() | nil
+  def parse_content_disposition(value) do
+    value
+    |> String.split(";")
+    |> Enum.find_value(&extract_filename_param/1)
+  end
+
+  defp extract_filename_param(part) do
+    with [key, raw] <- String.split(String.trim(part), "=", parts: 2),
+         true <- String.downcase(String.trim(key)) == "filename",
+         name when name != "" <- raw |> String.trim() |> String.trim("\"") do
+      name
+    else
+      _ -> nil
+    end
+  end
 end

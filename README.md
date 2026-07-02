@@ -82,11 +82,20 @@ config :ex_aws,
 
 ### Setup an HTTP client
 
-Waffle uses `:hackney` by default to download remote files. You can configure it explicitly:
+Waffle downloads remote files through a pluggable `Waffle.HTTPClient`. Two clients are
+built in, and both their dependencies are optional — add whichever one you use:
 
 ```elixir
+# Hackney (default) — add {:hackney, "~> 1.9"} to your deps
 config :waffle, :http_client, Waffle.HTTPClient.Hackney
+
+# Finch — add {:finch, "~> 0.18"} to your deps and start a Finch pool
+config :waffle, :http_client, Waffle.HTTPClient.Finch
+config :waffle, Waffle.HTTPClient.Finch, pool_name: MyApp.Finch
 ```
+
+At least one of `:hackney` or `:finch` is required if you download remote files;
+`Waffle.HTTPClient.Hackney` is used when `:http_client` is left unconfigured.
 
 You can also implement your own client by adopting the `Waffle.HTTPClient` behaviour.
 
