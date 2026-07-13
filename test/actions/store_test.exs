@@ -126,7 +126,7 @@ defmodule WaffleTest.Actions.Store do
   test "timeout" do
     Application.put_env(:waffle, :version_timeout, 1)
 
-    catch_exit do
+    catch_exit(
       with_mock Waffle.Storage.S3,
         put: fn DummyDefinition, _, {%{file_name: "image.png", path: @img}, :scope} ->
           :timer.sleep(100) && {:ok, "favicon.ico"}
@@ -134,7 +134,7 @@ defmodule WaffleTest.Actions.Store do
         assert DummyDefinition.store({%{filename: "image.png", path: @img}, :scope}) ==
                  {:ok, "image.png"}
       end
-    end
+    )
 
     Application.put_env(:waffle, :version_timeout, 15_000)
   end
