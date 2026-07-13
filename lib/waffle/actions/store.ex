@@ -133,7 +133,7 @@ defmodule Waffle.Actions.Store do
     case result do
       {:error, error} -> {:error, error}
       {:ok, nil} -> {:ok, nil}
-      {:ok, file} ->
+      {:ok, %Waffle.File{} = file} ->
         file_name = Versioning.resolve_file_name(definition, version, {file, scope})
         file      = %Waffle.File{file | file_name: file_name}
         result    = definition.__storage().put(definition, version, {file, scope})
