@@ -1,5 +1,5 @@
 defmodule Waffle.Storage.S3 do
-  @moduledoc """
+  @moduledoc ~S"""
   The module to facilitate integration with S3 through ExAws.S3
 
       config :waffle,
