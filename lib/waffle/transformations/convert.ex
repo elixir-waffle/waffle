@@ -1,7 +1,7 @@
 defmodule Waffle.Transformations.Convert do
   @moduledoc false
 
-  def apply(cmd, file, args, extension \\ nil) do
+  def apply(cmd, %Waffle.File{} = file, args, extension \\ nil) do
     new_path =
       if extension,
         do: Waffle.File.generate_temporary_path(extension),

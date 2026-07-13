@@ -1,4 +1,6 @@
 defmodule Mix.Tasks.Waffle do
+  @moduledoc false
+
   defmodule G do
     use Mix.Task
     import Mix.Generator
