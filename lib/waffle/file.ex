@@ -13,7 +13,7 @@ defmodule Waffle.File do
 
   # Given a remote file
   # (respects content-disposition header)
-  def new(remote_path = "http" <> _, definition) do
+  def new("http" <> _ = remote_path, definition) do
     uri = URI.parse(remote_path)
     filename = uri.path |> Path.basename() |> URI.decode()
 
