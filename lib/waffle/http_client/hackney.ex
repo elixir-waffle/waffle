@@ -4,7 +4,7 @@ defmodule Waffle.HTTPClient.Hackney do
 
   Add `:hackney` to your dependencies:
 
-      {:hackney, "~> 1.9"}
+      {:hackney, "~> 4.0"}
 
   ## Configuration
 
@@ -30,36 +30,21 @@ defmodule Waffle.HTTPClient.Hackney do
       connect_timeout: Keyword.get(options, :connect_timeout, 10_000)
     ]
 
-    max_body_length = Keyword.get(options, :max_body_length, :infinity)
-
     case :hackney.get(url, headers, "", hackney_options) do
-      {:ok, 200, response_headers, client_ref} ->
-        read_body(client_ref, response_headers, max_body_length)
-
-      {:ok, 503, _headers, client_ref} ->
-        :hackney.close(client_ref)
-        {:error, :service_unavailable}
-
-      {:ok, status, _headers, client_ref} ->
-        :hackney.close(client_ref)
-        {:error, {:http_error, status}}
-
-      {:error, reason} ->
-        normalize_error(reason)
-    end
-  end
-
-  defp read_body(client_ref, response_headers, max_body_length) do
-    case :hackney.body(client_ref, max_body_length) do
-      {:ok, body} ->
+      {:ok, 200, response_headers, body} ->
         filename =
           :hackney_headers.new(response_headers)
           |> get_content_disposition_filename()
 
         if filename, do: {:ok, body, filename}, else: {:ok, body}
 
+      {:ok, 503, _headers, _body} ->
+        {:error, :service_unavailable}
+
+      {:ok, status, _headers, _body} ->
+        {:error, {:http_error, status}}
+
       {:error, reason} ->
-        :hackney.close(client_ref)
         normalize_error(reason)
     end
   end

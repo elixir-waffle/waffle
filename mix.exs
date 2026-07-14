@@ -58,7 +58,7 @@ defmodule Waffle.Mixfile do
 
   defp deps do
     [
-      {:hackney, "~> 1.9"},
+      {:hackney, "~> 4.0"},
 
       # If using Amazon S3
       {:ex_aws, "~> 2.1", optional: true},
