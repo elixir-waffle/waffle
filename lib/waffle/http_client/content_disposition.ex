@@ -105,8 +105,17 @@ defmodule Waffle.HTTPClient.ContentDisposition do
   # e.g. UTF-8''my%20photo.jpg or UTF-8'en'my%20photo.jpg
   defp decode_extended_value(value) do
     case String.split(value, "'", parts: 3) do
-      [_charset, _language, encoded] -> URI.decode(encoded)
-      _ -> URI.decode(value)
+      [_charset, _language, encoded] -> safe_uri_decode(encoded)
+      _ -> safe_uri_decode(value)
     end
+  end
+
+  # A malformed percent-encoding (e.g. a trailing "%" or "%zz") makes
+  # `URI.decode/1` raise. Fall back to the raw (un-decoded) value rather than
+  # crashing the caller over a malformed header from a remote server.
+  defp safe_uri_decode(value) do
+    URI.decode(value)
+  rescue
+    ArgumentError -> value
   end
 end

@@ -81,5 +81,15 @@ defmodule WaffleTest.HTTPClient.ContentDisposition do
     test "best-effort parses an unterminated quoted filename (missing closing quote)" do
       assert ContentDisposition.filename(~s(attachment; filename="photo.jpg)) == "photo.jpg"
     end
+
+    test "falls back to the raw value instead of raising on malformed percent-encoding in filename*=" do
+      value = "attachment; filename*=UTF-8''broken%"
+      assert ContentDisposition.filename(value) == "broken%"
+    end
+
+    test "falls back to the raw value instead of raising on an invalid hex escape in filename*=" do
+      value = "attachment; filename*=UTF-8''broken%zz.jpg"
+      assert ContentDisposition.filename(value) == "broken%zz.jpg"
+    end
   end
 end

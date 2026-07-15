@@ -5,29 +5,7 @@ defmodule WaffleTest.Actions.Store do
   @remote_img_with_space_image_two "https://github.com/elixir-waffle/waffle/blob/master/test/support/image%20two.png"
 
   import Mock
-
-  # To simulate a real connection in these tests we queue up the exact sequence
-  # of `hackney_response` messages it would send (status, headers, body chunk(s), :done)
-  # and pop one off the queue each time `:hackney.get/4` or `:hackney.stream_next/1`
-  # is invoked
-  defp mock_hackney_messages(messages) do
-    ref = make_ref()
-    test_pid = self()
-    {:ok, agent} = Agent.start_link(fn -> messages end)
-
-    send_next = fn ->
-      # credo:disable-for-next-line Credo.Check.Refactor.Nesting
-      case Agent.get_and_update(agent, fn
-             [next | rest] -> {next, rest}
-             [] -> {nil, []}
-           end) do
-        nil -> :ok
-        msg -> send(test_pid, {:hackney_response, ref, msg})
-      end
-    end
-
-    {ref, send_next}
-  end
+  import WaffleTest.Support.HackneyMock, only: [mock_hackney_messages: 1]
 
   defmodule DummyDefinition do
     use Waffle.Actions.Store
@@ -215,7 +193,7 @@ defmodule WaffleTest.Actions.Store do
   test "sets remote filename from content-disposition header when available" do
     response_headers = [{"content-disposition", ~s(attachment; filename="image three.png")}]
 
-    {ref, send_next} =
+    {ref, send_auto, send_next} =
       mock_hackney_messages([
         {:status, 200, "OK"},
         {:headers, response_headers},
@@ -228,13 +206,14 @@ defmodule WaffleTest.Actions.Store do
         :hackney,
         [],
         get: fn _url, _headers, "", _opts ->
-          send_next.()
+          send_auto.()
           {:ok, ref}
         end,
         stream_next: fn ^ref ->
           send_next.()
           :ok
-        end
+        end,
+        close: fn ^ref -> :ok end
       },
       {
         Waffle.Storage.S3,
@@ -250,7 +229,7 @@ defmodule WaffleTest.Actions.Store do
   end
 
   test "sets HTTP headers for request to remote file" do
-    {ref, send_next} =
+    {ref, send_auto, send_next} =
       mock_hackney_messages([{:status, 200, "OK"}, {:headers, []}, "favicon data", :done])
 
     with_mocks([
@@ -258,13 +237,14 @@ defmodule WaffleTest.Actions.Store do
         :hackney,
         [],
         get: fn _url, _headers, "", _opts ->
-          send_next.()
+          send_auto.()
           {:ok, ref}
         end,
         stream_next: fn ^ref ->
           send_next.()
           :ok
-        end
+        end,
+        close: fn ^ref -> :ok end
       },
       {
         Waffle.Storage.S3,
