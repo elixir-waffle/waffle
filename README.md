@@ -34,7 +34,7 @@ defp deps do
     # If using S3:
     {:ex_aws, "~> 2.1.2"},
     {:ex_aws_s3, "~> 2.0"},
-    {:hackney, "~> 1.9"},
+    {:hackney, "~> 4.5.2"},
     {:sweet_xml, "~> 0.6"}
   ]
 end
@@ -88,7 +88,10 @@ Waffle uses `:hackney` by default to download remote files. You can configure it
 config :waffle, :http_client, Waffle.HTTPClient.Hackney
 ```
 
-You can also implement your own client by adopting the `Waffle.HTTPClient` behaviour.
+Network access for downloading remote files is routed through the
+pluggable `Waffle.HTTPClient` behaviour. The only built-in
+implementation is `Waffle.HTTPClient.Hackney`. You can implement your own
+provider by adopting the `Waffle.HTTPClient` behaviour.
 
 ### Define a definition module
 
