@@ -11,12 +11,16 @@ defmodule Waffle.Mixfile do
       source_url: "https://github.com/elixir-waffle/waffle",
       deps: deps(),
       docs: docs(),
+      elixirc_paths: elixirc_paths(Mix.env()),
 
       # Hex
       description: description(),
       package: package()
     ]
   end
+
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib"]
 
   defp description do
     """
@@ -58,7 +62,7 @@ defmodule Waffle.Mixfile do
 
   defp deps do
     [
-      {:hackney, "~> 1.9"},
+      {:hackney, "~> 4.5.2"},
 
       # If using Amazon S3
       {:ex_aws, "~> 2.1", optional: true},

@@ -5,6 +5,7 @@ defmodule WaffleTest.Actions.Store do
   @remote_img_with_space_image_two "https://github.com/elixir-waffle/waffle/blob/master/test/support/image%20two.png"
 
   import Mock
+  import WaffleTest.Support.HackneyMock, only: [mock_hackney_messages: 1]
 
   defmodule DummyDefinition do
     use Waffle.Actions.Store
@@ -190,13 +191,29 @@ defmodule WaffleTest.Actions.Store do
   end
 
   test "sets remote filename from content-disposition header when available" do
+    response_headers = [{"content-disposition", ~s(attachment; filename="image three.png")}]
+
+    {ref, send_auto, send_next} =
+      mock_hackney_messages([
+        {:status, 200, "OK"},
+        {:headers, response_headers},
+        "fake image data",
+        :done
+      ])
+
     with_mocks([
       {
-        :hackney_headers,
-        [:passthrough],
-        get_value: fn "content-disposition", _headers ->
-          "attachment; filename=\"image three.png\""
-        end
+        :hackney,
+        [],
+        get: fn _url, _headers, "", _opts ->
+          send_auto.()
+          {:ok, ref}
+        end,
+        stream_next: fn ^ref ->
+          send_next.()
+          :ok
+        end,
+        close: fn ^ref -> :ok end
       },
       {
         Waffle.Storage.S3,
@@ -212,11 +229,22 @@ defmodule WaffleTest.Actions.Store do
   end
 
   test "sets HTTP headers for request to remote file" do
+    {ref, send_auto, send_next} =
+      mock_hackney_messages([{:status, 200, "OK"}, {:headers, []}, "favicon data", :done])
+
     with_mocks([
       {
         :hackney,
-        [:passthrough],
-        []
+        [],
+        get: fn _url, _headers, "", _opts ->
+          send_auto.()
+          {:ok, ref}
+        end,
+        stream_next: fn ^ref ->
+          send_next.()
+          :ok
+        end,
+        close: fn ^ref -> :ok end
       },
       {
         Waffle.Storage.S3,
