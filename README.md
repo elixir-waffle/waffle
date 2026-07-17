@@ -82,10 +82,27 @@ config :ex_aws,
 
 ### Setup an HTTP client
 
-Waffle uses `:hackney` by default to download remote files. You can configure it explicitly:
+Waffle downloads remote files via a pluggable HTTP client. Waffle ships with support for
+two client libraries; choose one and add the matching dependency.
+
+`:hackney` is the default:
 
 ```elixir
+# mix.exs
+{:hackney, "~> 1.9"}
+
+# config
 config :waffle, :http_client, Waffle.HTTPClient.Hackney
+```
+
+`:req` is also supported:
+
+```elixir
+# mix.exs
+{:req, "~> 0.5"}
+
+# config
+config :waffle, :http_client, Waffle.HTTPClient.Req
 ```
 
 You can also implement your own client by adopting the `Waffle.HTTPClient` behaviour.

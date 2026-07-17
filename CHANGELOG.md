@@ -7,6 +7,8 @@
   - `:timeout` and `:recv_timeout` error atoms are **unchanged** from previous behaviour
   - `{:error, :service_unavailable}` replaces `{:error, {:waffle_hackney_error, {:ok, 503, ...}}}` on 503 out of retries
   - Non-2xx errors now return `{:error, {:http_error, status_code}}` (e.g. `{:error, {:http_error, 404}}`), replacing `{:error, {:waffle_hackney_error, {:ok, status, headers, ref}}}`
+- Add `Waffle.HTTPClient.Req`, an HTTP client implementation using `Req`
+  - Add `{:req, "~> 0.5"}` and set `config :waffle, :http_client, Waffle.HTTPClient.Req` to use
 
 ## v1.1.10 (2025-12-28)
 
