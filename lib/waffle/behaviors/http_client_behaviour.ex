@@ -6,6 +6,8 @@ defmodule Waffle.HTTPClient do
 
   - `Waffle.HTTPClient.Hackney` — default, uses `:hackney`. Add `{:hackney, "~> 1.9"}` to
     your deps.
+  - `Waffle.HTTPClient.Req` — uses [Req](https://hex.pm/packages/req). Add
+    `{:req, "~> 0.5"}` to your deps.
 
   ## Configuration
 
