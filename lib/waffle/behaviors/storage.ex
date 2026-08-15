@@ -1,4 +1,4 @@
-defmodule Waffle.StorageBehavior do
+defmodule Waffle.Storage do
   @moduledoc """
   Defines the behavior for file storage.
 

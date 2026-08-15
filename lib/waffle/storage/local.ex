@@ -22,7 +22,7 @@ defmodule Waffle.Storage.Local do
       end
   """
 
-  @behaviour Waffle.StorageBehavior
+  @behaviour Waffle.Storage
 
   alias Waffle.Definition.Versioning
 
