@@ -44,6 +44,13 @@ defmodule Waffle.File do
     uri = URI.parse(remote_path)
 
     case save_file(uri, filename, definition) do
+      {:ok, local_path, _filename_from_content_disposition} ->
+        %Waffle.File{
+          path: local_path,
+          file_name: filename,
+          is_tempfile?: true
+        }
+
       {:ok, local_path} ->
         %Waffle.File{path: local_path, file_name: filename, is_tempfile?: true}
 
