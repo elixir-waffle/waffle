@@ -187,25 +187,15 @@ defmodule Waffle.File do
 
   defp get_remote_path(remote_path, definition) do
     headers = definition.remote_file_headers(remote_path)
-
-    options = [
-      follow_redirect: true,
-      recv_timeout: Application.get_env(:waffle, :recv_timeout, 5_000),
-      connect_timeout: Application.get_env(:waffle, :connect_timeout, 10_000),
-      max_body_length: Application.get_env(:waffle, :max_body_length, :infinity),
-      max_retries: Application.get_env(:waffle, :max_retries, 3),
-      backoff_factor: Application.get_env(:waffle, :backoff_factor, 1000),
-      backoff_max: Application.get_env(:waffle, :backoff_max, 30_000)
-    ]
+    options = Waffle.HTTPClient.Request.options()
 
     request(remote_path, headers, options)
   end
 
   defp request(remote_path, headers, options, tries \\ 0) do
-    http_client = Application.get_env(:waffle, :http_client, Waffle.HTTPClient.Hackney)
     url = URI.to_string(remote_path)
 
-    case http_client.get(url, headers, options) do
+    case http_client().get(url, headers, options) do
       {:ok, body} ->
         {:ok, body}
 
@@ -232,5 +222,9 @@ defmodule Waffle.File do
     else
       {:error, :out_of_tries}
     end
+  end
+
+  defp http_client() do
+    Application.fetch_env!(:waffle, :http_client)
   end
 end
