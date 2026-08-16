@@ -12,10 +12,10 @@ defmodule WaffleTest.Storage.Local do
     File.mkdir_p("waffletest/tmp")
     System.put_env("TMPDIR", "waffletest/tmp")
 
-    on_exit fn ->
+    on_exit(fn ->
       File.rm_rf("waffletest/uploads")
       File.rm_rf("waffletest/tmp")
-    end
+    end)
   end
 
   def with_env(app, key, value, fun) do
@@ -42,9 +42,14 @@ defmodule WaffleTest.Storage.Local do
     def storage_dir(_, _), do: "waffletest/uploads"
     def __storage, do: Local
 
-    def filename(:original, {file, _}), do: "original-#{Path.basename(file.file_name, Path.extname(file.file_name))}"
-    def filename(:thumb, {file, _}), do: "1/thumb-#{Path.basename(file.file_name, Path.extname(file.file_name))}"
-    def filename(:skipped, {file, _}), do: "1/skipped-#{Path.basename(file.file_name, Path.extname(file.file_name))}"
+    def filename(:original, {file, _}),
+      do: "original-#{Path.basename(file.file_name, Path.extname(file.file_name))}"
+
+    def filename(:thumb, {file, _}),
+      do: "1/thumb-#{Path.basename(file.file_name, Path.extname(file.file_name))}"
+
+    def filename(:skipped, {file, _}),
+      do: "1/skipped-#{Path.basename(file.file_name, Path.extname(file.file_name))}"
   end
 
   defmodule DummyDefinitionWithPrefix do
@@ -58,8 +63,11 @@ defmodule WaffleTest.Storage.Local do
     def storage_dir(_, _), do: "waffletest/uploads"
     def __storage, do: Local
 
-    def filename(:original, {file, _}), do: "original-#{Path.basename(file.file_name, Path.extname(file.file_name))}"
-    def filename(:thumb, {file, _}), do: "1/thumb-#{Path.basename(file.file_name, Path.extname(file.file_name))}"
+    def filename(:original, {file, _}),
+      do: "original-#{Path.basename(file.file_name, Path.extname(file.file_name))}"
+
+    def filename(:thumb, {file, _}),
+      do: "1/thumb-#{Path.basename(file.file_name, Path.extname(file.file_name))}"
   end
 
   test "put, delete, get" do
@@ -126,7 +134,7 @@ defmodule WaffleTest.Storage.Local do
   end
 
   test "get, delete with :asset_host set" do
-    with_env :waffle, :asset_host, @custom_asset_host, fn ->
+    with_env(:waffle, :asset_host, @custom_asset_host, fn ->
       assert {:ok, "original-image.png"} ==
                Local.put(
                  DummyDefinition,
@@ -145,14 +153,18 @@ defmodule WaffleTest.Storage.Local do
 
       assert File.exists?("waffletest/uploads/original-image.png")
       assert File.exists?("waffletest/uploads/1/thumb-image.png")
-      assert @custom_asset_host <> "/waffletest/uploads/original-image.png" == DummyDefinition.url("image.png", :original)
-      assert @custom_asset_host <> "/waffletest/uploads/1/thumb-image.png" == DummyDefinition.url("1/image.png", :thumb)
+
+      assert @custom_asset_host <> "/waffletest/uploads/original-image.png" ==
+               DummyDefinition.url("image.png", :original)
+
+      assert @custom_asset_host <> "/waffletest/uploads/1/thumb-image.png" ==
+               DummyDefinition.url("1/image.png", :thumb)
 
       :ok = Local.delete(DummyDefinition, :original, {%{file_name: "image.png"}, nil})
       :ok = Local.delete(DummyDefinition, :thumb, {%{file_name: "image.png"}, nil})
       refute File.exists?("waffletest/uploads/original-image.png")
       refute File.exists?("waffletest/uploads/1/thumb-image.png")
-    end
+    end)
   end
 
   test "save binary" do
@@ -187,7 +199,7 @@ defmodule WaffleTest.Storage.Local do
 
   test "if one transform fails, they all fail" do
     filepath = @badimg
-    [filename] = String.split(@img, "/") |> Enum.reverse |> Enum.take(1)
+    [filename] = String.split(@img, "/") |> Enum.reverse() |> Enum.take(1)
     assert File.exists?(filepath)
     DummyDefinition.store(filepath)
 

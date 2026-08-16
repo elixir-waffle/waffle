@@ -1,4 +1,6 @@
 defmodule Waffle.HTTPClient.Request do
+  @moduledoc false
+
   @default [
     max_redirects: 3,
     max_retries: 3,
@@ -9,7 +11,7 @@ defmodule Waffle.HTTPClient.Request do
     backoff_max_ms: 30_000
   ]
 
-  def options() do
+  def options do
     :waffle |> Application.get_env(:request, []) |> Keyword.merge(@default)
   end
 end

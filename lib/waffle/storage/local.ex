@@ -28,11 +28,13 @@ defmodule Waffle.Storage.Local do
 
   @impl true
   def put(definition, version, {file, scope}) do
-    destination_path = Path.join([
-      definition.storage_dir_prefix(),
-      definition.storage_dir(version, {file, scope}),
-      file.file_name
-    ])
+    destination_path =
+      Path.join([
+        definition.storage_dir_prefix(),
+        definition.storage_dir(version, {file, scope}),
+        file.file_name
+      ])
+
     destination_path |> Path.dirname() |> File.mkdir_p!()
 
     if binary = file.binary do
@@ -46,10 +48,12 @@ defmodule Waffle.Storage.Local do
 
   @impl true
   def url(definition, version, file_and_scope, _options \\ []) do
-    local_path = Path.join([
-      definition.storage_dir(version, file_and_scope),
-      Versioning.resolve_file_name(definition, version, file_and_scope)
-    ])
+    local_path =
+      Path.join([
+        definition.storage_dir(version, file_and_scope),
+        Versioning.resolve_file_name(definition, version, file_and_scope)
+      ])
+
     host = host(definition)
 
     if host == nil do

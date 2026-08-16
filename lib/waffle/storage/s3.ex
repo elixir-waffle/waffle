@@ -217,15 +217,15 @@ defmodule Waffle.Storage.S3 do
     |> S3.upload(s3_bucket, s3_key, s3_options)
     |> ExAws.request()
     |> case do
-         {:ok, %{status_code: 200}} -> {:ok, file.file_name}
-         {:ok, :done} -> {:ok, file.file_name}
-         {:error, error} -> {:error, error}
-       end
+      {:ok, %{status_code: 200}} -> {:ok, file.file_name}
+      {:ok, :done} -> {:ok, file.file_name}
+      {:error, error} -> {:error, error}
+    end
   rescue
     e in ExAws.Error ->
       Logger.error(inspect(e))
-    Logger.error(e.message)
-    {:error, :invalid_bucket}
+      Logger.error(e.message)
+      {:error, :invalid_bucket}
   end
 
   defp build_url(definition, version, file_and_scope, _options) do

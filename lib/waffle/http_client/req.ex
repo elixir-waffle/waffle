@@ -1,4 +1,5 @@
 defmodule Waffle.HTTPClient.Req do
+  @moduledoc false
   @behaviour Waffle.HTTPClient
 
   # see [related discussion](https://github.com/wojtekmach/req/issues/355) for max body length

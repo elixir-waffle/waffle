@@ -1,6 +1,8 @@
 defmodule Waffle.File do
   @moduledoc false
 
+  alias Waffle.HTTPClient
+
   defstruct [:path, :file_name, :binary, :is_tempfile?, :stream]
 
   def generate_temporary_path(item \\ nil) do
@@ -187,7 +189,7 @@ defmodule Waffle.File do
 
   defp get_remote_path(remote_path, definition) do
     headers = definition.remote_file_headers(remote_path)
-    options = Waffle.HTTPClient.Request.options()
+    options = HTTPClient.Request.options()
 
     request(remote_path, headers, options)
   end
@@ -224,7 +226,7 @@ defmodule Waffle.File do
     end
   end
 
-  defp http_client() do
+  defp http_client do
     Application.fetch_env!(:waffle, :http_client)
   end
 end
