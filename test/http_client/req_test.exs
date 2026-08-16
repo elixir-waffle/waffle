@@ -185,5 +185,21 @@ defmodule WaffleTest.HTTPClient.ReqTest do
               }} =
                HTTPClient.Req.get("http://example.com/file.jpg", [], options)
     end
+
+    test "has non-default max redirects" do
+      Req.Test.expect(Waffle.HTTPClient.Req, fn conn ->
+        Req.Test.transport_error(conn, :econnrefused)
+      end)
+
+      assert {:error,
+              %HTTPClient.Error{
+                request: %Req.Request{options: %{max_redirects: 4}}
+              }} =
+               HTTPClient.Req.get(
+                 "http://example.com/file.jpg",
+                 [],
+                 Waffle.HTTPClient.Request.options()
+               )
+    end
   end
 end

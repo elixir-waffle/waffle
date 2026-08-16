@@ -12,6 +12,8 @@ defmodule Waffle.HTTPClient.Request do
   ]
 
   def options do
-    :waffle |> Application.get_env(:request, []) |> Keyword.merge(@default)
+    config = Application.get_env(:waffle, :request, [])
+
+    Keyword.merge(@default, config)
   end
 end

@@ -2,7 +2,10 @@ import Config
 
 config :waffle,
   storage: Waffle.Storage.S3,
-  http_client: Waffle.HTTPClient.Req
+  http_client: Waffle.HTTPClient.Req,
+  request: [
+    max_redirects: 4
+  ]
 
 config :ex_aws,
   json_codec: Jason
