@@ -3,6 +3,8 @@ defmodule WaffleTest.Storage.Local do
 
   alias Waffle.Storage.Local
 
+  setup {Req.Test, :verify_on_exit!}
+
   @img "test/support/image.png"
   @badimg "test/support/invalid_image.png"
   @custom_asset_host "http://static.example.com"
@@ -222,6 +224,10 @@ defmodule WaffleTest.Storage.Local do
   end
 
   test "temp files from handling remote URLs are cleaned up" do
+    Req.Test.expect(Waffle.HTTPClient.Req, fn conn ->
+      Plug.Conn.send_resp(conn, 200, File.read!(@img))
+    end)
+
     DummyDefinition.store("https://www.google.com/favicon.ico")
     assert Enum.empty?(File.ls!("waffletest/tmp"))
   end
