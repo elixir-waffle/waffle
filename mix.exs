@@ -74,7 +74,7 @@ defmodule Waffle.Mixfile do
       {:meck, "~> 1.0", only: :test, override: true},
 
       # Dev
-      {:ex_doc, "~> 0.21", only: :dev},
+      {:ex_doc, "~> 0.40", only: :dev, runtime: false},
 
       # Dev, Test
       {:credo, "~> 1.4", only: [:dev, :test], runtime: false}
