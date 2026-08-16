@@ -32,9 +32,6 @@ Add the `:waffle` dependency to `mix.exs`.
 {:waffle_ecto, "~> 0.0"}
 ```
 
-_Read more about Ecto integration in the [WaffleEcto documentation](https://waffle-ecto.hexdocs.pm/)._
-_WaffleEcto supports changeset integration and versioned URLs for cache busting._
-
 Configure file storage
 
 ```elixir
@@ -68,8 +65,16 @@ Cast the file payload with a changeset
 
 ```
 changeset
-|> cast_attachments(params, [:avatar])
+|> cast_attachments(
+  params,
+  [:avatar],
+  allow_paths: true,
+  allow_urls: true
+)
 ```
+
+_Read more about Ecto integration in the [WaffleEcto documentation](https://waffle-ecto.hexdocs.pm/)._
+_WaffleEcto supports changeset integration and versioned URLs for cache busting._
 
 ## More Examples
 
