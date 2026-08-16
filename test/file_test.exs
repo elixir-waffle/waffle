@@ -1,7 +1,7 @@
 defmodule WaffleTest.File do
   use ExUnit.Case, async: false
-  import Mock
-  alias Waffle.HTTPClient.Hackney
+
+  setup {Req.Test, :verify_on_exit!}
 
   @custom_tmp_dir System.tmp_dir() <> "/waffle_test_custom"
 
@@ -29,67 +29,82 @@ defmodule WaffleTest.File do
     end
   end
 
-  describe "new/2 with remote URL — retry behavior" do
+  describe "new/2" do
     setup do
-      Application.put_env(:waffle, :http_client, Hackney)
-      Application.put_env(:waffle, :max_retries, 2)
-      # Zero-out backoff so tests don't sleep
-      Application.put_env(:waffle, :backoff_factor, 0)
-      Application.put_env(:waffle, :backoff_max, 0)
+      request_options = Application.get_env(:waffle, :request, [])
 
-      on_exit(fn ->
-        Application.delete_env(:waffle, :http_client)
-        Application.delete_env(:waffle, :max_retries)
-        Application.delete_env(:waffle, :backoff_factor)
-        Application.delete_env(:waffle, :backoff_max)
+      Application.put_env(
+        :waffle,
+        :request,
+        Keyword.merge(request_options, max_retries: 1, backoff_factor_ms: 0)
+      )
+
+      on_exit(fn -> Application.put_env(:waffle, :request, request_options) end)
+    end
+
+    test "retries on 503" do
+      Req.Test.expect(Waffle.HTTPClient.Req, fn conn ->
+        Plug.Conn.send_resp(conn, 503, "service unavailable")
       end)
+
+      Req.Test.expect(Waffle.HTTPClient.Req, fn conn ->
+        Plug.Conn.send_resp(conn, 200, "file content")
+      end)
+
+      assert %Waffle.File{file_name: "image.jpg", path: path, is_tempfile?: true} =
+               Waffle.File.new("http://example.com/image.jpg", DummyDefinition)
+
+      on_exit(fn -> File.rm(path) end)
     end
 
-    test "retries on timeout and returns {:error, :timeout} after exhausting retries" do
-      with_mock Hackney,
-        get: fn _url, _headers, _opts ->
-          {:error, :timeout}
-        end do
-        result = Waffle.File.new("http://example.com/image.jpg", DummyDefinition)
-        assert result == {:error, :timeout}
-        # initial attempt + 2 retries
-        assert_called_exactly(Hackney.get(:_, :_, :_), 3)
-      end
+    test "retries on timeout" do
+      Req.Test.expect(Waffle.HTTPClient.Req, fn conn ->
+        Req.Test.transport_error(conn, :timeout)
+      end)
+
+      Req.Test.expect(Waffle.HTTPClient.Req, fn conn ->
+        Plug.Conn.send_resp(conn, 200, "file content")
+      end)
+
+      assert %Waffle.File{file_name: "image.jpg", path: path, is_tempfile?: true} =
+               Waffle.File.new("http://example.com/image.jpg", DummyDefinition)
+
+      on_exit(fn -> File.rm(path) end)
     end
 
-    test "retries on service_unavailable and returns {:error, :service_unavailable} after exhausting retries" do
-      with_mock Hackney,
-        get: fn _url, _headers, _opts ->
-          {:error, :service_unavailable}
-        end do
-        result = Waffle.File.new("http://example.com/image.jpg", DummyDefinition)
-        assert result == {:error, :service_unavailable}
-        assert_called_exactly(Hackney.get(:_, :_, :_), 3)
-      end
+    test "returns error when retry doesn't recover" do
+      Req.Test.expect(Waffle.HTTPClient.Req, 2, fn conn ->
+        Plug.Conn.send_resp(conn, 503, "service unavailable")
+      end)
+
+      assert {:error,
+              %Waffle.HTTPClient.Error{
+                error: {:unexpected_status, 503},
+                error_context: %Req.Response{status: 503, body: "service unavailable"}
+              }} = Waffle.File.new("http://example.com/image.jpg", DummyDefinition)
     end
 
-    test "does not retry on non-retryable errors" do
-      with_mock Hackney,
-        get: fn _url, _headers, _opts ->
-          {:error, {:http_error, :unexpected_status}}
-        end do
-        result = Waffle.File.new("http://example.com/image.jpg", DummyDefinition)
-        assert result == {:error, {:http_error, :unexpected_status}}
-        # exactly 1 call — no retry
-        assert :meck.num_calls(Hackney, :get, :_) == 1
-      end
+    test "doesn't retry on other http codes" do
+      Req.Test.expect(Waffle.HTTPClient.Req, fn conn ->
+        Plug.Conn.send_resp(conn, 404, "not found")
+      end)
+
+      assert {:error,
+              %Waffle.HTTPClient.Error{
+                error: {:unexpected_status, 404}
+              }} = Waffle.File.new("http://example.com/image.jpg", DummyDefinition)
     end
 
-    test "uses the module configured as :http_client" do
-      Application.put_env(:waffle, :http_client, Hackney)
+    test "doesn't retry on other errors" do
+      Req.Test.expect(Waffle.HTTPClient.Req, fn conn ->
+        Req.Test.transport_error(conn, :econnrefused)
+      end)
 
-      with_mock Hackney,
-        get: fn _url, _headers, _opts ->
-          {:ok, "image data"}
-        end do
-        Waffle.File.new("http://example.com/image.jpg", DummyDefinition)
-        assert called(Hackney.get(:_, :_, :_))
-      end
+      assert {:error,
+              %Waffle.HTTPClient.Error{
+                error: :http_client,
+                error_context: %Req.TransportError{reason: :econnrefused}
+              }} = Waffle.File.new("http://example.com/image.jpg", DummyDefinition)
     end
   end
 end
