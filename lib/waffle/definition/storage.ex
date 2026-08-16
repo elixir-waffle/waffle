@@ -58,6 +58,15 @@ defmodule Waffle.Definition.Storage do
   Override the `__storage` function in your definition module if you
   want to use a different type of storage for a particular uploader.
 
+  ### Community adapters
+
+  * **Rackspace** - [arc_rackspace](https://github.com/lokalebasen/arc_rackspace)
+  * **Manta** - [arc_manta](https://github.com/onyxrev/arc_manta)
+  * **OVH** - [arc_ovh](https://github.com/stephenmoloney/arc_ovh)
+  * **Google Cloud Storage** - [waffle_gcs](https://github.com/elixir-waffle/waffle_gcs)
+  * **Microsoft Azure Storage** - [arc_azure](https://github.com/phil-a/arc_azure)
+  * **Aliyun OSS Storage** - [waffle_aliyun_oss](https://github.com/ug0/waffle_aliyun_oss)
+
   ## File Validation
 
   While storing files on S3 eliminates some malicious attack vectors,

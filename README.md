@@ -20,7 +20,7 @@ Already using Waffle in your org? I'd love to learn more. Let's [have a chat](ht
 
 ## Why use Waffle?
 
-You want to apply file transformations, manage access rules, save files or do async file processing.
+You want to apply file transformations, manage access rules, save files, or process files asynchronously.
 
 ## Quick start
 
@@ -28,11 +28,11 @@ Add the `:waffle` dependency to `mix.exs`.
 
 **mix.exs**
 ```elixir
-{:waffle, "~> 2.0"}
+{:waffle, "~> 2.0"},
 {:waffle_ecto, "~> 0.0"}
 ```
 
-_Read more about Ecto integration from [WaffleEcto documentation](https://waffle-ecto.hexdocs.pm/)._
+_Read more about Ecto integration in the [WaffleEcto documentation](https://waffle-ecto.hexdocs.pm/)._
 _WaffleEcto supports changeset integration and versioned URLs for cache busting._
 
 Configure file storage
@@ -40,6 +40,8 @@ Configure file storage
 ```elixir
 config :waffle, storage: Waffle.Storage.Local
 ```
+
+_Read more about [storage configuration](https://waffle.hexdocs.pm/Waffle.Definition.Storage.html) and the supported adapters (including S3)._
 
 Create an uploader module with `mix waffle.g avatar`
 
@@ -71,8 +73,8 @@ changeset
 
 ## More Examples
 
-* [An example for Local storage driver](documentation/examples/local.md)
-* [An example for S3 storage driver](documentation/examples/s3.md)
+* [An example for the Local storage driver](documentation/examples/local.md)
+* [An example for the S3 storage driver](documentation/examples/s3.md)
 
 ## Attribution
 

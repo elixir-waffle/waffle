@@ -8,7 +8,9 @@ defmodule Waffle.Storage.S3 do
 
   Along with any configuration necessary for ExAws.
 
-  [ExAws](https://github.com/CargoSense/ex_aws) is used to support Amazon S3.
+  [ExAws](https://ex-aws.hexdocs.pm) is used to support Amazon S3.
+
+  First, [install ExAws](https://ex-aws.hexdocs.pm/readme.html#getting-started). Optionally, configure ExAws to [use Req http adapter](https://ex-aws.hexdocs.pm/ExAws.Request.HttpClient.html).
 
   To store your attachments in Amazon S3, you'll need to provide a
   bucket destination in your application config:
