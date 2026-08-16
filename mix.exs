@@ -58,7 +58,7 @@ defmodule Waffle.Mixfile do
 
   defp deps do
     [
-      {:req, "~> 0.7", only: [:dev, :test]},
+      {:req, "~> 0.7", optional: true},
 
       # If using Amazon S3
       {:ex_aws, "~> 2.1", optional: true},
