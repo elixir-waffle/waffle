@@ -107,6 +107,38 @@ defmodule WaffleTest.HTTPClient.ReqTest do
                HTTPClient.Req.get("http://example.com/file.jpg", [], options)
     end
 
+    test "with Finch options omits generated connect options" do
+      adapter_config = Application.fetch_env!(:waffle, Waffle.HTTPClient.Req)
+
+      updated_adapter_config =
+        Keyword.update!(adapter_config, :request_options, fn request_options ->
+          Keyword.put(request_options, :finch, pool_timeout: 5_000)
+        end)
+
+      Application.put_env(:waffle, Waffle.HTTPClient.Req, updated_adapter_config)
+
+      on_exit(fn ->
+        Application.put_env(:waffle, Waffle.HTTPClient.Req, adapter_config)
+      end)
+
+      Req.Test.expect(Waffle.HTTPClient.Req, fn conn ->
+        Plug.Conn.send_resp(conn, 404, "not found")
+      end)
+
+      assert {:error,
+              %HTTPClient.Error{
+                request: %Req.Request{options: request_options}
+              }} =
+               HTTPClient.Req.get(
+                 "http://example.com/missing.jpg",
+                 [],
+                 Waffle.HTTPClient.Request.options()
+               )
+
+      assert request_options.finch == [pool_timeout: 5_000]
+      refute Map.has_key?(request_options, :connect_options)
+    end
+
     test "with receive timeout" do
       Req.Test.expect(Waffle.HTTPClient.Req, fn conn ->
         Req.Test.transport_error(conn, :timeout)

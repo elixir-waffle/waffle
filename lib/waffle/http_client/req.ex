@@ -30,13 +30,18 @@ if Code.ensure_loaded?(Req) do
 
         config :waffle, Waffle.HTTPClient.Req,
           request_options: [
-            finch: [pool_timeout: 5_000]
+            pool_timeout: 5_000
           ]
 
     These options are merged after Waffle's request options and therefore take
     precedence. Prefer the
     [request configuration](`m:Waffle.HTTPClient.Request`) for options supported
     directly by Waffle.
+
+    When `:finch` is configured, Waffle does not set Req's `:connect_options`
+    because Req does not allow both options. Configure the connection timeout
+    on the Finch pool instead; Waffle's `:connect_timeout_ms` does not apply in
+    that case.
     """
 
     @behaviour Waffle.HTTPClient
@@ -61,10 +66,10 @@ if Code.ensure_loaded?(Req) do
           method: :get,
           headers: headers,
           receive_timeout: receive_timeout_ms,
-          connect_options: [timeout: connect_timeout_ms],
           retry: false,
           decode_body: false
         ]
+        |> maybe_with_connect_timeout(connect_timeout_ms, config_request_options)
         |> maybe_with_redirects(max_redirects)
         |> maybe_with_max_body_length(max_body_length_bytes)
         |> Keyword.merge(config_request_options)
@@ -101,6 +106,14 @@ if Code.ensure_loaded?(Req) do
 
         {:error, exception} ->
           {:error, %Error{request: request, error_context: exception, error: :http_client}}
+      end
+    end
+
+    defp maybe_with_connect_timeout(request, connect_timeout_ms, config_request_options) do
+      if Keyword.has_key?(config_request_options, :finch) do
+        request
+      else
+        Keyword.put(request, :connect_options, timeout: connect_timeout_ms)
       end
     end
 
