@@ -1,5 +1,7 @@
 defmodule Waffle.HTTPClient do
-  @moduledoc false
+  @moduledoc """
+  Defines the behavior for http client.
+  """
 
   @type url :: String.t()
   @type header :: {String.t(), String.t()}

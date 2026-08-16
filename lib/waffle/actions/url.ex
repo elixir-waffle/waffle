@@ -7,7 +7,7 @@ defmodule Waffle.Actions.Url do
   as important as storing them in the first place.
 
   Often times you will want to regain access to the stored files.  As
-  such, `Waffle` facilitates the generation of urls.
+  such, Waffle facilitates the generation of urls.
 
       # Given some user record
       user = %{id: 1}

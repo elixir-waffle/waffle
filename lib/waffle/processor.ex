@@ -100,9 +100,9 @@ defmodule Waffle.Processor do
 
   ## Complex Transformations
 
-  `Waffle` requires the output of your transformation to be located at
+  Waffle requires the output of your transformation to be located at
   a predetermined path.  However, the transformation may be done
-  completely outside of `Waffle`. For fine-grained transformations,
+  completely outside of Waffle. For fine-grained transformations,
   you should create an executable wrapper in your $PATH (eg. bash
   script) which takes these proper arguments, runs your
   transformation, and then moves the file into the correct location.
