@@ -1,5 +1,43 @@
 defmodule Waffle.HTTPClient.Req do
-  @moduledoc false
+  @moduledoc """
+  HTTP client adapter that uses `Req` to download remote files.
+
+  ## Installation
+
+  Add the `:req` dependency to `mix.exs`:
+
+      {:req, "~> 0.7"}
+
+  Configure Waffle to use this adapter:
+
+      config :waffle,
+        http_client: Waffle.HTTPClient.Req
+
+  This adapter is used only when Waffle downloads a remote URL. It does not
+  configure S3 requests made by `Waffle.Storage.S3`, which are handled by ExAws.
+
+  Timeouts, redirects, retries, and response body limits are configured through
+  the `:waffle` `:request` option. See the
+  [request configuration](`m:Waffle.HTTPClient.Request`) for supported options
+  and defaults.
+
+  ## Req-specific options
+
+  Additional options can be passed directly to `Req.new/1`. See the
+  [`Req.new/1` documentation](https://hexdocs.pm/req/Req.html#new/1) for the
+  available options.
+
+      config :waffle, Waffle.HTTPClient.Req,
+        request_options: [
+          finch: [pool_timeout: 5_000]
+        ]
+
+  These options are merged after Waffle's request options and therefore take
+  precedence. Prefer the
+  [request configuration](`m:Waffle.HTTPClient.Request`) for options supported
+  directly by Waffle.
+  """
+
   @behaviour Waffle.HTTPClient
 
   # see [related discussion](https://github.com/wojtekmach/req/issues/355) for max body length

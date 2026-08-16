@@ -134,11 +134,22 @@ defmodule Waffle.Definition.Storage do
         end
       end
 
-  ## Passing custom headers when downloading from remote path
+  ## Fetching remote files
 
-  By default, when downloading files from remote path request headers are empty,
-  but if you wish to provide your own, you can override the `remote_file_headers/1`
-  function in your definition module. For example:
+  When a remote URL is passed to an uploader, Waffle downloads it to a temporary
+  file before validation, transformation, and storage.
+
+  See `Waffle.HTTPClient.Req` for HTTP client setup and Req-specific options.
+  See `Waffle.HTTPClient.Request` for timeouts, redirects, retries, and response
+  body limits.
+
+  Remote-file HTTP client configuration does not affect requests made by
+  `Waffle.Storage.S3`, which are handled separately by ExAws.
+
+  ### Passing custom request headers
+
+  Waffle does not add custom headers when downloading remote files. Override
+  `remote_file_headers/1` in your definition module to provide them. For example:
 
       defmodule Avatar do
         use Waffle.Definition
@@ -147,12 +158,12 @@ defmodule Waffle.Definition.Storage do
           credentials = Application.get_env(:my_app, :avatar_credentials)
           token = Base.encode64(credentials[:username] <> ":" <> credentials[:password])
 
-          [{"Authorization", "Basic #{token}")}]
+          [{"Authorization", "Basic #{token}"}]
         end
       end
 
-  This code would authenticate request only for specific domain. Otherwise, it would send
-  empty request headers.
+  This authenticates requests only to the specified domain. Requests to other
+  domains use no custom headers.
 
   ## Temporary Directory
 

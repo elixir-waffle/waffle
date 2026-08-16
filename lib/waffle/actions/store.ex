@@ -31,6 +31,9 @@ defmodule Waffle.Actions.Store do
       {:ok, data, _conn} = Plug.Conn.read_body(conn)
       Avatar.store(%{filename: "file.png", binary: data})
 
+  See [Fetching remote files](`m:Waffle.Definition.Storage#module-fetching-remote-files`)
+  for setup and configuration.
+
   Example usage as a file attached to a `scope`:
 
       scope = Repo.get(User, 1)

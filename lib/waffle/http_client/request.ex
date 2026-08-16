@@ -1,5 +1,40 @@
 defmodule Waffle.HTTPClient.Request do
-  @moduledoc false
+  @moduledoc """
+  Configures requests used to download remote files.
+
+  These settings apply only when Waffle fetches a remote URL. They do not affect
+  requests made by storage adapters such as `Waffle.Storage.S3`.
+
+  ## Configuration
+
+  Override the defaults with:
+
+      config :waffle,
+        request: [
+          max_redirects: 3,
+          max_retries: 3,
+          receive_timeout_ms: 5_000,
+          connect_timeout_ms: 10_000,
+          max_body_length_bytes: 50 * 1024,
+          backoff_factor_ms: 1_000,
+          backoff_max_ms: 30_000
+        ]
+
+  The values shown above are the defaults.
+
+  ## Options
+
+    * `:max_redirects` - maximum number of redirects to follow. Set to `nil` to
+      disable redirects.
+    * `:max_retries` - number of retries after the initial request. Waffle retries
+      timeouts and HTTP `503` responses.
+    * `:receive_timeout_ms` - socket receive timeout, in milliseconds.
+    * `:connect_timeout_ms` - connection timeout, in milliseconds.
+    * `:max_body_length_bytes` - maximum response body size, in bytes. Set to
+      `nil` to disable the limit.
+    * `:backoff_factor_ms` - initial exponential-backoff delay, in milliseconds.
+    * `:backoff_max_ms` - maximum exponential-backoff delay, in milliseconds.
+  """
 
   alias Waffle.HTTPClient.{Error, Response}
 

@@ -1,6 +1,4 @@
 defmodule Waffle.HTTPClient do
-  @moduledoc false
-
   @type url :: String.t()
   @type header :: {String.t(), String.t()}
   @type headers :: [header()]
