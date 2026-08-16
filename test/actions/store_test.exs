@@ -6,6 +6,20 @@ defmodule WaffleTest.Actions.Store do
 
   import Mock
 
+  setup {Req.Test, :verify_on_exit!}
+
+  setup do
+    request_options = Application.get_env(:waffle, :request, [])
+
+    Application.put_env(
+      :waffle,
+      :request,
+      Keyword.put(request_options, :max_retries, 0)
+    )
+
+    on_exit(fn -> Application.put_env(:waffle, :request, request_options) end)
+  end
+
   defmodule DummyDefinition do
     use Waffle.Actions.Store
     use Waffle.Definition.Storage
@@ -55,13 +69,11 @@ defmodule WaffleTest.Actions.Store do
     def __versions, do: [:original, :thumb, :skipped]
   end
 
-  test "custom transformations change a file extension" do
-    with_mock Waffle.Storage.S3,
-      put: fn DummyDefinitionWithExtension, _, {%{file_name: "image.jpg", path: _}, nil} ->
-        {:ok, "resp"}
-      end do
-      assert DummyDefinitionWithExtension.store(@img) == {:ok, "image.png"}
-    end
+  test_with_mock "custom transformations change a file extension", Waffle.Storage.S3,
+    put: fn DummyDefinitionWithExtension, _, {%{file_name: "image.jpg", path: _}, nil} ->
+      {:ok, "resp"}
+    end do
+    assert DummyDefinitionWithExtension.store(@img) == {:ok, "image.png"}
   end
 
   test "checks file existence" do
@@ -76,192 +88,157 @@ defmodule WaffleTest.Actions.Store do
     assert DummyDefinitionWithValidationError.store(__ENV__.file) == {:error, "invalid file type"}
   end
 
-  test "single binary argument is interpreted as file path" do
-    with_mock Waffle.Storage.S3,
-      put: fn DummyDefinition, _, {%{file_name: "image.png", path: @img}, nil} ->
-        {:ok, "resp"}
-      end do
-      assert DummyDefinition.store(@img) == {:ok, "image.png"}
-    end
+  test_with_mock "single binary argument is interpreted as file path", Waffle.Storage.S3,
+    put: fn DummyDefinition, _, {%{file_name: "image.png", path: @img}, nil} ->
+      {:ok, "resp"}
+    end do
+    assert DummyDefinition.store(@img) == {:ok, "image.png"}
   end
 
-  test "two-tuple argument interpreted as path and scope" do
-    with_mock Waffle.Storage.S3,
-      put: fn DummyDefinition, _, {%{file_name: "image.png", path: @img}, :scope} ->
-        {:ok, "resp"}
-      end do
-      assert DummyDefinition.store({@img, :scope}) == {:ok, "image.png"}
-    end
+  test_with_mock "two-tuple argument interpreted as path and scope", Waffle.Storage.S3,
+    put: fn DummyDefinition, _, {%{file_name: "image.png", path: @img}, :scope} ->
+      {:ok, "resp"}
+    end do
+    assert DummyDefinition.store({@img, :scope}) == {:ok, "image.png"}
   end
 
-  test "map with a filename and path" do
-    with_mock Waffle.Storage.S3,
-      put: fn DummyDefinition, _, {%{file_name: "image.png", path: @img}, nil} ->
-        {:ok, "resp"}
-      end do
-      assert DummyDefinition.store(%{filename: "image.png", path: @img}) == {:ok, "image.png"}
-    end
+  test_with_mock "map with a filename and path", Waffle.Storage.S3,
+    put: fn DummyDefinition, _, {%{file_name: "image.png", path: @img}, nil} ->
+      {:ok, "resp"}
+    end do
+    assert DummyDefinition.store(%{filename: "image.png", path: @img}) == {:ok, "image.png"}
   end
 
-  test "two-tuple with Plug.Upload and a scope" do
-    with_mock Waffle.Storage.S3,
-      put: fn DummyDefinition, _, {%{file_name: "image.png", path: @img}, :scope} ->
-        {:ok, "resp"}
-      end do
-      assert DummyDefinition.store({%{filename: "image.png", path: @img}, :scope}) ==
-               {:ok, "image.png"}
-    end
+  test_with_mock "two-tuple with Plug.Upload and a scope", Waffle.Storage.S3,
+    put: fn DummyDefinition, _, {%{file_name: "image.png", path: @img}, :scope} ->
+      {:ok, "resp"}
+    end do
+    assert DummyDefinition.store({%{filename: "image.png", path: @img}, :scope}) ==
+             {:ok, "image.png"}
   end
 
-  test "error from ExAws on upload to S3" do
-    with_mock Waffle.Storage.S3,
-      put: fn DummyDefinition, _, {%{file_name: "image.png", path: @img}, :scope} ->
-        {:error, {:http_error, 404, "XML"}}
-      end do
-      assert DummyDefinition.store({%{filename: "image.png", path: @img}, :scope}) ==
-               {:error, [{:http_error, 404, "XML"}, {:http_error, 404, "XML"}]}
-    end
+  test_with_mock "error from ExAws on upload to S3", Waffle.Storage.S3,
+    put: fn DummyDefinition, _, {%{file_name: "image.png", path: @img}, :scope} ->
+      {:error, {:http_error, 404, "XML"}}
+    end do
+    assert DummyDefinition.store({%{filename: "image.png", path: @img}, :scope}) ==
+             {:error, [{:http_error, 404, "XML"}, {:http_error, 404, "XML"}]}
   end
 
-  test "timeout" do
+  test_with_mock "timeout", Waffle.Storage.S3,
+    put: fn DummyDefinition, _, {%{file_name: "image.png", path: @img}, :scope} ->
+      :timer.sleep(100) && {:ok, "favicon.ico"}
+    end do
     Application.put_env(:waffle, :version_timeout, 1)
 
     catch_exit(
-      with_mock Waffle.Storage.S3,
-        put: fn DummyDefinition, _, {%{file_name: "image.png", path: @img}, :scope} ->
-          :timer.sleep(100) && {:ok, "favicon.ico"}
-        end do
-        assert DummyDefinition.store({%{filename: "image.png", path: @img}, :scope}) ==
-                 {:ok, "image.png"}
-      end
+      assert DummyDefinition.store({%{filename: "image.png", path: @img}, :scope}) ==
+               {:ok, "image.png"}
     )
 
     Application.put_env(:waffle, :version_timeout, 15_000)
   end
 
-  test "recv_timeout" do
-    original = Application.get_env(:waffle, :recv_timeout)
-    Application.put_env(:waffle, :recv_timeout, 1)
-
-    on_exit(fn ->
-      if original,
-        do: Application.put_env(:waffle, :recv_timeout, original),
-        else: Application.delete_env(:waffle, :recv_timeout)
+  test_with_mock "receive timeout", Waffle.Storage.S3,
+    put: fn DummyDefinition, _, {%{file_name: "favicon.ico", path: _}, nil} ->
+      {:ok, "favicon.ico"}
+    end do
+    Req.Test.expect(Waffle.HTTPClient.Req, fn conn ->
+      Req.Test.transport_error(conn, :timeout)
     end)
 
-    with_mock Waffle.Storage.S3,
-      put: fn DummyDefinition, _, {%{file_name: "favicon.ico", path: _}, nil} ->
-        {:ok, "favicon.ico"}
-      end do
-      assert DummyDefinition.store("https://www.google.com/favicon.ico") ==
-               {:error, :recv_timeout}
-    end
+    assert {:error, %Waffle.HTTPClient.Error{error: :timeout}} =
+             DummyDefinition.store("https://www.google.com/favicon.ico")
   end
 
-  test "recv_timeout with a filename" do
-    original = Application.get_env(:waffle, :recv_timeout)
-    Application.put_env(:waffle, :recv_timeout, 1)
-
-    on_exit(fn ->
-      if original,
-        do: Application.put_env(:waffle, :recv_timeout, original),
-        else: Application.delete_env(:waffle, :recv_timeout)
+  test_with_mock "receive timeout with a filename", Waffle.Storage.S3,
+    put: fn DummyDefinition, _, {%{file_name: "newfavicon.ico", path: _}, nil} ->
+      {:ok, "newfavicon.ico"}
+    end do
+    Req.Test.expect(Waffle.HTTPClient.Req, fn conn ->
+      Req.Test.transport_error(conn, :timeout)
     end)
 
-    with_mock Waffle.Storage.S3,
-      put: fn DummyDefinition, _, {%{file_name: "newfavicon.ico", path: _}, nil} ->
-        {:ok, "newfavicon.ico"}
-      end do
-      assert DummyDefinition.store(%{
+    assert {:error, %Waffle.HTTPClient.Error{error: :timeout}} =
+             DummyDefinition.store(%{
                remote_path: "https://www.google.com/favicon.ico",
                filename: "newfavicon.ico"
-             }) ==
-               {:error, :recv_timeout}
-    end
+             })
   end
 
-  test "accepts remote files" do
-    with_mock Waffle.Storage.S3,
-      put: fn DummyDefinition, _, {%{file_name: "favicon.ico", path: _}, nil} ->
-        {:ok, "favicon.ico"}
-      end do
-      assert DummyDefinition.store("https://www.google.com/favicon.ico") == {:ok, "favicon.ico"}
-    end
+  test_with_mock "accepts remote files", Waffle.Storage.S3,
+    put: fn DummyDefinition, _, {%{file_name: "favicon.ico", path: _}, nil} ->
+      {:ok, "favicon.ico"}
+    end do
+    Req.Test.expect(Waffle.HTTPClient.Req, fn conn ->
+      Plug.Conn.send_resp(conn, 200, "file content")
+    end)
+
+    assert DummyDefinition.store("https://www.google.com/favicon.ico") == {:ok, "favicon.ico"}
   end
 
-  test "sets remote filename from content-disposition header when available" do
-    with_mocks([
-      {
-        :hackney_headers,
-        [:passthrough],
-        get_value: fn "content-disposition", _headers ->
-          "attachment; filename=\"image three.png\""
-        end
-      },
-      {
-        Waffle.Storage.S3,
-        [],
-        put: fn DummyDefinition, _, {%{file_name: "image three.png", path: _}, nil} ->
-          {:ok, "image three.png"}
-        end
-      }
-    ]) do
-      assert DummyDefinition.store(@remote_img_with_space_image_two) ==
-               {:ok, "image three.png"}
-    end
-  end
-
-  test "sets HTTP headers for request to remote file" do
-    with_mocks([
-      {
-        :hackney,
-        [:passthrough],
-        []
-      },
-      {
-        Waffle.Storage.S3,
-        [],
-        put: fn DummyDefinitionWithHeaders, _, {%{file_name: "favicon.ico", path: _}, nil} ->
-          {:ok, "favicon.ico"}
-        end
-      }
-    ]) do
-      DummyDefinitionWithHeaders.store("https://www.google.com/favicon.ico")
-
-      assert_called(
-        :hackney.get("https://www.google.com/favicon.ico", [{"User-Agent", "MyApp"}], "", :_)
+  test_with_mock "sets remote filename from content-disposition header when available",
+                 Waffle.Storage.S3,
+                 put: fn DummyDefinition, _, {%{file_name: "image three.png", path: _}, nil} ->
+                   {:ok, "image three.png"}
+                 end do
+    Req.Test.expect(Waffle.HTTPClient.Req, fn conn ->
+      conn
+      |> Plug.Conn.put_resp_header(
+        "content-disposition",
+        ~s(attachment; filename="image three.png")
       )
-    end
+      |> Plug.Conn.send_resp(200, "file content")
+    end)
+
+    assert DummyDefinition.store(@remote_img_with_space_image_two) ==
+             {:ok, "image three.png"}
   end
 
-  test "accepts remote files with spaces" do
-    with_mock Waffle.Storage.S3,
-      put: fn DummyDefinition, _, {%{file_name: "image two.png", path: _}, nil} ->
-        {:ok, "image two.png"}
-      end do
-      assert DummyDefinition.store(@remote_img_with_space_image_two) == {:ok, "image two.png"}
-    end
+  test_with_mock "sets HTTP headers for request to remote file", Waffle.Storage.S3,
+    put: fn DummyDefinitionWithHeaders, _, {%{file_name: "favicon.ico", path: _}, nil} ->
+      {:ok, "favicon.ico"}
+    end do
+    Req.Test.expect(Waffle.HTTPClient.Req, fn conn ->
+      assert Plug.Conn.get_req_header(conn, "user-agent") == ["MyApp"]
+      Plug.Conn.send_resp(conn, 200, "file content")
+    end)
+
+    assert DummyDefinitionWithHeaders.store("https://www.google.com/favicon.ico") ==
+             {:ok, "favicon.ico"}
   end
 
-  test "accepts remote files with filenames" do
-    with_mock Waffle.Storage.S3,
-      put: fn DummyDefinition, _, {%{file_name: "newfavicon.ico", path: _}, nil} ->
-        {:ok, "newfavicon.ico"}
-      end do
-      assert DummyDefinition.store(%{
-               remote_path: "https://www.google.com/favicon.ico",
-               filename: "newfavicon.ico"
-             }) == {:ok, "newfavicon.ico"}
-    end
+  test_with_mock "accepts remote files with spaces", Waffle.Storage.S3,
+    put: fn DummyDefinition, _, {%{file_name: "image two.png", path: _}, nil} ->
+      {:ok, "image two.png"}
+    end do
+    Req.Test.expect(Waffle.HTTPClient.Req, fn conn ->
+      Plug.Conn.send_resp(conn, 200, "file content")
+    end)
+
+    assert DummyDefinition.store(@remote_img_with_space_image_two) == {:ok, "image two.png"}
   end
 
-  test "rejects remote files with filenames and invalid remote path" do
-    with_mock Waffle.Storage.S3,
-      put: fn DummyDefinition, _, {%{file_name: "newfavicon.ico", path: _}, nil} ->
-        {:ok, "newfavicon.ico"}
-      end do
-      assert DummyDefinition.store(%{remote_path: "path/favicon.ico", filename: "newfavicon.ico"}) ==
-               {:error, :invalid_file_path}
-    end
+  test_with_mock "accepts remote files with filenames", Waffle.Storage.S3,
+    put: fn DummyDefinition, _, {%{file_name: "newfavicon.ico", path: _}, nil} ->
+      {:ok, "newfavicon.ico"}
+    end do
+    Req.Test.expect(Waffle.HTTPClient.Req, fn conn ->
+      Plug.Conn.send_resp(conn, 200, "file content")
+    end)
+
+    assert DummyDefinition.store(%{
+             remote_path: "https://www.google.com/favicon.ico",
+             filename: "newfavicon.ico"
+           }) == {:ok, "newfavicon.ico"}
+  end
+
+  test_with_mock "rejects remote files with filenames and invalid remote path",
+                 Waffle.Storage.S3,
+                 put: fn DummyDefinition, _, {%{file_name: "newfavicon.ico", path: _}, nil} ->
+                   {:ok, "newfavicon.ico"}
+                 end do
+    assert DummyDefinition.store(%{remote_path: "path/favicon.ico", filename: "newfavicon.ico"}) ==
+             {:error, :invalid_file_path}
   end
 end
