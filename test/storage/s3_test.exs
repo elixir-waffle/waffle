@@ -79,7 +79,7 @@ defmodule WaffleTest.Storage.S3 do
   defmacro assert_header(definition, args, header, value) do
     quote bind_quoted: [definition: definition, args: args, header: header, value: value] do
       url = definition.url(args)
-      {:ok, {{_, 200, 'OK'}, headers, _}} = :httpc.request(to_charlist(url))
+      {:ok, {{_, 200, ~c"OK"}, headers, _}} = :httpc.request(to_charlist(url))
 
       char_header = to_charlist(header)
 
@@ -96,12 +96,12 @@ defmodule WaffleTest.Storage.S3 do
       unsigned_url = definition.url(args)
       {:ok, {{_, code, msg}, _, _}} = :httpc.request(to_charlist(unsigned_url))
       assert code == 403
-      assert msg == 'Forbidden'
+      assert msg == ~c"Forbidden"
 
       signed_url = definition.url(args, signed: true)
       {:ok, {{_, code, msg}, headers, _}} = :httpc.request(to_charlist(signed_url))
       assert code == 200
-      assert msg == 'OK'
+      assert msg == ~c"OK"
     end
   end
 
@@ -110,7 +110,7 @@ defmodule WaffleTest.Storage.S3 do
       url = definition.url(args)
       {:ok, {{_, code, msg}, headers, _}} = :httpc.request(to_charlist(url))
       assert code == 200
-      assert msg == 'OK'
+      assert msg == ~c"OK"
     end
   end
 
@@ -124,7 +124,7 @@ defmodule WaffleTest.Storage.S3 do
       url = definition.url(args, version)
       {:ok, {{_, code, msg}, headers, _}} = :httpc.request(to_charlist(url))
       assert code == 200
-      assert msg == 'OK'
+      assert msg == ~c"OK"
       assert Path.extname(url) == extension
     end
   end
