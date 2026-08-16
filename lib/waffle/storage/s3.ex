@@ -13,12 +13,18 @@ if Code.ensure_loaded?(ExAws) and Code.ensure_loaded?(ExAws.S3) do
 
     First, add the ExAws dependencies to `mix.exs`:
 
-        {:ex_aws, "~> 2.1"},
-        {:ex_aws_s3, "~> 2.1"}
+        {:ex_aws, "~> 2.7"},
+        {:ex_aws_s3, "~> 2.1"},
+        {:req, "~> 0.7"},
+        {:sweet_xml, "~> 0.6"}
+
+    Configure ExAws to use Req as its HTTP adapter:
+
+        config :ex_aws,
+          http_client: ExAws.Request.Req
 
     Then follow the [ExAws installation instructions](https://ex-aws.hexdocs.pm/readme.html#getting-started)
-    to configure a JSON codec and HTTP client. ExAws can optionally
-    [use Req as its HTTP adapter](https://ex-aws.hexdocs.pm/ExAws.Request.HttpClient.html).
+    to configure credentials, a JSON codec, and any other required options.
 
     To store your attachments in Amazon S3, you'll need to provide a
     bucket destination in your application config:

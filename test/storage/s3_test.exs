@@ -130,7 +130,7 @@ defmodule WaffleTest.Storage.S3 do
   end
 
   setup_all do
-    Application.ensure_all_started(:hackney)
+    Application.ensure_all_started(:req)
     Application.ensure_all_started(:ex_aws)
     Application.put_env(:waffle, :virtual_host, true)
     Application.put_env(:waffle, :bucket, {:system, "WAFFLE_TEST_BUCKET"})
