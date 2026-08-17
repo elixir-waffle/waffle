@@ -2,11 +2,117 @@
 
 ## Unreleased
 
-- Add pluggable HTTP client behaviour (`Waffle.HTTPClient`) with `Waffle.HTTPClient.Hackney`
-  as the default implementation (#150)
-  - `:timeout` and `:recv_timeout` error atoms are **unchanged** from previous behaviour
-  - `{:error, :service_unavailable}` replaces `{:error, {:waffle_hackney_error, {:ok, 503, ...}}}` on 503 out of retries
-  - Non-2xx errors now return `{:error, {:http_error, status_code}}` (e.g. `{:error, {:http_error, 404}}`), replacing `{:error, {:waffle_hackney_error, {:ok, status, headers, ref}}}`
+- Replace the required Hackney dependency with the optional Req adapter.
+- Add a pluggable HTTP-client behaviour for remote downloads.
+- Limit remote downloads to 50 MiB by default.
+- Return structured `%Waffle.HTTPClient.Error{}` values for HTTP failures.
+- Compile cleanly without optional Req or ExAws dependencies.
+- Allow the temporary directory to be configured with `:tmp_dir`.
+- Support RFC 6266 `filename*` parameters and reject unsafe filenames from
+  remote `Content-Disposition` headers.
+
+### Upgrade guide
+
+Applications that download remote URLs must add and configure Req:
+
+```elixir
+{:req, "~> 0.7"}
+```
+
+```elixir
+config :waffle,
+  http_client: Waffle.HTTPClient.Req
+```
+
+Configuration names changed as follows:
+
+| Waffle 1.x        | Waffle 2.0              |
+|-------------------|-------------------------|
+| `recv_timeout`    | `receive_timeout_ms`    |
+| `connect_timeout` | `connect_timeout_ms`    |
+| `max_body_length` | `max_body_length_bytes` |
+| `backoff_factor`  | `backoff_factor_ms`     |
+| `backoff_max`     | `backoff_max_ms`        |
+
+The first retry delay now equals `backoff_factor_ms`. In Waffle 1.x, it was
+half of `backoff_factor` because retry counting started at zero.
+
+Remote downloads previously always followed redirects. Waffle 2.0 adds
+`max_redirects`, which defaults to `3`; set it to `nil` to disable redirects.
+
+Request options also moved under the `:request` key. `max_retries` keeps its
+name.
+
+Before:
+
+```elixir
+config :waffle,
+  recv_timeout: 5_000,
+  connect_timeout: 10_000,
+  max_body_length: :infinity,
+  max_retries: 3,
+  backoff_factor: 1_000,
+  backoff_max: 30_000
+```
+
+After:
+
+```elixir
+config :waffle,
+  http_client: Waffle.HTTPClient.Req,
+  request: [
+    max_redirects: 3,
+    max_retries: 3,
+    receive_timeout_ms: 5_000,
+    connect_timeout_ms: 10_000,
+    max_body_length_bytes: 50 * 1024 * 1024,
+    backoff_factor_ms: 1_000,
+    backoff_max_ms: 30_000
+  ]
+```
+
+The new example shows the Waffle 2.0 defaults. Set
+`max_body_length_bytes: nil` to preserve the previous unlimited behaviour.
+
+Remote-download errors also changed shape.
+
+Before:
+
+```elixir
+{:error, :timeout}
+{:error, :recv_timeout}
+{:error, :waffle_hackney_error}
+{:error, {:waffle_hackney_error, response}}
+```
+
+After:
+
+```elixir
+@type remote_download_error ::
+        {:error,
+         %Waffle.HTTPClient.Error{
+           error:
+             :timeout
+             | {:unexpected_status, Waffle.HTTPClient.status()}
+             | :response_body_limit_exceeded
+             | :http_client,
+           error_context: term()
+         }}
+```
+
+Connect and receive timeouts are now both reported as `:timeout`. Callers that
+pattern-match on remote-download errors must update their matches.
+
+S3 users who relied on Waffle providing Hackney must configure an ExAws HTTP
+client. With ExAws 2.7 or newer:
+
+```elixir
+config :ex_aws,
+  http_client: ExAws.Request.Req
+```
+
+Applications that use neither remote URL downloads nor S3 need no HTTP-client
+dependency.
 
 ## v1.1.10 (2025-12-28)
 

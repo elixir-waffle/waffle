@@ -146,6 +146,15 @@ defmodule Waffle.Definition.Storage do
   Remote-file HTTP client configuration does not affect requests made by
   `Waffle.Storage.S3`, which are handled separately by ExAws.
 
+  ### Filenames from Content-Disposition
+
+  When a remote response provides a filename through `Content-Disposition`,
+  Waffle uses it instead of the URL's basename. Both `filename` and RFC 6266
+  `filename*` parameters are supported, with `filename*` taking precedence.
+
+  Filenames containing path separators or control characters are rejected. In
+  that case, Waffle falls back to the filename derived from the URL.
+
   ### Passing custom request headers
 
   Waffle does not add custom headers when downloading remote files. Override
