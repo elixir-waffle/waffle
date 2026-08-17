@@ -7,7 +7,7 @@ defmodule Waffle.Mixfile do
     [
       app: :waffle,
       version: @version,
-      elixir: "~> 1.4",
+      elixir: "~> 1.15",
       source_url: "https://github.com/elixir-waffle/waffle",
       deps: deps(),
       docs: docs(),
@@ -29,7 +29,7 @@ defmodule Waffle.Mixfile do
       maintainers: ["Boris Kuznetsov"],
       licenses: ["Apache-2.0"],
       links: %{"GitHub" => "https://github.com/elixir-waffle/waffle"},
-      files: ~w(mix.exs README.md CHANGELOG.md lib)
+      files: ~w(mix.exs README.md CHANGELOG.md documentation lib)
     ]
   end
 
