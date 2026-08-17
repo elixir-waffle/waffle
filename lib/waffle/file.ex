@@ -1,6 +1,8 @@
 defmodule Waffle.File do
   @moduledoc false
 
+  alias Waffle.HTTPClient
+
   defstruct [:path, :file_name, :binary, :is_tempfile?, :stream]
 
   def generate_temporary_path(item \\ nil) do
@@ -160,77 +162,14 @@ defmodule Waffle.File do
       generate_temporary_path()
       |> Kernel.<>(Path.extname(filename))
 
-    case save_temp_file(local_path, uri, definition) do
+    url = URI.to_string(uri)
+
+    headers = definition.remote_file_headers(uri)
+
+    case HTTPClient.Request.download(local_path, url, headers) do
       {:ok, filename} -> {:ok, local_path, filename}
       :ok -> {:ok, local_path}
       err -> err
-    end
-  end
-
-  defp save_temp_file(local_path, remote_path, definition) do
-    remote_file = get_remote_path(remote_path, definition)
-
-    case remote_file do
-      {:ok, body, filename} ->
-        case File.write(local_path, body) do
-          :ok -> {:ok, filename}
-          _ -> :error
-        end
-
-      {:ok, body} ->
-        File.write(local_path, body)
-
-      {:error, _reason} = err ->
-        err
-    end
-  end
-
-  defp get_remote_path(remote_path, definition) do
-    headers = definition.remote_file_headers(remote_path)
-
-    options = [
-      follow_redirect: true,
-      recv_timeout: Application.get_env(:waffle, :recv_timeout, 5_000),
-      connect_timeout: Application.get_env(:waffle, :connect_timeout, 10_000),
-      max_body_length: Application.get_env(:waffle, :max_body_length, :infinity),
-      max_retries: Application.get_env(:waffle, :max_retries, 3),
-      backoff_factor: Application.get_env(:waffle, :backoff_factor, 1000),
-      backoff_max: Application.get_env(:waffle, :backoff_max, 30_000)
-    ]
-
-    request(remote_path, headers, options)
-  end
-
-  defp request(remote_path, headers, options, tries \\ 0) do
-    http_client = Application.get_env(:waffle, :http_client, Waffle.HTTPClient.Hackney)
-    url = URI.to_string(remote_path)
-
-    case http_client.get(url, headers, options) do
-      {:ok, body} ->
-        {:ok, body}
-
-      {:ok, body, filename} ->
-        {:ok, body, filename}
-
-      {:error, reason} when reason in [:timeout, :recv_timeout, :service_unavailable] ->
-        case retry(tries, options) do
-          {:ok, :retry} -> request(remote_path, headers, options, tries + 1)
-          {:error, :out_of_tries} -> {:error, reason}
-        end
-
-      {:error, _} = err ->
-        err
-    end
-  end
-
-  defp retry(tries, options) do
-    if tries < options[:max_retries] do
-      backoff = round(options[:backoff_factor] * :math.pow(2, tries))
-      backoff = :erlang.min(backoff, options[:backoff_max])
-      :timer.sleep(backoff)
-      {:ok, :retry}
-    else
-      {:error, :out_of_tries}
     end
   end
 end

@@ -31,6 +31,9 @@ defmodule Waffle.Actions.Store do
       {:ok, data, _conn} = Plug.Conn.read_body(conn)
       Avatar.store(%{filename: "file.png", binary: data})
 
+  See [Fetching remote files](`m:Waffle.Definition.Storage#module-fetching-remote-files`)
+  for setup and configuration.
+
   Example usage as a file attached to a `scope`:
 
       scope = Repo.get(User, 1)
@@ -84,28 +87,31 @@ defmodule Waffle.Actions.Store do
   defp put_versions(definition, {file, scope}) do
     if definition.async() do
       definition.__versions()
-      |> Enum.map(fn(r)    -> async_process_version(definition, r, {file, scope}) end)
-      |> Enum.map(fn(task) -> Task.await(task, version_timeout()) end)
+      |> Enum.map(fn r -> async_process_version(definition, r, {file, scope}) end)
+      |> Enum.map(fn task -> Task.await(task, version_timeout()) end)
       |> ensure_all_success
-      |> Enum.map(fn({v, r})    -> async_put_version(definition, v, {r, scope}) end)
-      |> Enum.map(fn(task) -> Task.await(task, version_timeout()) end)
+      |> Enum.map(fn {v, r} -> async_put_version(definition, v, {r, scope}) end)
+      |> Enum.map(fn task -> Task.await(task, version_timeout()) end)
       |> handle_responses(file.file_name)
     else
       definition.__versions()
-      |> Enum.map(fn(version) -> process_version(definition, version, {file, scope}) end)
+      |> Enum.map(fn version -> process_version(definition, version, {file, scope}) end)
       |> ensure_all_success
-      |> Enum.map(fn({version, result}) -> put_version(definition, version, {result, scope}) end)
+      |> Enum.map(fn {version, result} -> put_version(definition, version, {result, scope}) end)
       |> handle_responses(file.file_name)
     end
   end
 
   defp ensure_all_success(responses) do
-    errors = Enum.filter(responses, fn({_version, resp}) -> elem(resp, 0) == :error end)
+    errors = Enum.filter(responses, fn {_version, resp} -> elem(resp, 0) == :error end)
     if Enum.empty?(errors), do: responses, else: errors
   end
 
   defp handle_responses(responses, filename) do
-    errors = Enum.filter(responses, fn(resp) -> elem(resp, 0) == :error end) |> Enum.map(fn(err) -> elem(err, 1) end)
+    errors =
+      Enum.filter(responses, fn resp -> elem(resp, 0) == :error end)
+      |> Enum.map(fn err -> elem(err, 1) end)
+
     if Enum.empty?(errors), do: {:ok, filename}, else: {:error, errors}
   end
 
@@ -131,18 +137,23 @@ defmodule Waffle.Actions.Store do
 
   defp put_version(definition, version, {result, scope}) do
     case result do
-      {:error, error} -> {:error, error}
-      {:ok, nil} -> {:ok, nil}
+      {:error, error} ->
+        {:error, error}
+
+      {:ok, nil} ->
+        {:ok, nil}
+
       {:ok, %Waffle.File{} = file} ->
         file_name = Versioning.resolve_file_name(definition, version, {file, scope})
-        file      = %Waffle.File{file | file_name: file_name}
-        result    = definition.__storage().put(definition, version, {file, scope})
+        file = %Waffle.File{file | file_name: file_name}
+        result = definition.__storage().put(definition, version, {file, scope})
 
         case definition.transform(version, {file, scope}) do
           :noaction ->
             # We don't have to cleanup after `:noaction` transformations
             # because final `cleanup!` will remove the original temporary file.
             result
+
           _ ->
             cleanup!(result, file)
         end
@@ -158,5 +169,4 @@ defmodule Waffle.Actions.Store do
 
     result
   end
-
 end

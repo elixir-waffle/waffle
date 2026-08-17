@@ -58,7 +58,7 @@ defmodule Waffle.Mixfile do
 
   defp deps do
     [
-      {:hackney, "~> 1.9"},
+      {:req, "~> 0.7", optional: true},
 
       # If using Amazon S3
       {:ex_aws, "~> 2.1", optional: true},
@@ -67,13 +67,14 @@ defmodule Waffle.Mixfile do
 
       # Test
       {:mock, "~> 0.3", only: :test},
+      {:plug, "~> 1.0", only: :test},
 
       # To be removed once https://github.com/jjh42/mock/pull/155/changes is merged.
       # Needed because meck 0.9.2, required by mock above, won't compile on OTP 29
       {:meck, "~> 1.0", only: :test, override: true},
 
       # Dev
-      {:ex_doc, "~> 0.21", only: :dev},
+      {:ex_doc, "~> 0.40", only: :dev, runtime: false},
 
       # Dev, Test
       {:credo, "~> 1.4", only: [:dev, :test], runtime: false}

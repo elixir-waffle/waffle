@@ -58,6 +58,15 @@ defmodule Waffle.Definition.Storage do
   Override the `__storage` function in your definition module if you
   want to use a different type of storage for a particular uploader.
 
+  ### Community adapters
+
+  * **Rackspace** - [arc_rackspace](https://github.com/lokalebasen/arc_rackspace)
+  * **Manta** - [arc_manta](https://github.com/onyxrev/arc_manta)
+  * **OVH** - [arc_ovh](https://github.com/stephenmoloney/arc_ovh)
+  * **Google Cloud Storage** - [waffle_gcs](https://github.com/elixir-waffle/waffle_gcs)
+  * **Microsoft Azure Storage** - [arc_azure](https://github.com/phil-a/arc_azure)
+  * **Aliyun OSS Storage** - [waffle_aliyun_oss](https://github.com/ug0/waffle_aliyun_oss)
+
   ## File Validation
 
   While storing files on S3 eliminates some malicious attack vectors,
@@ -125,11 +134,31 @@ defmodule Waffle.Definition.Storage do
         end
       end
 
-  ## Passing custom headers when downloading from remote path
+  ## Fetching remote files
 
-  By default, when downloading files from remote path request headers are empty,
-  but if you wish to provide your own, you can override the `remote_file_headers/1`
-  function in your definition module. For example:
+  When a remote URL is passed to an uploader, Waffle downloads it to a temporary
+  file before validation, transformation, and storage.
+
+  See `Waffle.HTTPClient.Req` for HTTP client setup and Req-specific options.
+  See `Waffle.HTTPClient.Request` for timeouts, redirects, retries, and response
+  body limits.
+
+  Remote-file HTTP client configuration does not affect requests made by
+  `Waffle.Storage.S3`, which are handled separately by ExAws.
+
+  ### Filenames from Content-Disposition
+
+  When a remote response provides a filename through `Content-Disposition`,
+  Waffle uses it instead of the URL's basename. Both `filename` and RFC 6266
+  `filename*` parameters are supported, with `filename*` taking precedence.
+
+  Filenames containing path separators or control characters are rejected. In
+  that case, Waffle falls back to the filename derived from the URL.
+
+  ### Passing custom request headers
+
+  Waffle does not add custom headers when downloading remote files. Override
+  `remote_file_headers/1` in your definition module to provide them. For example:
 
       defmodule Avatar do
         use Waffle.Definition
@@ -138,12 +167,12 @@ defmodule Waffle.Definition.Storage do
           credentials = Application.get_env(:my_app, :avatar_credentials)
           token = Base.encode64(credentials[:username] <> ":" <> credentials[:password])
 
-          [{"Authorization", "Basic #{token}")}]
+          [{"Authorization", "Basic #{token}"}]
         end
       end
 
-  This code would authenticate request only for specific domain. Otherwise, it would send
-  empty request headers.
+  This authenticates requests only to the specified domain. Requests to other
+  domains use no custom headers.
 
   ## Temporary Directory
 
