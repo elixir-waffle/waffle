@@ -1,6 +1,6 @@
 # Waffle
 
-<img align="right" width="96" height="96"
+<img align="right" width="160"
      alt="Waffle logo"
      src="https://elixir-waffle.github.io/waffle/assets/logo.svg">
 
@@ -87,7 +87,7 @@ This library was forked from [Arc](https://github.com/stavro/arc) at version `v0
 
 ## Sponsors
 
-- [Evrone](https://evrone.com?utm_source=waffle), Custom software development company
+- [Evrone](https://evrone.com?utm_source=waffle), custom software development company
 - [Oficinaria](https://oficinaria.com.br?utm_source=waffle), marketplace for in-person creative workshops Brazil
 
 ## License
