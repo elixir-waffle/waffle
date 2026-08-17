@@ -1,8 +1,6 @@
 # Waffle
 
-<img align="right" width="160"
-     alt="Waffle logo"
-     src="https://elixir-waffle.github.io/waffle/assets/logo.svg">
+<img align="right" width="160" alt="Waffle logo" src="https://elixir-waffle.github.io/waffle/assets/logo.svg">
 
 Waffle is a flexible file upload library for Elixir with straightforward integrations for Amazon S3 and ImageMagick.
 
