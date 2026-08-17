@@ -18,3 +18,12 @@ defmodule Waffle.Storage do
   @callback delete(definition :: atom, version :: atom, file_and_scope :: {Waffle.File.t(), any}) ::
               atom
 end
+
+defmodule Waffle.StorageBehavior do
+  @moduledoc """
+  Deprecated compatibility name for `Waffle.Storage`.
+  """
+
+  @doc false
+  defdelegate behaviour_info(key), to: Waffle.Storage
+end
