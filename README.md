@@ -28,7 +28,7 @@ Add the `:waffle` dependency to `mix.exs`.
 
 **mix.exs**
 ```elixir
-{:waffle, "~> 2.0"},
+{:waffle, "== 2.0.0-rc.1"},
 {:waffle_ecto, "~> 0.0"}
 ```
 

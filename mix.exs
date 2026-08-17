@@ -1,7 +1,7 @@
 defmodule Waffle.Mixfile do
   use Mix.Project
 
-  @version "1.1.10"
+  @version "2.0.0-rc.1"
 
   def project do
     [
@@ -27,7 +27,7 @@ defmodule Waffle.Mixfile do
   defp package do
     [
       maintainers: ["Boris Kuznetsov"],
-      licenses: ["Apache 2.0"],
+      licenses: ["Apache-2.0"],
       links: %{"GitHub" => "https://github.com/elixir-waffle/waffle"},
       files: ~w(mix.exs README.md CHANGELOG.md lib)
     ]

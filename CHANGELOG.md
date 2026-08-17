@@ -1,9 +1,11 @@
 # Changelog
 
-## Unreleased
+## v2.0.0-rc.1
 
 - Replace the required Hackney dependency with the optional Req adapter.
 - Add a pluggable HTTP-client behaviour for remote downloads.
+- Retain `Waffle.StorageBehavior` as a compatibility name for storage adapters.
+  `Waffle.Storage` is a preferred name.
 - Limit remote downloads to 50 MiB by default.
 - Return structured `%Waffle.HTTPClient.Error{}` values for HTTP failures.
 - Compile cleanly without optional Req or ExAws dependencies.
