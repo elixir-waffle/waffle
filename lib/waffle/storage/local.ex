@@ -54,7 +54,7 @@ defmodule Waffle.Storage.Local do
         Versioning.resolve_file_name(definition, version, file_and_scope)
       ])
 
-    host = host(definition)
+    host = host(definition, file_and_scope)
 
     if host == nil do
       Path.join("/", local_path)
@@ -74,8 +74,8 @@ defmodule Waffle.Storage.Local do
     |> File.rm()
   end
 
-  defp host(definition) do
-    case definition.asset_host() do
+  defp host(definition, file_and_scope) do
+    case definition.asset_host(file_and_scope) do
       {:system, env_var} when is_binary(env_var) -> System.get_env(env_var)
       url -> url
     end

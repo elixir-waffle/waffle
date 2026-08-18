@@ -196,6 +196,9 @@ defmodule Waffle.Definition.Storage do
       def bucket, do: Application.fetch_env!(:waffle, :bucket)
       def bucket({_file, _scope}), do: bucket()
       def asset_host, do: Application.get_env(:waffle, :asset_host)
+      def asset_host({_file, _scope}), do: asset_host()
+      def region, do: Application.fetch_env!(:waffle, :region)
+      def region({_file, _scope}), do: region()
       def filename(_, {file, _}), do: Path.basename(file.file_name, Path.extname(file.file_name))
       def storage_dir_prefix, do: Application.get_env(:waffle, :storage_dir_prefix, "")
       def storage_dir(_, _), do: Application.get_env(:waffle, :storage_dir, "uploads")
@@ -213,7 +216,10 @@ defmodule Waffle.Definition.Storage do
                      __storage: 0,
                      bucket: 0,
                      bucket: 1,
-                     asset_host: 0
+                     asset_host: 0,
+                     asset_host: 1,
+                     region: 0,
+                     region: 1
 
       @before_compile Waffle.Definition.Storage
     end
