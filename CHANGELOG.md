@@ -1,6 +1,6 @@
 # Changelog
 
-## v2.0.0-rc.1
+## v2.0.0
 
 - Replace the required Hackney dependency with the optional Req adapter.
 - Add a pluggable HTTP-client behaviour for remote downloads.
@@ -12,6 +12,7 @@
 - Allow the temporary directory to be configured with `:tmp_dir`.
 - Support RFC 6266 `filename*` parameters and reject unsafe filenames from
   remote `Content-Disposition` headers.
+- Require Elixir 1.15 or later.
 
 ### Upgrade guide
 
