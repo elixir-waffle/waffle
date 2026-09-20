@@ -67,6 +67,12 @@ defmodule WaffleTest.Processor do
     def transform(:original, _), do: {:blah, ""}
   end
 
+  defmodule MissingOutputDefinition do
+    use Waffle.Definition
+
+    def transform(:original, _), do: {"true", fn _input, _output -> [] end}
+  end
+
   test "returns the original path for :noaction transformations" do
     {:ok, file} =
       Waffle.Processor.process(
@@ -206,6 +212,17 @@ defmodule WaffleTest.Processor do
                :thumb,
                {Waffle.File.new(@img, BrokenDefinition), nil}
              )
+  end
+
+  test "returns an error when a successful transformation produces no output" do
+    assert {:error, message} =
+             Waffle.Processor.process(
+               MissingOutputDefinition,
+               :original,
+               {Waffle.File.new(@img, MissingOutputDefinition), nil}
+             )
+
+    assert message =~ "Transform output file does not exist:"
   end
 
   test "raises an error if the given transformation executable cannot be found" do
