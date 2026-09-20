@@ -87,6 +87,7 @@ This library was forked from [Arc](https://github.com/stavro/arc) at version `v0
 
 - [Evrone](https://evrone.com?utm_source=waffle), custom software development company
 - [Oficinaria](https://oficinaria.com.br?utm_source=waffle), marketplace for in-person creative workshops in Brazil
+- [Tecotype](https://tecotype.com?utm_source=waffle), keyboard-first mail app
 
 ## License
 
