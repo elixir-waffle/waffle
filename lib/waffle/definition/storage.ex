@@ -64,7 +64,7 @@ defmodule Waffle.Definition.Storage do
   * **Manta** - [arc_manta](https://github.com/onyxrev/arc_manta)
   * **OVH** - [arc_ovh](https://github.com/stephenmoloney/arc_ovh)
   * **Google Cloud Storage** - [waffle_gcs](https://github.com/elixir-waffle/waffle_gcs)
-  * **Microsoft Azure Storage** - [arc_azure](https://github.com/phil-a/arc_azure)
+  * **Microsoft Azure Storage** - [waffle_azure](https://github.com/phil-a/waffle_azure)
   * **Aliyun OSS Storage** - [waffle_aliyun_oss](https://github.com/ug0/waffle_aliyun_oss)
 
   ## File Validation
