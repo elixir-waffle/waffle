@@ -102,6 +102,33 @@ defmodule WaffleTest.Actions.Store do
     assert DummyDefinition.store({@img, :scope}) == {:ok, "image.png"}
   end
 
+  test_with_mock "with a Waffle.File struct", Waffle.Storage.S3,
+    put: fn DummyDefinition, _, {%{file_name: "image.png", path: @img}, nil} ->
+      {:ok, "resp"}
+    end do
+    assert DummyDefinition.store(%Waffle.File{file_name: "image.png", path: @img}) ==
+             {:ok, "image.png"}
+  end
+
+  test_with_mock "with a Waffle.File struct as temporary file", Waffle.Storage.S3,
+    put: fn DummyDefinition, _, {%{file_name: "image.png", path: img}, nil} ->
+      refute img == @img
+      {:ok, "resp"}
+    end do
+    tmp_path = Waffle.File.generate_temporary_path()
+
+    File.ln!(@img, tmp_path)
+
+    assert DummyDefinition.store(%Waffle.File{
+             file_name: "image.png",
+             path: tmp_path,
+             is_tempfile?: true
+           }) == {:ok, "image.png"}
+
+    assert File.exists?(@img)
+    refute File.exists?(tmp_path)
+  end
+
   test_with_mock "map with a filename and path", Waffle.Storage.S3,
     put: fn DummyDefinition, _, {%{file_name: "image.png", path: @img}, nil} ->
       {:ok, "resp"}
