@@ -74,6 +74,8 @@ changeset
 _Read more about Ecto integration in the [WaffleEcto documentation](https://waffle-ecto.hexdocs.pm/)._
 _WaffleEcto supports changeset integration and versioned URLs for cache busting._
 
+Check out [`Waffle.LiveView`](https://hexdocs.pm/waffle/Waffle.LiveView.html) on how to integrate Waffle with LiveView uploads.
+
 ## More Examples
 
 * [An example for the Local storage driver](documentation/examples/local.md)

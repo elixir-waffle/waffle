@@ -1,5 +1,8 @@
 # Changelog
 
+- Allows `%Waffle.File{}` in `Uploader.store/1` function
+- Adds integration with LiveView uploads (`Waffle.LiveView`)
+
 ## v2.0.0
 
 - Replace the required Hackney dependency with the optional Req adapter.

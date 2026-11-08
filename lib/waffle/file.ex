@@ -5,16 +5,20 @@ defmodule Waffle.File do
 
   defstruct [:path, :file_name, :binary, :is_tempfile?, :stream]
 
+  @type t :: %__MODULE__{
+          path: String.t() | nil,
+          file_name: String.t() | nil,
+          binary: binary() | nil,
+          is_tempfile?: boolean() | nil,
+          stream: Stream.t() | File.Stream.t() | nil
+        }
+
   def generate_temporary_path(item \\ nil) do
     do_generate_temporary_path(item)
   end
 
-  #
-  # Handle a remote file
-  #
+  def new(%Waffle.File{binary: nil, stream: nil} = file, _definition), do: file
 
-  # Given a remote file
-  # (respects content-disposition header)
   def new("http" <> _ = remote_path, definition) do
     uri = URI.parse(remote_path)
     filename = uri.path |> Path.basename() |> URI.decode()
@@ -38,7 +42,6 @@ defmodule Waffle.File do
     end
   end
 
-  # Given a remote file with a filename
   def new(
         %{filename: filename, remote_path: remote_path} = %{filename: _, remote_path: "http" <> _},
         definition
@@ -57,7 +60,6 @@ defmodule Waffle.File do
     end
   end
 
-  # Rejects invalid remote file path
   def new(
         %{filename: _filename, remote_path: _remote_path} = %{filename: _, remote_path: _},
         _definition
@@ -65,20 +67,11 @@ defmodule Waffle.File do
     {:error, :invalid_file_path}
   end
 
-  #
-  # Handle a binary blob
-  #
-
   def new(%{filename: filename, binary: binary}, _definition) do
     %Waffle.File{binary: binary, file_name: Path.basename(filename)}
     |> write_binary()
   end
 
-  #
-  # Handle a local file
-  #
-
-  # Accepts a path
   def new(path, _definition) when is_binary(path) do
     case File.exists?(path) do
       true -> %Waffle.File{path: path, file_name: Path.basename(path)}
@@ -94,22 +87,9 @@ defmodule Waffle.File do
     end
   end
 
-  #
-  # Handle a stream
-  #
   def new(%{filename: filename, stream: stream}, _definition) when is_struct(stream) do
     %Waffle.File{stream: stream, file_name: Path.basename(filename)}
   end
-
-  #
-  # Support functions
-  #
-
-  #
-  #
-  # Temp file with exact extension.
-  # Used for converting formats when passing extension in transformations
-  #
 
   defp do_generate_temporary_path(%Waffle.File{path: path}) do
     Path.extname(path || "")

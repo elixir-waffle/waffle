@@ -11,7 +11,10 @@ defmodule Waffle.Actions.Store do
 
     * A map with a filename and path keys (eg, a `%Plug.Upload{}`)
 
+    * A Waffle.File struct
+
     * A map with a filename and binary keys (eg, `%{filename: "image.png", binary: <<255,255,255,...>>}`)
+
     * A map with a filename and stream keys (eg, `%{filename: "image.png", stream: %Stream{...}}`)
 
     * A two-element tuple consisting of one of the above file formats as well as a scope map
@@ -26,6 +29,9 @@ defmodule Waffle.Actions.Store do
 
       # Store a file directly from a `%Plug.Upload{}`
       Avatar.store(%Plug.Upload{filename: "file.png", path: "/a/b/c"}) #=> {:ok, "file.png"}
+
+      # Store a Waffle.File
+      Avatar.store(%Waffle.File{file_name: "file.png", path: "/a/b/c", is_tempfile?: true}) #=> {:ok, "file.png"}
 
       # Store a file from a connection body
       {:ok, data, _conn} = Plug.Conn.read_body(conn)
