@@ -20,7 +20,11 @@ defmodule Waffle.Transformations.Convert do
 
     case result do
       {_, 0} ->
-        {:ok, %Waffle.File{file | path: new_path, is_tempfile?: true}}
+        if File.exists?(new_path) do
+          {:ok, %Waffle.File{file | path: new_path, is_tempfile?: true}}
+        else
+          {:error, "Transform output file does not exist: #{new_path}"}
+        end
 
       {error_message, _exit_code} ->
         {:error, error_message}
