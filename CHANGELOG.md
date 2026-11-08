@@ -1,5 +1,7 @@
 # Changelog
 
+## v2.1.0
+
 - Allows `%Waffle.File{}` in `Uploader.store/1` function
 - Adds integration with LiveView uploads (`Waffle.LiveView`)
 
